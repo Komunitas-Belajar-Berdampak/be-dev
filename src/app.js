@@ -5,11 +5,17 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize');
 const config = require('./config');
+
 const { httpLogger } = require('./libs/logger');
 const errorHandler = require('./middlewares/error');
+
 const authRoutes = require('./modules/auth/auth.routes');
 const rolesRoutes = require('./modules/roles/roles.routes');
 const userRoutes = require('./modules/users/user.routes');
+const academicTermRoutes = require('./modules/academicTerms/academic-term.routes');
+const facultyRoutes = require('./modules/faculties/faculty.routes');
+const majorRoutes = require('./modules/majors/major.routes');
+
 const app = express();
 
 app.use(httpLogger);
@@ -44,6 +50,9 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/roles', rolesRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/academic-terms', academicTermRoutes);
+app.use('/api/faculties', facultyRoutes);
+app.use('/api/majors', majorRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
