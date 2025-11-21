@@ -3,6 +3,7 @@ const { successResponse } = require('../../utils/http');
 const courseService = require('./course.service');
 const meetingService = require('../meetings/meeting.service');
 const materialService = require('../materials/material.service');
+const assignmentService = require('../assignments/assignment.service');
 
 const createCourseSchema = Joi.object({
     kodeMatkul: Joi.string().required(),
@@ -49,6 +50,24 @@ const materialUpdateSchema = Joi.object({
     pathFile: Joi.string().optional(),
     visibility: Joi.string().valid('HIDE', 'VISIBLE').optional(),
     deskripsi: Joi.object().optional(),
+}).min(1);
+
+const assignmentCreateSchema = Joi.object({
+    judul: Joi.string().required(),
+    statusTugas: Joi.boolean().required(), 
+    tenggat: Joi.date().iso().required(),
+    status: Joi.string().valid('HIDE', 'VISIBLE').optional(),
+    deskripsi: Joi.object().optional(),
+    lampiran: Joi.string().optional(),
+});
+
+const assignmentUpdateSchema = Joi.object({
+    judul: Joi.string().optional(),
+    statusTugas: Joi.boolean().optional(),
+    tenggat: Joi.date().iso().optional(),
+    status: Joi.string().valid('HIDE', 'VISIBLE').optional(),
+    deskripsi: Joi.object().optional(),
+    lampiran: Joi.string().optional(),
 }).min(1);
 
 const getCourses = async (req, res, next) => {
@@ -226,6 +245,111 @@ const getMaterialDetail = async (req, res, next) => {
     }
 };
 
+const getAssignmentsByCourse = async (req, res, next) => {
+    try {
+        const data = await assignmentService.listAssignmentsByCourse(
+        req.params.idCourse,
+        req.user,
+        );
+        return successResponse(res, {
+        message: 'data berhasil diambil!',
+        data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const getAssignmentsByMeeting = async (req, res, next) => {
+    try {
+        const data = await assignmentService.listAssignmentsByMeeting(
+        req.params.idCourse,
+        Number(req.params.pertemuan),
+        req.user,
+        );
+        return successResponse(res, {
+        message: 'data berhasil diambil!',
+        data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const getAssignmentDetail = async (req, res, next) => {
+    try {
+        const data = await assignmentService.getAssignmentDetail(
+        req.params.idCourse,
+        Number(req.params.pertemuan),
+        req.params.idAssignment,
+        req.user,
+        );
+        return successResponse(res, {
+        message: 'data berhasil diambil!',
+        data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const createAssignment = async (req, res, next) => {
+    try {
+        const { error, value } = assignmentCreateSchema.validate(req.body);
+        if (error) throw error;
+
+        const data = await assignmentService.createAssignment(
+        req.params.idCourse,
+        Number(req.params.pertemuan),
+        value,
+        );
+
+        return successResponse(res, {
+        statusCode: 201,
+        message: 'tugas berhasil dibuat!',
+        data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const updateAssignment = async (req, res, next) => {
+    try {
+        const { error, value } = assignmentUpdateSchema.validate(req.body);
+        if (error) throw error;
+
+        await assignmentService.updateAssignment(
+        req.params.idCourse,
+        Number(req.params.pertemuan),
+        req.params.idAssignment,
+        value,
+        );
+
+        return successResponse(res, {
+        message: 'tugas berhasil diubah!',
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const deleteAssignment = async (req, res, next) => {
+    try {
+        await assignmentService.deleteAssignment(
+        req.params.idCourse,
+        Number(req.params.pertemuan),
+        req.params.idAssignment,
+        );
+
+        return successResponse(res, {
+        message: 'tugas berhasil dihapus!',
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const createMaterial = async (req, res, next) => {
     try {
         const { error, value } = materialCreateSchema.validate(req.body);
@@ -296,4 +420,10 @@ module.exports = {
     createMaterial,
     updateMaterial,
     deleteMaterial,
+    getAssignmentsByCourse,
+    getAssignmentsByMeeting,
+    getAssignmentDetail,
+    createAssignment,
+    updateAssignment,
+    deleteAssignment,
 };

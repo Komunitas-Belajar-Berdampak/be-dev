@@ -70,4 +70,33 @@ router.delete(
     controller.deleteMaterial,
 );
 
+router.get(
+    '/:idCourse/meetings/assignments',
+    controller.getAssignmentsByCourse,
+);
+router.get(
+    '/:idCourse/meetings/:pertemuan/assignments',
+    controller.getAssignmentsByMeeting,
+);
+router.get(
+    '/:idCourse/meetings/:pertemuan/assignments/:idAssignment',
+    controller.getAssignmentDetail,
+);
+router.post(
+    '/:idCourse/meetings/:pertemuan/assignments',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.createAssignment,
+);
+router.put(
+    '/:idCourse/meetings/:pertemuan/assignments/:idAssignment',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.updateAssignment,
+);
+router.delete(
+    '/:idCourse/meetings/:pertemuan/assignments/:idAssignment',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.deleteAssignment,
+);
+
+
 module.exports = router;
