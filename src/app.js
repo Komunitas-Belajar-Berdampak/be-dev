@@ -17,7 +17,7 @@ const facultyRoutes = require('./modules/faculties/faculty.routes');
 const majorRoutes = require('./modules/majors/major.routes');
 const courseRoutes = require('./modules/courses/course.routes');
 const submissionRoutes = require('./modules/submissions/submission.routes');
-
+const groupRoutes = require('./modules/groups/group.routes');
 
 const app = express();
 
@@ -59,6 +59,7 @@ app.use('/api/majors', majorRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/assignments', submissionRoutes);
+app.use('/api', groupRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
