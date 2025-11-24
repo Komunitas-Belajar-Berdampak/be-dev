@@ -58,4 +58,54 @@ router.post(
     controller.rejectMembership,
 );
 
+router.get(
+    '/groups/:idGroup/threads',
+    controller.getThreadsByGroup,
+);
+router.post(
+    '/groups/:idGroup/threads',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.createThread,
+);
+
+router.get(
+    '/threads/:idThread/posts',
+    controller.getPostsByThread,
+);
+router.post(
+    '/threads/:idThread/posts',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.createPost,
+);
+router.put(
+    '/threads/:idThread/posts/:idPost',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.updatePostController,
+);
+router.delete(
+    '/threads/:idThread/posts/:idPost',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.deletePostController,
+);
+
+router.get(
+    '/threads/:idThread/tasks',
+    controller.getTasksByThread,
+);
+router.post(
+    '/threads/:idThread/tasks',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.createTask,
+);
+router.put(
+    '/threads/:idThread/tasks/:idTask',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.updateTaskController,
+);
+router.delete(
+    '/threads/:idThread/tasks/:idTask',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.deleteTaskController,
+);
+
 module.exports = router;
