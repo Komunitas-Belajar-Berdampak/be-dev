@@ -22,6 +22,41 @@ const gradeSchema = Joi.object({
 
 router.use(auth);
 
+/**
+ * @swagger
+ * tags:
+ *   name: Submissions
+ *   description: Pengumpulan tugas
+ */
+
+/**
+ * @swagger
+ * /api/assignments/{idAssignment}/submissions:
+ *   get:
+ *     summary: List submissions untuk satu assignment
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idAssignment
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Submission'
+ */
 router.get('/:idAssignment/submissions', async (req, res, next) => {
     try {
         const data = await service.listSubmissions(req.params.idAssignment, req.user);
@@ -34,6 +69,31 @@ router.get('/:idAssignment/submissions', async (req, res, next) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/assignments/{idAssignment}/submissions:
+ *   post:
+ *     summary: Submit tugas
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idAssignment
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [file]
+ *             properties:
+ *               file: { type: string }
+ *     responses:
+ *       201:
+ *         description: tugas sudah tersubmit!
+ */
 router.post('/:idAssignment/submissions', async (req, res, next) => {
     try {
         const { error, value } = createSchema.validate(req.body);
@@ -55,6 +115,31 @@ router.post('/:idAssignment/submissions', async (req, res, next) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/assignments/{idAssignment}/submissions/{idSubmission}:
+ *   patch:
+ *     summary: Update file submission
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idAssignment
+ *       - in: path
+ *         name: idSubmission
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               file: { type: string }
+ *     responses:
+ *       200:
+ *         description: submissions telah diubah!
+ */
 router.patch('/:idAssignment/submissions/:idSubmission', async (req, res, next) => {
     try {
         const { error, value } = updateSchema.validate(req.body);
@@ -75,6 +160,35 @@ router.patch('/:idAssignment/submissions/:idSubmission', async (req, res, next) 
     }
 });
 
+/**
+ * @swagger
+ * /api/assignments/{idAssignment}/submissions/{idSubmission}/grade:
+ *   patch:
+ *     summary: Beri nilai submission
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idAssignment
+ *       - in: path
+ *         name: idSubmission
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nilai]
+ *             properties:
+ *               nilai:
+ *                 type: number
+ *                 minimum: 0
+ *                 maximum: 100
+ *     responses:
+ *       200:
+ *         description: nilai berhasil disimpan!
+ */
 router.patch(
     '/:idAssignment/submissions/:idSubmission/grade',
     requireRoles('DOSEN', 'SUPER_ADMIN'),

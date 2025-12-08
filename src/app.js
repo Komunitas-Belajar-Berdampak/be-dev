@@ -18,6 +18,10 @@ const majorRoutes = require('./modules/majors/major.routes');
 const courseRoutes = require('./modules/courses/course.routes');
 const submissionRoutes = require('./modules/submissions/submission.routes');
 const groupRoutes = require('./modules/groups/group.routes');
+const approachRoutes = require('./modules/approach/approach.routes');
+const privateFileRoutes = require('./modules/privateFiles/private-file.routes');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./docs/swagger');
 
 const app = express();
 
@@ -60,6 +64,9 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/submissions', submissionRoutes);
 app.use('/api/assignments', submissionRoutes);
 app.use('/api', groupRoutes);
+app.use('/api/approach', approachRoutes);
+app.use('/api/private-files', privateFileRoutes);
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res) => {
     res.status(404).json({

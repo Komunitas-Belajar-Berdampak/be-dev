@@ -3,7 +3,12 @@ const StudyGroup = require('./group.model');
 const GroupMember = require('./group-member.model');
 const Course = require('../courses/course.model');
 const User = require('../users/user.model');
+const GroupThread = require('./group-thread.model');
+const GroupPost = require('./group-post.model');
+const ActivityLog = require('./activity-log.model');
 const { ApiError } = require('../../utils/http');
+
+const POINT_PER_POST = 10;
 
 const listGroupsByCourse = async (idCourse) => {
     if (!mongoose.isValidObjectId(idCourse)) {
@@ -107,8 +112,63 @@ const getUserDetailInGroup = async (idCourse, idGroup, idUser) => {
         idMahasiswa: idUser,
     }).lean();
 
-    const kontribusiList = [];
-    const aktivitasList = [];
+    const threads = await GroupThread.find({ idGroup }).lean();
+    const threadIds = threads.map((t) => t._id);
+    const threadMap = threads.reduce((acc, t) => {
+        acc[t._id.toString()] = t.judul;
+        return acc;
+    }, {});
+
+    let kontribusiList = [];
+    if (threadIds.length > 0) {
+        const aggregate = await GroupPost.aggregate([
+        {
+            $match: {
+            idThread: { $in: threadIds },
+            idAuthor: new mongoose.Types.ObjectId(idUser),
+            },
+        },
+        {
+            $group: {
+            _id: '$idThread',
+            count: { $sum: 1 },
+            },
+        },
+        ]);
+
+        kontribusiList = aggregate.map((row) => {
+        const threadId = row._id.toString();
+        const judulThread = threadMap[threadId] || '(thread tidak ditemukan)';
+        const totalPoin = (row.count || 0) * POINT_PER_POST;
+
+        return {
+            thread: judulThread,
+            kontribusi: totalPoin,
+        };
+        });
+    }
+
+    const logs = await ActivityLog.find({
+        idUser,
+        ...(threadIds.length > 0 && {
+        idContribusionThread: { $in: threadIds },
+        }),
+    })
+        .populate('idContribusionThread', 'judul')
+        .sort({ createdAt: 1 })
+        .lean();
+
+    const aktivitasList = logs.map((log) => ({
+        id: log._id.toString(),
+        aktivitas: log.aktivitas,
+        thread: log.idContribusionThread
+        ? {
+            id: log.idContribusionThread._id.toString(),
+            judul: log.idContribusionThread.judul,
+            }
+        : null,
+        createdAt: log.createdAt,
+    }));
 
     return {
         id: member?._id?.toString() || null,
@@ -117,8 +177,8 @@ const getUserDetailInGroup = async (idCourse, idGroup, idUser) => {
         nrp: mahasiswa.nrp,
         nama: mahasiswa.nama,
         },
-        kontribusi: kontribusiList,
-        aktivitas: aktivitasList,
+        kontribusi: kontribusiList,  
+        aktivitas: aktivitasList,     
     };
 };
 
