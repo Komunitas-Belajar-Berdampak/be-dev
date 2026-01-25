@@ -1,10 +1,23 @@
 const Role = require('./roles.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listRoles = async () => {
-    const roles = await Role.find().sort({ nama: 1 }).lean();
-    return roles;
+const listRoles = async (query) => {
+    const { page, limit, skip } = parsePagination(query);
+
+    const totalItems = await Role.countDocuments({});
+    const roles = await Role.find({})
+        .sort({ nama: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    return {
+        items: roles,
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
+
 
 const createRole = async ({ nama }) => {
     const exists = await Role.findOne({

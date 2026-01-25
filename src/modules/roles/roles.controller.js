@@ -3,15 +3,17 @@ const rolesService = require('./roles.service');
 
 const getRoles = async (req, res, next) => {
     try {
-        const roles = await rolesService.listRoles();
+        const result = await rolesService.listRoles(req.query);
         return successResponse(res, {
-            message: 'Data role berhasil diambil!',
-            data: roles,
+        message: 'Data role berhasil diambil!',
+        data: result.items,
+        pagination: result.pagination,
         });
     } catch (err) {
         return next(err);
     }
 };
+
 
 const createRole = async (req, res, next) => {
     try {

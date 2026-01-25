@@ -7,32 +7,35 @@ const GroupThread = require('./group-thread.model');
 const GroupPost = require('./group-post.model');
 const ActivityLog = require('./activity-log.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const POINT_PER_POST = 10;
 
-const listGroupsByCourse = async (idCourse) => {
-    if (!mongoose.isValidObjectId(idCourse)) {
-        throw new ApiError(400, 'ID course tidak valid');
-    }
+const listGroupsByCourse = async (idCourse, queryParams) => {
+    if (!mongoose.isValidObjectId(idCourse)) throw new ApiError(400, 'ID course tidak valid');
 
     const course = await Course.findById(idCourse).lean();
-    if (!course) {
-        throw new ApiError(404, 'Course tidak ditemukan');
-    }
+    if (!course) throw new ApiError(404, 'Course tidak ditemukan');
 
-    const groups = await StudyGroup.find({ idCourse }).lean();
+    const { page, limit, skip } = parsePagination(queryParams);
+
+    const filter = { idCourse };
+    const totalItems = await StudyGroup.countDocuments(filter);
+
+    const groups = await StudyGroup.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
 
     const groupIds = groups.map((g) => g._id);
+
     const members = await GroupMember.aggregate([
         { $match: { idGroup: { $in: groupIds } } },
         {
         $group: {
             _id: '$idGroup',
-            totalAnggota: {
-            $sum: {
-                $cond: [{ $eq: ['$status', 'APPROVED'] }, 1, 0],
-            },
-            },
+            totalAnggota: { $sum: { $cond: [{ $eq: ['$status', 'APPROVED'] }, 1, 0] } },
         },
         },
     ]);
@@ -42,14 +45,17 @@ const listGroupsByCourse = async (idCourse) => {
         return acc;
     }, {});
 
-    return groups.map((g) => ({
+    return {
+        items: groups.map((g) => ({
         id: g._id.toString(),
         nama: g.nama,
         kapasitas: g.kapasitas,
         totalAnggota: memberMap[g._id.toString()] || 0,
-        status: g.status, 
+        status: g.status,
         totalKontribusi: g.totalKontribusi || 0,
-    }));
+        })),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const getGroupDetail = async (idCourse, idGroup) => {

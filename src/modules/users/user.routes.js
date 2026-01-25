@@ -210,18 +210,13 @@ router.put(
 
 /**
  * @swagger
- * /api/users/{id}:
+ * /api/users:
  *   patch:
- *     summary: Ganti password / update sebagian profil user login
+ *     summary: Update profil user yang sedang login (mahasiswa atau dosen)
  *     tags: [Users]
+ *     description: Mahasiswa atau dosen bisa update profile mereka sendiri, ID diambil dari token auth
  *     security:
  *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
  *     requestBody:
  *       required: true
  *       content:
@@ -229,17 +224,31 @@ router.put(
  *           schema:
  *             type: object
  *             properties:
- *               passwordLama: { type: string }
- *               passwordBaru: { type: string }
- *               fotoProfil: { type: string }
- *               alamat: { type: string }
- *               nama: { type: string }
+ *               passwordLama:
+ *                 type: string
+ *                 description: Password lama (wajib jika ingin ganti password)
+ *               passwordBaru:
+ *                 type: string
+ *                 description: Password baru
+ *               fotoProfil:
+ *                 type: string
+ *                 nullable: true
+ *               alamat:
+ *                 type: string
+ *                 nullable: true
+ *               nama:
+ *                 type: string
  *     responses:
  *       200:
  *         description: data berhasil diubah!
+ *       400:
+ *         description: Bad Request (e.g., password lama salah)
+ *       401:
+ *         description: Unauthorized
  */
 router.patch(
-    '/:id',
+    '/',
+    auth,
     validate(patchUserSchema),
     controller.patchUser,
 );

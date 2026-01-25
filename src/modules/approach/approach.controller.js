@@ -6,7 +6,6 @@ const bodySchema = Joi.object({
     gayaBelajar: Joi.array().items(Joi.string()).required(),
 });
 
-// hanya pemilik atau SUPER_ADMIN / DOSEN yang boleh akses
 function ensureCanAccess(req, targetUserId) {
     const isOwner = req.user.sub === targetUserId;
     const roles = req.user.roles || [];

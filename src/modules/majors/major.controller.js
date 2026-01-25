@@ -3,10 +3,11 @@ const service = require('./major.service');
 
 const getMajors = async (req, res, next) => {
     try {
-        const data = await service.listMajors();
+        const result = await service.listMajors(req.query);
         return successResponse(res, {
         message: 'data berhasil diambil!',
-        data,
+        data: result.items,
+        pagination: result.pagination,
         });
     } catch (err) {
         return next(err);

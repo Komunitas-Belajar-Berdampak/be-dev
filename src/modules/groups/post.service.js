@@ -6,31 +6,37 @@ const GroupMember = require('./group-member.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { logActivity } = require('./activity-log.service');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const POINT_PER_POST = 10;
 
-const listPostsByThread = async (idThread) => {
-    if (!mongoose.isValidObjectId(idThread)) {
-        throw new ApiError(400, 'ID thread tidak valid');
-    }
+const listPostsByThread = async (idThread, query) => {
+    if (!mongoose.isValidObjectId(idThread)) throw new ApiError(400, 'ID thread tidak valid');
 
     const thread = await GroupThread.findById(idThread).lean();
     if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
-    const posts = await GroupPost.find({ idThread })
+    const { page, limit, skip } = parsePagination(query);
+
+    const filter = { idThread };
+    const totalItems = await GroupPost.countDocuments(filter);
+
+    const posts = await GroupPost.find(filter)
         .populate('idAuthor', 'nrp nama')
         .sort({ updatedAt: 1 })
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return posts.map((p) => ({
+    return {
+        items: posts.map((p) => ({
         id: p._id.toString(),
-        author: {
-        nrp: p.idAuthor.nrp,
-        nama: p.idAuthor.nama,
-        },
+        author: { nrp: p.idAuthor.nrp, nama: p.idAuthor.nama },
         konten: p.konten,
         updatedAt: p.updatedAt,
-    }));
+        })),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const createPost = async (idThread, user, konten) => {

@@ -3,6 +3,7 @@ const Submission = require('./submission.model');
 const Assignment = require('../assignments/assignment.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
@@ -29,20 +30,27 @@ const mapSubmission = (s, mahasiswaMap) => {
     };
 };
 
-const listSubmissions = async (idAssignment, user) => {
-    if (!mongoose.isValidObjectId(idAssignment)) {
-        throw new ApiError(400, 'ID assignment tidak valid');
+const listAllSubmissions = async (idAssignment, user, queryParams) => {
+    if (!mongoose.isValidObjectId(idAssignment)) throw new ApiError(400, 'ID assignment tidak valid');
+
+    if (!isDosenOrAdmin(user)) {
+        throw new ApiError(403, 'Hanya dosen/admin yang boleh melihat semua submissions');
     }
 
     const assignment = await Assignment.findById(idAssignment).lean();
     if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
 
-    const query = { idAssignment };
-    if (isMahasiswa(user)) {
-        query.idStudent = user.sub;
-    }
+    const { page, limit, skip } = parsePagination(queryParams);
 
-    const subs = await Submission.find(query).lean();
+    const query = { idAssignment };
+
+    const totalItems = await Submission.countDocuments(query);
+
+    const subs = await Submission.find(query)
+        .sort({ submittedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
 
     const studentIds = subs
         .map((s) => s.idStudent)
@@ -52,15 +60,54 @@ const listSubmissions = async (idAssignment, user) => {
     let mahasiswaMap = {};
     if (studentIds.length > 0) {
         const mahasiswa = await User.find({ _id: { $in: studentIds } })
-        .select('nrp nama')
-        .lean();
+            .select('nrp nama')
+            .lean();
         mahasiswaMap = mahasiswa.reduce((acc, m) => {
-        acc[m._id.toString()] = m;
-        return acc;
+            acc[m._id.toString()] = m;
+            return acc;
         }, {});
     }
 
-    return subs.map((s) => mapSubmission(s, mahasiswaMap));
+    return {
+        items: subs.map((s) => mapSubmission(s, mahasiswaMap)),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
+};
+
+const getMySubmission = async (idAssignment, user) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
+    }
+
+    if (!isMahasiswa(user)) {
+        throw new ApiError(403, 'Endpoint ini hanya untuk mahasiswa');
+    }
+
+    const assignment = await Assignment.findById(idAssignment).lean();
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
+    const sub = await Submission.findOne({
+        idAssignment,
+        idStudent: user.sub,
+    }).lean();
+
+    if (!sub) {
+        return {
+            id: null,
+            submittedAt: null,
+            file: null,
+            grade: null,
+            gradeAt: null,
+        };
+    }
+
+    return {
+        id: sub._id.toString(),
+        submittedAt: sub.submittedAt,
+        file: sub.file,
+        grade: sub.nilai,
+        gradeAt: sub.gradedAt,
+    };
 };
 
 const createSubmission = async (idAssignment, user, filePath) => {
@@ -105,40 +152,41 @@ const createSubmission = async (idAssignment, user, filePath) => {
     };
 };
 
-const updateSubmissionFile = async (idAssignment, idSubmission, user, filePath) => {
-    if (
-        !mongoose.isValidObjectId(idAssignment) ||
-        !mongoose.isValidObjectId(idSubmission)
-    ) {
-        throw new ApiError(400, 'ID tidak valid');
+const updateMySubmission = async (idAssignment, user, filePath) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
     }
-
-    const assignment = await Assignment.findById(idAssignment).lean();
-    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
 
     if (!isMahasiswa(user)) {
         throw new ApiError(403, 'Hanya mahasiswa yang boleh mengubah submissions');
     }
 
+    const assignment = await Assignment.findById(idAssignment).lean();
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
     const now = new Date();
     if (assignment.tenggat && now > assignment.tenggat) {
-        throw new ApiError(422, 'Tenggat waktu telah lewat');
+        throw new ApiError(422, 'Tenggat waktu telah lewat, tidak bisa mengubah submission');
     }
 
     const sub = await Submission.findOne({
-        _id: idSubmission,
         idAssignment,
         idStudent: user.sub,
     });
 
     if (!sub) {
-        throw new ApiError(404, 'Submission tidak ditemukan');
+        throw new ApiError(404, 'Submission tidak ditemukan, silakan submit terlebih dahulu');
     }
 
-    sub.file = filePath;
+    if (filePath) sub.file = filePath;
     sub.submittedAt = now;
 
     await sub.save();
+
+    return {
+        file: sub.file,
+        submittedAt: sub.submittedAt,
+    };
 };
 
 const gradeSubmission = async (idAssignment, idSubmission, user, nilai, gradeAt) => {
@@ -170,8 +218,9 @@ const gradeSubmission = async (idAssignment, idSubmission, user, nilai, gradeAt)
 };
 
 module.exports = {
-    listSubmissions,
+    listAllSubmissions,
+    getMySubmission,
     createSubmission,
-    updateSubmissionFile,
+    updateMySubmission,
     gradeSubmission,
 };

@@ -1,16 +1,28 @@
 const mongoose = require('mongoose');
 const AcademicTerm = require('./academic-term.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listTerms = async () => {
-    const terms = await AcademicTerm.find().sort({ createdAt: -1 }).lean();
-    return terms.map((t) => ({
+const listTerms = async (query) => {
+    const { page, limit, skip } = parsePagination(query);
+
+    const totalItems = await AcademicTerm.countDocuments({});
+    const terms = await AcademicTerm.find({})
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    return {
+        items: terms.map((t) => ({
         id: t._id.toString(),
         periode: t.periode,
         startDate: t.startDate,
         endDate: t.endDate,
         status: t.status,
-    }));
+        })),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const createTerm = async ({ periode, startDate, endDate, status }) => {

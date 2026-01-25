@@ -3,6 +3,7 @@ const Assignment = require('./assignment.model');
 const Meeting = require('../meetings/meeting.model');
 const Course = require('../courses/course.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
@@ -37,13 +38,13 @@ const mapDetail = (a) => ({
     lampiran: a.pathLampiran || null,
 });
 
-const listAssignmentsByCourse = async (idCourse, user) => {
-    if (!mongoose.isValidObjectId(idCourse)) {
-        throw new ApiError(400, 'ID course tidak valid');
-    }
+const listAssignmentsByCourse = async (idCourse, user, queryParams) => {
+    if (!mongoose.isValidObjectId(idCourse)) throw new ApiError(400, 'ID course tidak valid');
 
     const course = await Course.findById(idCourse).lean();
     if (!course) throw new ApiError(404, 'Course tidak ditemukan');
+
+    const { page, limit, skip } = parsePagination(queryParams);
 
     const meetings = await Meeting.find({ idCourse }).lean();
     const meetingIds = meetings.map((m) => m._id);
@@ -53,35 +54,45 @@ const listAssignmentsByCourse = async (idCourse, user) => {
     }, {});
 
     const query = { idMeeting: { $in: meetingIds } };
-    if (isMahasiswa(user)) {
-        query.status = 'VISIBLE';
-    }
+    if (isMahasiswa(user)) query.status = 'VISIBLE';
+
+    const totalItems = await Assignment.countDocuments(query);
 
     const assignments = await Assignment.find(query)
         .sort({ tenggat: 1 })
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return assignments.map((a) => mapListItemByCourse(a, meetingMap));
+    return {
+        items: assignments.map((a) => mapListItemByCourse(a, meetingMap)),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
-const listAssignmentsByMeeting = async (idCourse, pertemuan, user) => {
-    if (!mongoose.isValidObjectId(idCourse)) {
-        throw new ApiError(400, 'ID course tidak valid');
-    }
+const listAssignmentsByMeeting = async (idCourse, pertemuan, user, queryParams) => {
+    if (!mongoose.isValidObjectId(idCourse)) throw new ApiError(400, 'ID course tidak valid');
 
     const meeting = await Meeting.findOne({ idCourse, pertemuan }).lean();
     if (!meeting) throw new ApiError(404, 'Pertemuan tidak ditemukan');
 
+    const { page, limit, skip } = parsePagination(queryParams);
+
     const query = { idMeeting: meeting._id };
-    if (isMahasiswa(user)) {
-        query.status = 'VISIBLE';
-    }
+    if (isMahasiswa(user)) query.status = 'VISIBLE';
+
+    const totalItems = await Assignment.countDocuments(query);
 
     const assignments = await Assignment.find(query)
         .sort({ tenggat: 1 })
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return assignments.map(mapListItemByMeeting);
+    return {
+        items: assignments.map(mapListItemByMeeting),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const getAssignmentDetail = async (idCourse, pertemuan, idAssignment, user) => {
@@ -172,6 +183,50 @@ const deleteAssignment = async (idCourse, pertemuan, idAssignment) => {
     if (!deleted) throw new ApiError(404, 'Tugas tidak ditemukan');
 };
 
+const getAssignmentById = async (idAssignment, user) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
+    }
+
+    const assignment = await Assignment.findById(idAssignment).lean();
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
+    if (isMahasiswa(user) && assignment.status !== 'VISIBLE') {
+        throw new ApiError(403, 'Anda tidak boleh mengakses resource ini');
+    }
+
+    return mapDetail(assignment);
+};
+
+const updateAssignmentById = async (idAssignment, payload) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
+    }
+
+    const assignment = await Assignment.findById(idAssignment);
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
+    const { judul, statusTugas, tenggat, status, deskripsi, lampiran } = payload;
+
+    if (judul !== undefined) assignment.judul = judul;
+    if (statusTugas !== undefined) assignment.statusTugas = statusTugas;
+    if (tenggat !== undefined) assignment.tenggat = tenggat;
+    if (status !== undefined) assignment.status = status;
+    if (deskripsi !== undefined) assignment.deskripsi = deskripsi;
+    if (lampiran !== undefined) assignment.pathLampiran = lampiran;
+
+    await assignment.save();
+};
+
+const deleteAssignmentById = async (idAssignment) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
+    }
+
+    const deleted = await Assignment.findByIdAndDelete(idAssignment);
+    if (!deleted) throw new ApiError(404, 'Tugas tidak ditemukan');
+};
+
 module.exports = {
     listAssignmentsByCourse,
     listAssignmentsByMeeting,
@@ -179,4 +234,7 @@ module.exports = {
     createAssignment,
     updateAssignment,
     deleteAssignment,
+    getAssignmentById,
+    updateAssignmentById,
+    deleteAssignmentById,
 };

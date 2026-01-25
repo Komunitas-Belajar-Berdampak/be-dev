@@ -4,24 +4,33 @@ const StudyGroup = require('./group.model');
 const Assignment = require('../assignments/assignment.model');
 const { ApiError } = require('../../utils/http');
 const { logActivity } = require('./activity-log.service');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listThreadsByGroup = async (idGroup) => {
-    if (!mongoose.isValidObjectId(idGroup)) {
-        throw new ApiError(400, 'ID group tidak valid');
-    }
+const listThreadsByGroup = async (idGroup, query) => {
+    if (!mongoose.isValidObjectId(idGroup)) throw new ApiError(400, 'ID group tidak valid');
 
     const group = await StudyGroup.findById(idGroup).lean();
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
-    const threads = await GroupThread.find({ idGroup })
+    const { page, limit, skip } = parsePagination(query);
+
+    const filter = { idGroup };
+    const totalItems = await GroupThread.countDocuments(filter);
+
+    const threads = await GroupThread.find(filter)
         .populate('idAssignment', 'judul')
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return threads.map((t) => ({
+    return {
+        items: threads.map((t) => ({
         id: t._id.toString(),
         judul: t.judul,
         assignment: t.idAssignment ? t.idAssignment.judul : null,
-    }));
+        })),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const createThread = async (idGroup, payload, user) => {

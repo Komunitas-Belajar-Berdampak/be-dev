@@ -1,20 +1,28 @@
 const mongoose = require('mongoose');
 const Major = require('./major.model');
 const Faculty = require('../faculties/faculty.model');
-const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listMajors = async () => {
-    const majors = await Major.find()
+const listMajors = async (query) => {
+    const { page, limit, skip } = parsePagination(query);
+
+    const totalItems = await Major.countDocuments({});
+    const majors = await Major.find({})
         .populate('idFakultas', 'namaFakultas')
         .sort({ namaProdi: 1 })
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return majors.map((m) => ({
+    return {
+        items: majors.map((m) => ({
         id: m._id.toString(),
         kodeProdi: m.kodeProdi,
         namaFakultas: m.idFakultas?.namaFakultas || null,
         namaProdi: m.namaProdi,
-    }));
+        })),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const createMajor = async ({ kodeProdi, namaProdi, idFakultas }) => {

@@ -15,11 +15,11 @@ const patchSchema = Joi.object({
 
 const listPrivateFiles = async (req, res, next) => {
     try {
-        const data = await service.listByUser(req.user.sub);
-
+        const result = await service.listByUser(req.user.sub, req.query);
         return successResponse(res, {
         message: 'data berhasil diambil!',
-        data,
+        data: result.items,
+        pagination: result.pagination,
         });
     } catch (err) {
         return next(err);

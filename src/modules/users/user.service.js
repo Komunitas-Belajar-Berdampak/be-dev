@@ -3,6 +3,7 @@ const User = require('./user.model');
 const Role = require('../roles/roles.model');
 const { ApiError } = require('../../utils/http');
 const { hashPassword, comparePassword } = require('../auth/auth.utils');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const mapUserListItem = (u) => {
     const primaryRole =
@@ -44,46 +45,47 @@ const mapUserDetail = (u) => {
 
 const listUsers = async (filters) => {
     const { role, angkatan, prodi, status } = filters;
+    const { page, limit, skip } = parsePagination(filters);
+
     const query = {};
-
-    if (angkatan) {
-        query.angkatan = angkatan;
-    }
-
-    if (status) {
-        query.status = status;
-    }
+    if (angkatan) query.angkatan = angkatan;
+    if (status) query.status = status;
 
     if (prodi) {
-        if (!mongoose.isValidObjectId(prodi)) {
-        throw new ApiError(400, 'Parameter prodi tidak valid');
-        }
+        if (!mongoose.isValidObjectId(prodi)) throw new ApiError(400, 'Parameter prodi tidak valid');
         query.idProdi = prodi;
     }
 
-    let roleIdFilter = null;
     if (role) {
+        let roleIdFilter = null;
         if (mongoose.isValidObjectId(role)) {
         roleIdFilter = role;
         } else {
-        const roleDoc = await Role.findOne({
-            nama: { $regex: `^${role}$`, $options: 'i' },
-        }).lean();
-
+        const roleDoc = await Role.findOne({ nama: { $regex: `^${role}$`, $options: 'i' } }).lean();
         if (!roleDoc) {
-            return [];
+            return {
+            items: [],
+            pagination: buildPagination({ page, limit, totalItems: 0 }),
+            };
         }
         roleIdFilter = roleDoc._id;
         }
         query.roleIds = roleIdFilter;
     }
 
+    const totalItems = await User.countDocuments(query);
+
     const users = await User.find(query)
         .populate('idProdi', 'namaProdi')
         .populate('roleIds', 'nama')
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return users.map(mapUserListItem);
+    return {
+        items: users.map(mapUserListItem),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const getUserById = async (id) => {
@@ -246,7 +248,7 @@ const updateUser = async (id, payload) => {
     return mapUserDetail(updated);
 };
 
-const patchUser = async (id, payload, currentUser) => {
+const patchUser = async (id, payload) => {
     if (!mongoose.isValidObjectId(id)) {
         throw new ApiError(400, 'ID user tidak valid');
     }
@@ -256,20 +258,15 @@ const patchUser = async (id, payload, currentUser) => {
         throw new ApiError(404, 'User tidak ditemukan');
     }
 
-    const isSuperAdmin =
-        Array.isArray(currentUser.roles) &&
-        currentUser.roles.includes('SUPER_ADMIN');
-
-    if (!isSuperAdmin && currentUser.sub !== id) {
-        throw new ApiError(403, 'Anda tidak boleh mengakses resource ini');
-    }
-
     const { passwordLama, passwordBaru, fotoProfil, alamat, nama } = payload;
 
     if (passwordBaru) {
+        if (!passwordLama) {
+            throw new ApiError(400, 'passwordLama wajib diisi saat mengganti password');
+        }
         const ok = await comparePassword(passwordLama, user.passwordHash);
         if (!ok) {
-        throw new ApiError(400, 'Password lama tidak cocok');
+            throw new ApiError(400, 'Password lama tidak cocok');
         }
         user.passwordHash = await hashPassword(passwordBaru);
     }

@@ -2,9 +2,17 @@ const mongoose = require('mongoose');
 const Faculty = require('./faculty.model');
 const Major = require('../majors/major.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listFaculties = async () => {
-    const faculties = await Faculty.find().sort({ namaFakultas: 1 }).lean();
+const listFaculties = async (query) => {
+    const { page, limit, skip } = parsePagination(query);
+
+    const totalItems = await Faculty.countDocuments({});
+    const faculties = await Faculty.find({})
+        .sort({ namaFakultas: 1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
 
     const facultyIds = faculties.map((f) => f._id);
     const majors = await Major.find({ idFakultas: { $in: facultyIds } }).lean();
@@ -20,12 +28,15 @@ const listFaculties = async () => {
         return acc;
     }, {});
 
-    return faculties.map((f) => ({
+    return {
+        items: faculties.map((f) => ({
         id: f._id.toString(),
         namaFakultas: f.namaFakultas,
         kodeFakultas: f.kodeFakultas || null,
         prodi: majorsByFaculty[f._id.toString()] || [],
-    }));
+        })),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const createFaculty = async ({ namaFakultas, kodeFakultas }) => {

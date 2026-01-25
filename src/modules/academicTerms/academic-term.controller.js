@@ -3,10 +3,11 @@ const service = require('./academic-term.service');
 
 const getTerms = async (req, res, next) => {
     try {
-        const data = await service.listTerms();
+        const result = await service.listTerms(req.query);
         return successResponse(res, {
         message: 'data berhasil diambil!',
-        data,
+        data: result.items,
+        pagination: result.pagination,
         });
     } catch (err) {
         return next(err);

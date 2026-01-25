@@ -3,10 +3,11 @@ const userService = require('./user.service');
 
 const getUsers = async (req, res, next) => {
     try {
-        const users = await userService.listUsers(req.query);
+        const result = await userService.listUsers(req.query);
         return successResponse(res, {
         message: 'data berhasil diambil!',
-        data: users,
+        data: result.items,
+        pagination: result.pagination,
         });
     } catch (err) {
         return next(err);
@@ -55,7 +56,7 @@ const updateUser = async (req, res, next) => {
 
 const patchUser = async (req, res, next) => {
     try {
-        await userService.patchUser(req.params.id, req.body, req.user);
+        await userService.patchUser(req.user.sub, req.body);
         return successResponse(res, {
         message: 'data berhasil diubah!',
         });

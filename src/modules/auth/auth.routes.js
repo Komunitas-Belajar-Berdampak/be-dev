@@ -51,4 +51,48 @@ router.post('/login', validate(loginSchema), controller.login);
  */
 router.post('/logout', auth, controller.logout);
 
+/**
+ * @openapi
+ * /api/auth/me:
+ *   get:
+ *     tags:
+ *       - Auth
+ *     summary: Get current user info
+ *     description: Mengembalikan data user yang sedang login berdasarkan token JWT.
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User terverifikasi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: success
+ *                 message:
+ *                   type: string
+ *                   example: user terverifikasi!
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     nrp:
+ *                       type: string
+ *                     nama:
+ *                       type: string
+ *                     namaRole:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       401:
+ *         description: Token tidak valid atau tidak ditemukan
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
+router.get('/me', auth, controller.getMe);
+
 module.exports = router;

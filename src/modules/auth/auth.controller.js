@@ -25,7 +25,23 @@ const logout = async (req, res, next) => {
     }
 };
 
+const getMe = async (req, res, next) => {
+    try {
+        return successResponse(res, {
+        message: 'user terverifikasi!',
+        user: {
+            nrp: req.user.nrp,
+            nama: req.user.nama,
+            namaRole: req.user.roles,
+        },
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 module.exports = {
     login,
     logout,
+    getMe,
 };

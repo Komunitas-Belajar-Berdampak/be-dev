@@ -3,6 +3,8 @@ const Course = require('./course.model');
 const AcademicTerm = require('../academicTerms/academic-term.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
+
 
 const mapCourseListItem = (c) => ({
     id: c._id.toString(),
@@ -11,14 +13,16 @@ const mapCourseListItem = (c) => ({
     sks: c.sks,
     status: c.status,
     periode: c.idPeriode?.periode || null,
+    deskripsi: c.deskripsi || null,
     pengajar: c.idPengajar?.nama || null,
     kelas: c.kelas,
 });
 
-const listCourses = async (filters) => {
-    const { kodeMatkul, status, periode, pengajar, kelas, sks } = filters;
-    const query = {};
+const listCourses = async (filters, currentUser) => {
+    const { page, limit, skip } = parsePagination(filters);
+    const { kodeMatkul, status, periode, nrp, kelas, sks } = filters;
 
+    const query = {};
     if (kodeMatkul) query.kodeMatkul = kodeMatkul;
     if (status) query.status = status;
     if (kelas) query.kelas = kelas;
@@ -31,29 +35,49 @@ const listCourses = async (filters) => {
         const term = await AcademicTerm.findOne({
             periode: { $regex: `^${periode}$`, $options: 'i' },
         }).lean();
-        if (!term) return [];
+        if (!term) {
+            return { items: [], pagination: buildPagination({ page, limit, totalItems: 0 }) };
+        }
         query.idPeriode = term._id;
         }
     }
 
-    if (pengajar) {
-        if (mongoose.isValidObjectId(pengajar)) {
-        query.idPengajar = pengajar;
-        } else {
-        const dosen = await User.findOne({
-            nama: { $regex: pengajar, $options: 'i' },
-        }).lean();
-        if (!dosen) return [];
-        query.idPengajar = dosen._id;
+    if (nrp) {
+        const user = await User.findOne({ nrp }).lean();
+        if (!user) {
+        return { items: [], pagination: buildPagination({ page, limit, totalItems: 0 }) };
+        }
+        query.$or = [
+        { idPengajar: user._id },
+        { idMahasiswa: user._id },
+        ];
+    }
+
+    const isSuperAdmin = Array.isArray(currentUser.roles) && currentUser.roles.includes('SUPER_ADMIN');
+    const isDosen = Array.isArray(currentUser.roles) && currentUser.roles.includes('DOSEN');
+    const isMahasiswa = Array.isArray(currentUser.roles) && currentUser.roles.includes('MAHASISWA');
+
+    if (!isSuperAdmin && !nrp) {
+        if (isDosen) {
+        query.idPengajar = currentUser.sub;
+        } else if (isMahasiswa) {
+        query.idMahasiswa = currentUser.sub;
         }
     }
+
+    const totalItems = await Course.countDocuments(query);
 
     const courses = await Course.find(query)
         .populate('idPeriode', 'periode')
         .populate('idPengajar', 'nama')
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    return courses.map(mapCourseListItem);
+    return {
+        items: courses.map(mapCourseListItem),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
 };
 
 const getCourseById = async (id) => {

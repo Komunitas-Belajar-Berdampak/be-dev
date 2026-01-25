@@ -52,14 +52,9 @@ const updateTaskSchema = Joi.object({
 
 const getGroupsByCourse = async (req, res, next) => {
     try {
-        const data = await groupService.listGroupsByCourse(req.params.idCourse);
-        return successResponse(res, {
-        message: 'data berhasil diambil!',
-        data,
-        });
-    } catch (err) {
-        return next(err);
-    }
+        const result = await groupService.listGroupsByCourse(req.params.idCourse, req.query);
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
 };
 
 const getGroupDetail = async (req, res, next) => {
@@ -142,26 +137,16 @@ const deleteGroup = async (req, res, next) => {
 
 const getMemberships = async (req, res, next) => {
     try {
-        const data = await membershipService.listMemberships(req.params.idGroup);
-        return successResponse(res, {
-        message: 'data berhasil diambil!',
-        data,
-        });
-    } catch (err) {
-        return next(err);
-    }
+        const result = await membershipService.listMemberships(req.params.idGroup, req.query);
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
 };
 
 const getThreadsByGroup = async (req, res, next) => {
     try {
-        const data = await threadService.listThreadsByGroup(req.params.idGroup);
-        return successResponse(res, {
-        message: 'data berhasil diambil!',
-        data,
-        });
-    } catch (err) {
-        return next(err);
-    }
+        const result = await threadService.listThreadsByGroup(req.params.idGroup, req.query);
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
 };
 
 const createThread = async (req, res, next) => {
@@ -187,14 +172,9 @@ const createThread = async (req, res, next) => {
 
 const getPostsByThread = async (req, res, next) => {
     try {
-        const data = await postService.listPostsByThread(req.params.idThread);
-        return successResponse(res, {
-        message: 'data berhasil diambil!',
-        data,
-        });
-    } catch (err) {
-        return next(err);
-    }
+        const result = await postService.listPostsByThread(req.params.idThread, req.query);
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
 };
 
 const createPost = async (req, res, next) => {
@@ -255,14 +235,9 @@ const deletePostController = async (req, res, next) => {
 
 const getTasksByThread = async (req, res, next) => {
     try {
-        const data = await taskService.listTasksByThread(req.params.idThread);
-        return successResponse(res, {
-        message: 'data berhasil diambil!',
-        data,
-        });
-    } catch (err) {
-        return next(err);
-    }
+        const result = await taskService.listTasksByThread(req.params.idThread, req.query);
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
 };
 
 const createTask = async (req, res, next) => {

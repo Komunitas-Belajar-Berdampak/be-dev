@@ -3,10 +3,11 @@ const service = require('./faculty.service');
 
 const getFaculties = async (req, res, next) => {
     try {
-        const data = await service.listFaculties();
+        const result = await service.listFaculties(req.query);
         return successResponse(res, {
         message: 'data berhasil diambil!',
-        data,
+        data: result.items,
+        pagination: result.pagination,
         });
     } catch (err) {
         return next(err);

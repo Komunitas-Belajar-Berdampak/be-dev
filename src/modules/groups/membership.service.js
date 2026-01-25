@@ -3,30 +3,39 @@ const StudyGroup = require('./group.model');
 const GroupMember = require('./group-member.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
+const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listMemberships = async (idGroup) => {
-    if (!mongoose.isValidObjectId(idGroup)) {
-        throw new ApiError(400, 'ID group tidak valid');
-    }
+const listMemberships = async (idGroup, query) => {
+    if (!mongoose.isValidObjectId(idGroup)) throw new ApiError(400, 'ID group tidak valid');
 
     const group = await StudyGroup.findById(idGroup).lean();
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
-    const members = await GroupMember.find({ idGroup })
+    const { page, limit, skip } = parsePagination(query);
+
+    const filter = { idGroup };
+    const totalItems = await GroupMember.countDocuments(filter);
+
+    const members = await GroupMember.find(filter)
         .populate('idMahasiswa', 'nrp nama')
+        .skip(skip)
+        .limit(limit)
         .lean();
 
-    const totalRequest = members.filter((m) => m.status === 'PENDING').length;
+    const totalRequest = await GroupMember.countDocuments({ idGroup, status: 'PENDING' });
 
     return {
+        items: {
         id: group._id.toString(),
         totalRequest,
         mahasiswa: members.map((m) => ({
-        id: m._id.toString(),
-        nrp: m.idMahasiswa.nrp,
-        nama: m.idMahasiswa.nama,
-        status: m.status,
+            id: m._id.toString(),
+            nrp: m.idMahasiswa.nrp,
+            nama: m.idMahasiswa.nama,
+            status: m.status,
         })),
+        },
+        pagination: buildPagination({ page, limit, totalItems }),
     };
 };
 

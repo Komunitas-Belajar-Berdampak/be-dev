@@ -8,34 +8,29 @@ class ApiError extends Error {
     }
 }
 
-const successResponse = (res, { statusCode = 200, message = 'OK', data }) => {
+const successResponse = (
+    res,
+    { statusCode = 200, message = 'OK', data, pagination }
+    ) => {
     const payload = {
         status: 'success',
         message,
     };
 
-    if (data !== undefined) {
-        payload.data = data;
-    }
+    if (data !== undefined) payload.data = data;
+    if (pagination !== undefined) payload.pagination = pagination;
 
     return res.status(statusCode).json(payload);
 };
 
 const errorResponse = (res, { statusCode = 500, message, details }) => {
-    const payload = {
-        status: 'error',
-        message,
-    };
-
-    if (details) {
-        payload.details = details;
-    }
-
+    const payload = { status: 'error', message };
+    if (details) payload.details = details;
     return res.status(statusCode).json(payload);
 };
 
-module.exports = {
-    ApiError,
-    successResponse,
-    errorResponse,
+module.exports = { 
+    ApiError, 
+    successResponse, 
+    errorResponse 
 };
