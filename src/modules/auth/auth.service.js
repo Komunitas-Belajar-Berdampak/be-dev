@@ -31,7 +31,7 @@ const login = async (nrp, password) => {
         id: user._id,
         nrp: user.nrp,
         nama: user.nama,
-        namaRole: roleNames, 
+        namaRole: roleNames.join(','),
         },
     };
 };

@@ -32,7 +32,7 @@ const getMe = async (req, res, next) => {
         user: {
             nrp: req.user.nrp,
             nama: req.user.nama,
-            namaRole: req.user.roles,
+            namaRole: req.user.roles.join(','),
         },
         });
     } catch (err) {

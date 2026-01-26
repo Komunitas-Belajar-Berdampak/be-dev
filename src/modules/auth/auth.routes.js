@@ -83,9 +83,7 @@ router.post('/logout', auth, controller.logout);
  *                     nama:
  *                       type: string
  *                     namaRole:
- *                       type: array
- *                       items:
- *                         type: string
+ *                       type: string
  *       401:
  *         description: Token tidak valid atau tidak ditemukan
  *         content:
