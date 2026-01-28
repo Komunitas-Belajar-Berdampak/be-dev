@@ -59,7 +59,7 @@ const router = express.Router();
  *       403:
  *         description: Forbidden
  */
-router.get('/', requireRoles('SUPER_ADMIN'), controller.getUsers);
+router.get('/', auth, requireRoles('SUPER_ADMIN'), controller.getUsers);
 
 /**
  * @openapi
@@ -95,7 +95,7 @@ router.get('/', requireRoles('SUPER_ADMIN'), controller.getUsers);
  *             schema:
  *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', requireRoles('SUPER_ADMIN'), controller.getUserById);
+router.get('/:id', auth, requireRoles('SUPER_ADMIN'), controller.getUserById);
 
 /**
  * @openapi
@@ -154,6 +154,7 @@ router.get('/:id', requireRoles('SUPER_ADMIN'), controller.getUserById);
  */
 router.post(
     '/',
+    auth,
     requireRoles('SUPER_ADMIN'),
     validate(createUserSchema),
     controller.createUser,
@@ -203,6 +204,7 @@ router.post(
  */
 router.put(
     '/:id',
+    auth,
     requireRoles('SUPER_ADMIN'),
     validate(updateUserSchema),
     controller.updateUser,
