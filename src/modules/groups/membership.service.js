@@ -5,15 +5,15 @@ const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 
-const listMemberships = async (idGroup, query) => {
-    if (!mongoose.isValidObjectId(idGroup)) throw new ApiError(400, 'ID group tidak valid');
+const listMemberships = async (idStudyGroup, query) => {
+    if (!mongoose.isValidObjectId(idStudyGroup)) throw new ApiError(400, 'ID group tidak valid');
 
-    const group = await StudyGroup.findById(idGroup).lean();
+    const group = await StudyGroup.findById(idStudyGroup).lean();
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
     const { page, limit, skip } = parsePagination(query);
 
-    const filter = { idGroup };
+    const filter = { idGroup: idStudyGroup };
     const totalItems = await GroupMember.countDocuments(filter);
 
     const members = await GroupMember.find(filter)
@@ -22,29 +22,29 @@ const listMemberships = async (idGroup, query) => {
         .limit(limit)
         .lean();
 
-    const totalRequest = await GroupMember.countDocuments({ idGroup, status: 'PENDING' });
+    const totalRequest = await GroupMember.countDocuments({ idGroup: idStudyGroup, status: 'PENDING' });
 
     return {
-        items: {
-        id: group._id.toString(),
-        totalRequest,
-        mahasiswa: members.map((m) => ({
-            id: m._id.toString(),
-            nrp: m.idMahasiswa.nrp,
-            nama: m.idMahasiswa.nama,
-            status: m.status,
-        })),
+        data: {
+            id: group._id.toString(),
+            totalRequest,
+            mahasiswa: members.map((m) => ({
+                id: m._id.toString(),
+                nrp: m.idMahasiswa.nrp,
+                nama: m.idMahasiswa.nama,
+                status: m.status,
+            })),
         },
         pagination: buildPagination({ page, limit, totalItems }),
     };
 };
 
-const joinGroup = async (idGroup, userId) => {
-    if (!mongoose.isValidObjectId(idGroup) || !mongoose.isValidObjectId(userId)) {
+const joinGroup = async (idStudyGroup, userId) => {
+    if (!mongoose.isValidObjectId(idStudyGroup) || !mongoose.isValidObjectId(userId)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const group = await StudyGroup.findById(idGroup).lean();
+    const group = await StudyGroup.findById(idStudyGroup).lean();
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
     if (group.status === true) {
@@ -52,7 +52,7 @@ const joinGroup = async (idGroup, userId) => {
     }
 
     const member = await GroupMember.findOne({
-        idGroup,
+        idGroup: idStudyGroup,
         idMahasiswa: userId,
     });
 
@@ -66,7 +66,7 @@ const joinGroup = async (idGroup, userId) => {
     }
 
     const doc = await GroupMember.create({
-        idGroup,
+        idGroup: idStudyGroup,
         idMahasiswa: userId,
         status: 'PENDING',
         kontribusi: 0,
@@ -78,23 +78,23 @@ const joinGroup = async (idGroup, userId) => {
     };
 };
 
-const approveMembership = async (idGroup, idMembership) => {
-    if (!mongoose.isValidObjectId(idGroup) || !mongoose.isValidObjectId(idMembership)) {
+const approveMembership = async (idStudyGroup, idMembership) => {
+    if (!mongoose.isValidObjectId(idStudyGroup) || !mongoose.isValidObjectId(idMembership)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const group = await StudyGroup.findById(idGroup);
+    const group = await StudyGroup.findById(idStudyGroup);
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
     const member = await GroupMember.findOne({
         _id: idMembership,
-        idGroup,
+        idGroup: idStudyGroup,
     });
 
     if (!member) throw new ApiError(404, 'Membership tidak ditemukan');
 
     const approvedCount = await GroupMember.countDocuments({
-        idGroup,
+        idGroup: idStudyGroup,
         status: 'APPROVED',
     });
 
@@ -106,14 +106,14 @@ const approveMembership = async (idGroup, idMembership) => {
     await member.save();
 };
 
-const rejectMembership = async (idGroup, idMembership) => {
-    if (!mongoose.isValidObjectId(idGroup) || !mongoose.isValidObjectId(idMembership)) {
+const rejectMembership = async (idStudyGroup, idMembership) => {
+    if (!mongoose.isValidObjectId(idStudyGroup) || !mongoose.isValidObjectId(idMembership)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
     const member = await GroupMember.findOne({
         _id: idMembership,
-        idGroup,
+        idGroup: idStudyGroup,
     });
 
     if (!member) throw new ApiError(404, 'Membership tidak ditemukan');

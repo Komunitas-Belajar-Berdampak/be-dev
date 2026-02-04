@@ -3,6 +3,7 @@ const GroupThread = require('./group-thread.model');
 const GroupPost = require('./group-post.model');
 const StudyGroup = require('./group.model');
 const GroupMember = require('./group-member.model');
+const ContributionThread = require('./contribution-thread.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { logActivity } = require('./activity-log.service');
@@ -71,6 +72,14 @@ const createPost = async (idThread, user, konten) => {
         GroupThread.findByIdAndUpdate(idThread, {
         $inc: { kontribusi: POINT_PER_POST },
         }).exec(),
+        ContributionThread.findOneAndUpdate(
+        {
+            idThread: idThread,
+            idMahasiswa: user.sub,
+        },
+        { $inc: { kontribusi: POINT_PER_POST } },
+        { upsert: true, new: true },
+        ).exec(),
     ]);
 
     await logActivity({
@@ -89,23 +98,16 @@ const createPost = async (idThread, user, konten) => {
     };
 };
 
-const updatePost = async (idThread, idPost, user, konten) => {
-    if (
-        !mongoose.isValidObjectId(idThread) ||
-        !mongoose.isValidObjectId(idPost)
-    ) {
+const updatePost = async (idPost, user, konten) => {
+    if (!mongoose.isValidObjectId(idPost)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const thread = await GroupThread.findById(idThread).lean();
-    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
-
-    const post = await GroupPost.findOne({
-        _id: idPost,
-        idThread,
-    });
-
+    const post = await GroupPost.findById(idPost);
     if (!post) throw new ApiError(404, 'Post tidak ditemukan');
+
+    const thread = await GroupThread.findById(post.idThread).lean();
+    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
     const isOwner = post.idAuthor.toString() === user.sub;
     const isPrivileged =
@@ -126,23 +128,16 @@ const updatePost = async (idThread, idPost, user, konten) => {
     });
 };
 
-const deletePost = async (idThread, idPost, user) => {
-    if (
-        !mongoose.isValidObjectId(idThread) ||
-        !mongoose.isValidObjectId(idPost)
-    ) {
+const deletePost = async (idPost, user) => {
+    if (!mongoose.isValidObjectId(idPost)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const thread = await GroupThread.findById(idThread).lean();
-    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
-
-    const post = await GroupPost.findOne({
-        _id: idPost,
-        idThread,
-    });
-
+    const post = await GroupPost.findById(idPost);
     if (!post) throw new ApiError(404, 'Post tidak ditemukan');
+
+    const thread = await GroupThread.findById(post.idThread).lean();
+    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
     const isOwner = post.idAuthor.toString() === user.sub;
     const isPrivileged =
@@ -167,9 +162,17 @@ const deletePost = async (idThread, idPost, user) => {
         StudyGroup.findByIdAndUpdate(thread.idGroup, {
         $inc: { totalKontribusi: -POINT_PER_POST },
         }).exec(),
-        GroupThread.findByIdAndUpdate(idThread, {
+        GroupThread.findByIdAndUpdate(post.idThread, {
         $inc: { kontribusi: -POINT_PER_POST },
         }).exec(),
+        ContributionThread.findOneAndUpdate(
+        {
+            idThread: post.idThread,
+            idMahasiswa: post.idAuthor,
+        },
+        { $inc: { kontribusi: -POINT_PER_POST } },
+        { new: true },
+        ).exec(),
     ]);
 
     await logActivity({

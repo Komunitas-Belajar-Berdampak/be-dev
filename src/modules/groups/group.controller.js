@@ -52,7 +52,7 @@ const updateTaskSchema = Joi.object({
 
 const getGroupsByCourse = async (req, res, next) => {
     try {
-        const result = await groupService.listGroupsByCourse(req.params.idCourse, req.query);
+        const result = await groupService.listGroupsByCourse(req.params.idCourse || req.params.id, req.query);
         return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
     } catch (err) { return next(err); }
 };
@@ -60,8 +60,7 @@ const getGroupsByCourse = async (req, res, next) => {
 const getGroupDetail = async (req, res, next) => {
     try {
         const data = await groupService.getGroupDetail(
-        req.params.idCourse,
-        req.params.idGroup,
+        req.params.id,
         );
         return successResponse(res, {
         message: 'data berhasil diambil!',
@@ -75,8 +74,7 @@ const getGroupDetail = async (req, res, next) => {
 const getUserDetailInGroup = async (req, res, next) => {
     try {
         const data = await groupService.getUserDetailInGroup(
-        req.params.idCourse,
-        req.params.idGroup,
+        req.params.id,
         req.params.idUser,
         );
         return successResponse(res, {
@@ -111,8 +109,7 @@ const updateGroup = async (req, res, next) => {
         if (error) throw error;
 
         await groupService.updateGroup(
-        req.params.idCourse,
-        req.params.idGroup,
+        req.params.id,
         value,
         );
 
@@ -126,7 +123,7 @@ const updateGroup = async (req, res, next) => {
 
 const deleteGroup = async (req, res, next) => {
     try {
-        await groupService.deleteGroup(req.params.idCourse, req.params.idGroup);
+        await groupService.deleteGroup(req.params.id);
         return successResponse(res, {
         message: 'kelompok berhasil dihapus!',
         });
@@ -137,15 +134,37 @@ const deleteGroup = async (req, res, next) => {
 
 const getMemberships = async (req, res, next) => {
     try {
-        const result = await membershipService.listMemberships(req.params.idGroup, req.query);
-        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+        const result = await membershipService.listMemberships(req.params.idStudyGroup, req.query);
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.data, pagination: result.pagination });
     } catch (err) { return next(err); }
 };
 
 const getThreadsByGroup = async (req, res, next) => {
     try {
-        const result = await threadService.listThreadsByGroup(req.params.idGroup, req.query);
+        const result = await threadService.listThreadsByGroup(req.params.idStudyGroup || req.params.id, req.query);
         return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
+};
+
+const getThreadsOrPosts = async (req, res, next) => {
+    try {
+        const id = req.params.id;
+        const StudyGroup = require('./group.model');
+        const mongoose = require('mongoose');
+
+        if (!mongoose.isValidObjectId(id)) {
+            return next(new Error('ID tidak valid'));
+        }
+
+        const group = await StudyGroup.findById(id).lean();
+
+        if (group) {
+            const result = await threadService.listThreadsByGroup(id, req.query);
+            return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+        } else {
+            const result = await postService.listPostsByThread(id, req.query);
+            return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+        }
     } catch (err) { return next(err); }
 };
 
@@ -155,7 +174,7 @@ const createThread = async (req, res, next) => {
         if (error) throw error;
 
         const data = await threadService.createThread(
-        req.params.idGroup,
+        req.params.idStudyGroup || req.params.id,
         value,
         req.user,
         );
@@ -165,6 +184,46 @@ const createThread = async (req, res, next) => {
         message: 'thread dibuat!',
         data,
         });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const createThreadOrPost = async (req, res, next) => {
+    try {
+        if (req.body.judul !== undefined) {
+            const { error, value } = createThreadSchema.validate(req.body);
+            if (error) throw error;
+
+            const data = await threadService.createThread(
+                req.params.id,
+                value,
+                req.user,
+            );
+
+            return successResponse(res, {
+                statusCode: 201,
+                message: 'thread dibuat!',
+                data,
+            });
+        } else if (req.body.konten !== undefined) {
+            const { error, value } = createPostSchema.validate(req.body);
+            if (error) throw error;
+
+            const data = await postService.createPost(
+                req.params.id,
+                req.user,
+                value.konten,
+            );
+
+            return successResponse(res, {
+                statusCode: 201,
+                message: 'post dibuat!',
+                data,
+            });
+        } else {
+            throw new Error('Request body harus mengandung judul (untuk thread) atau konten (untuk post)');
+        }
     } catch (err) {
         return next(err);
     }
@@ -204,7 +263,6 @@ const updatePostController = async (req, res, next) => {
         if (error) throw error;
 
         await postService.updatePost(
-        req.params.idThread,
         req.params.idPost,
         req.user,
         value.konten,
@@ -221,7 +279,6 @@ const updatePostController = async (req, res, next) => {
 const deletePostController = async (req, res, next) => {
     try {
         await postService.deletePost(
-        req.params.idThread,
         req.params.idPost,
         req.user,
         );
@@ -267,8 +324,7 @@ const updateTaskController = async (req, res, next) => {
         if (error) throw error;
 
         await taskService.updateTask(
-        req.params.idThread,
-        req.params.idTask,
+        req.params.idTasks,
         value,
         req.user,
         );
@@ -284,8 +340,7 @@ const updateTaskController = async (req, res, next) => {
 const deleteTaskController = async (req, res, next) => {
     try {
         await taskService.deleteTask(
-        req.params.idThread,
-        req.params.idTask,
+        req.params.idTasks,
         req.user,
         );
 
@@ -301,7 +356,7 @@ const deleteTaskController = async (req, res, next) => {
 const joinGroup = async (req, res, next) => {
     try {
         const result = await membershipService.joinGroup(
-        req.params.idGroup,
+        req.params.idStudyGroup,
         req.user.sub,
         );
         return successResponse(res, {
@@ -318,7 +373,7 @@ const joinGroup = async (req, res, next) => {
 const approveMembership = async (req, res, next) => {
     try {
         await membershipService.approveMembership(
-        req.params.idGroup,
+        req.params.idStudyGroup,
         req.params.idMembership,
         );
         return successResponse(res, {
@@ -332,7 +387,7 @@ const approveMembership = async (req, res, next) => {
 const rejectMembership = async (req, res, next) => {
     try {
         await membershipService.rejectMembership(
-        req.params.idGroup,
+        req.params.idStudyGroup,
         req.params.idMembership,
         );
         return successResponse(res, {
@@ -356,6 +411,8 @@ module.exports = {
     rejectMembership,
     getThreadsByGroup,
     createThread,
+    getThreadsOrPosts,
+    createThreadOrPost,
     getPostsByThread,
     createPost,
     updatePostController,

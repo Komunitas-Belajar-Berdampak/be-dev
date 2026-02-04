@@ -9,7 +9,7 @@ router.use(auth);
 
 /**
  * @swagger
- * /api/courses/{idCourse}/groups:
+ * /api/sg/{idCourse}:
  *   get:
  *     summary: List kelompok belajar di 1 course
  *     tags: [StudyGroups]
@@ -34,11 +34,11 @@ router.use(auth);
  *                   items:
  *                     $ref: '#/components/schemas/StudyGroupSummary'
  */
-router.get('/courses/:idCourse/groups', controller.getGroupsByCourse);
+router.get('/sg/:idCourse', controller.getGroupsByCourse);
 
 /**
  * @swagger
- * /api/courses/{idCourse}/groups/{idGroup}:
+ * /api/sg/{id}:
  *   get:
  *     summary: Detail kelompok belajar
  *     tags: [StudyGroups]
@@ -46,9 +46,8 @@ router.get('/courses/:idCourse/groups', controller.getGroupsByCourse);
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idCourse
- *       - in: path
- *         name: idGroup
+ *         name: id
+ *         required: true
  *     responses:
  *       200:
  *         description: data berhasil diambil!
@@ -62,11 +61,11 @@ router.get('/courses/:idCourse/groups', controller.getGroupsByCourse);
  *                 data:
  *                   $ref: '#/components/schemas/StudyGroupDetail'
  */
-router.get('/courses/:idCourse/groups/:idGroup', controller.getGroupDetail);
+router.get('/sg/:id', controller.getGroupDetail);
 
 /**
  * @swagger
- * /api/courses/{idCourse}/groups/{idGroup}/user-detail/{idUser}:
+ * /api/sg/{id}/user-detail/{idUser}:
  *   get:
  *     summary: Detail kontribusi & aktivitas 1 mahasiswa dalam 1 kelompok
  *     tags: [StudyGroups]
@@ -74,23 +73,23 @@ router.get('/courses/:idCourse/groups/:idGroup', controller.getGroupDetail);
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idCourse
- *       - in: path
- *         name: idGroup
+ *         name: id
+ *         required: true
  *       - in: path
  *         name: idUser
+ *         required: true
  *     responses:
  *       200:
  *         description: data berhasil diambil!
  */
 router.get(
-    '/courses/:idCourse/groups/:idGroup/user-detail/:idUser',
+    '/sg/:id/user-detail/:idUser',
     controller.getUserDetailInGroup,
 );
 
 /**
  * @swagger
- * /api/courses/{idCourse}/groups:
+ * /api/sg/{idCourse}:
  *   post:
  *     summary: Buat kelompok belajar
  *     tags: [StudyGroups]
@@ -122,14 +121,14 @@ router.get(
  *         description: kelompok berhasil dibuat!
  */
 router.post(
-    '/courses/:idCourse/groups',
+    '/sg/:idCourse',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.createGroup,
 );
 
 /**
  * @swagger
- * /api/courses/{idCourse}/groups/{idGroup}:
+ * /api/sg/{id}:
  *   put:
  *     summary: Update kelompok belajar
  *     tags: [StudyGroups]
@@ -137,9 +136,8 @@ router.post(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idCourse
- *       - in: path
- *         name: idGroup
+ *         name: id
+ *         required: true
  *     requestBody:
  *       required: true
  *       content:
@@ -159,14 +157,14 @@ router.post(
  *         description: kelompok berhasil diubah!
  */
 router.put(
-    '/courses/:idCourse/groups/:idGroup',
+    '/sg/:id',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.updateGroup,
 );
 
 /**
  * @swagger
- * /api/courses/{idCourse}/groups/{idGroup}:
+ * /api/sg/{id}:
  *   delete:
  *     summary: Hapus kelompok belajar
  *     tags: [StudyGroups]
@@ -174,22 +172,21 @@ router.put(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idCourse
- *       - in: path
- *         name: idGroup
+ *         name: id
+ *         required: true
  *     responses:
  *       200:
  *         description: kelompok berhasil dihapus!
  */
 router.delete(
-    '/courses/:idCourse/groups/:idGroup',
+    '/sg/:id',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.deleteGroup,
 );
 
 /**
  * @swagger
- * /api/groups/{idGroup}/memberships:
+ * /api/memberships/{idStudyGroup}:
  *   get:
  *     summary: List anggota & request membership di satu group
  *     tags: [Memberships]
@@ -197,7 +194,7 @@ router.delete(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idGroup
+ *         name: idStudyGroup
  *         required: true
  *     responses:
  *       200:
@@ -213,14 +210,14 @@ router.delete(
  *                   $ref: '#/components/schemas/MembershipList'
  */
 router.get(
-    '/groups/:idGroup/memberships',
+    '/memberships/:idStudyGroup',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.getMemberships,
 );
 
 /**
  * @swagger
- * /api/groups/{idGroup}/memberships/join:
+ * /api/memberships/{idStudyGroup}/join:
  *   post:
  *     summary: Ajukan join ke kelompok (Mahasiswa)
  *     tags: [Memberships]
@@ -228,21 +225,21 @@ router.get(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idGroup
+ *         name: idStudyGroup
  *         required: true
  *     responses:
  *       200:
  *         description: pengajuan join terkirim!
  */
 router.post(
-    '/groups/:idGroup/memberships/join',
+    '/memberships/:idStudyGroup/join',
     requireRoles('MAHASISWA'),
     controller.joinGroup,
 );
 
 /**
  * @swagger
- * /api/groups/{idGroup}/memberships/{idMembership}/approve:
+ * /api/memberships/{idMembership}/sg/{idStudyGroup}/approve:
  *   post:
  *     summary: Approve membership
  *     tags: [Memberships]
@@ -250,22 +247,24 @@ router.post(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idGroup
- *       - in: path
  *         name: idMembership
+ *         required: true
+ *       - in: path
+ *         name: idStudyGroup
+ *         required: true
  *     responses:
  *       200:
  *         description: anggota berhasil di-approve!
  */
 router.post(
-    '/groups/:idGroup/memberships/:idMembership/approve',
+    '/memberships/:idMembership/sg/:idStudyGroup/approve',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.approveMembership,
 );
 
 /**
  * @swagger
- * /api/groups/{idGroup}/memberships/{idMembership}/reject:
+ * /api/memberships/{idMembership}/sg/{idStudyGroup}/reject:
  *   post:
  *     summary: Reject membership
  *     tags: [Memberships]
@@ -273,149 +272,84 @@ router.post(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idGroup
- *       - in: path
  *         name: idMembership
+ *         required: true
+ *       - in: path
+ *         name: idStudyGroup
+ *         required: true
  *     responses:
  *       200:
  *         description: pengajuan ditolak!
  */
 router.post(
-    '/groups/:idGroup/memberships/:idMembership/reject',
+    '/memberships/:idMembership/sg/:idStudyGroup/reject',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.rejectMembership,
 );
 
 /**
  * @swagger
- * /api/groups/{idGroup}/threads:
+ * /api/threads/{id}:
  *   get:
- *     summary: List thread dalam satu kelompok
- *     tags: [Threads]
+ *     summary: List threads in study group OR list posts in thread
+ *     tags: [Threads, Posts]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idGroup
+ *         name: id
  *         required: true
+ *         description: Study Group ID or Thread ID
  *     responses:
  *       200:
  *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status: { type: string }
- *                 message: { type: string }
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/ThreadSummary'
  */
 router.get(
-    '/groups/:idGroup/threads',
-    controller.getThreadsByGroup,
+    '/threads/:id',
+    controller.getThreadsOrPosts,
 );
 
 /**
  * @swagger
- * /api/groups/{idGroup}/threads:
+ * /api/threads/{id}:
  *   post:
- *     summary: Buat thread baru
- *     tags: [Threads]
+ *     summary: Create thread in study group OR create post in thread
+ *     tags: [Threads, Posts]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idGroup
+ *         name: id
+ *         required: true
+ *         description: Study Group ID or Thread ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [judul]
- *             properties:
- *               judul: { type: string }
- *               idAssignment: { type: string }
+ *             oneOf:
+ *               - type: object
+ *                 required: [judul]
+ *                 properties:
+ *                   judul: { type: string }
+ *                   idAssignment: { type: string }
+ *               - type: object
+ *                 required: [konten]
+ *                 properties:
+ *                   konten: { type: object }
  *     responses:
  *       201:
- *         description: thread dibuat!
+ *         description: thread dibuat! OR post dibuat!
  */
 router.post(
-    '/groups/:idGroup/threads',
+    '/threads/:id',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
-    controller.createThread,
+    controller.createThreadOrPost,
 );
 
 /**
  * @swagger
- * /api/threads/{idThread}/posts:
- *   get:
- *     summary: List post dalam thread
- *     tags: [Posts]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: idThread
- *         required: true
- *     responses:
- *       200:
- *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status: { type: string }
- *                 message: { type: string }
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Post'
- */
-router.get(
-    '/threads/:idThread/posts',
-    controller.getPostsByThread,
-);
-
-/**
- * @swagger
- * /api/threads/{idThread}/posts:
- *   post:
- *     summary: Buat post baru (tambahkan poin kontribusi)
- *     tags: [Posts]
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: idThread
- *         required: true
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [konten]
- *             properties:
- *               konten:
- *                 type: object
- *     responses:
- *       201:
- *         description: post dibuat!
- */
-router.post(
-    '/threads/:idThread/posts',
-    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
-    controller.createPost,
-);
-
-/**
- * @swagger
- * /api/threads/{idThread}/posts/{idPost}:
+ * /api/posts/{idPost}:
  *   put:
  *     summary: Edit post
  *     tags: [Posts]
@@ -423,9 +357,8 @@ router.post(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idThread
- *       - in: path
  *         name: idPost
+ *         required: true
  *     requestBody:
  *       required: true
  *       content:
@@ -441,14 +374,14 @@ router.post(
  *         description: post berhasil diedit!
  */
 router.put(
-    '/threads/:idThread/posts/:idPost',
+    '/posts/:idPost',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.updatePostController,
 );
 
 /**
  * @swagger
- * /api/threads/{idThread}/posts/{idPost}:
+ * /api/posts/{idPost}:
  *   delete:
  *     summary: Hapus post (kurangi poin kontribusi)
  *     tags: [Posts]
@@ -456,22 +389,21 @@ router.put(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idThread
- *       - in: path
  *         name: idPost
+ *         required: true
  *     responses:
  *       200:
  *         description: post berhasil dihapus!
  */
 router.delete(
-    '/threads/:idThread/posts/:idPost',
+    '/posts/:idPost',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.deletePostController,
 );
 
 /**
  * @swagger
- * /api/threads/{idThread}/tasks:
+ * /api/tasks/{idThread}:
  *   get:
  *     summary: List task dalam thread
  *     tags: [Tasks]
@@ -486,13 +418,13 @@ router.delete(
  *         description: data berhasil diambil!
  */
 router.get(
-    '/threads/:idThread/tasks',
+    '/tasks/:idThread',
     controller.getTasksByThread,
 );
 
 /**
  * @swagger
- * /api/threads/{idThread}/tasks:
+ * /api/tasks/{idThread}:
  *   post:
  *     summary: Buat task baru
  *     tags: [Tasks]
@@ -522,14 +454,14 @@ router.get(
  *         description: data berhasil ditambah!
  */
 router.post(
-    '/threads/:idThread/tasks',
+    '/tasks/:idThread',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.createTask,
 );
 
 /**
  * @swagger
- * /api/threads/{idThread}/tasks/{idTask}:
+ * /api/tasks/{idTasks}:
  *   put:
  *     summary: Update task
  *     tags: [Tasks]
@@ -537,9 +469,8 @@ router.post(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idThread
- *       - in: path
- *         name: idTask
+ *         name: idTasks
+ *         required: true
  *     requestBody:
  *       required: true
  *       content:
@@ -559,14 +490,14 @@ router.post(
  *         description: task diubah!
  */
 router.put(
-    '/threads/:idThread/tasks/:idTask',
+    '/tasks/:idTasks',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.updateTaskController,
 );
 
 /**
  * @swagger
- * /api/threads/{idThread}/tasks/{idTask}:
+ * /api/tasks/{idTasks}:
  *   delete:
  *     summary: Hapus task
  *     tags: [Tasks]
@@ -574,15 +505,14 @@ router.put(
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: idThread
- *       - in: path
- *         name: idTask
+ *         name: idTasks
+ *         required: true
  *     responses:
  *       200:
  *         description: task dihapus!
  */
 router.delete(
-    '/threads/:idThread/tasks/:idTask',
+    '/tasks/:idTasks',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.deleteTaskController,
 );

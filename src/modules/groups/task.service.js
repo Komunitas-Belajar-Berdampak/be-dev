@@ -25,10 +25,10 @@ const listTasksByThread = async (idThread, query) => {
 
     return {
         items: tasks.map((t) => ({
-        id: t._id.toString(),
-        task: t.task,
-        mahasiswa: (t.idMahasiswa || []).map((m) => m.nama),
-        status: t.status,
+            id: t._id.toString(),
+            task: t.task,
+            mahasiswa: (t.idMahasiswa || []).map((m) => m.nama),
+            status: t.status,
         })),
         pagination: buildPagination({ page, limit, totalItems }),
     };
@@ -73,23 +73,16 @@ const createTask = async (idThread, payload, user) => {
     };
 };
 
-const updateTask = async (idThread, idTask, payload, user) => {
-    if (
-        !mongoose.isValidObjectId(idThread) ||
-        !mongoose.isValidObjectId(idTask)
-    ) {
+const updateTask = async (idTask, payload, user) => {
+    if (!mongoose.isValidObjectId(idTask)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const thread = await GroupThread.findById(idThread).lean();
-    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
-
-    const taskDoc = await GroupTask.findOne({
-        _id: idTask,
-        idThread,
-    });
-
+    const taskDoc = await GroupTask.findById(idTask);
     if (!taskDoc) throw new ApiError(404, 'Task tidak ditemukan');
+
+    const thread = await GroupThread.findById(taskDoc.idThread).lean();
+    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
     const { task, IdMahasiswa, status } = payload;
 
@@ -111,23 +104,16 @@ const updateTask = async (idThread, idTask, payload, user) => {
     });
 };
 
-const deleteTask = async (idThread, idTask, user) => {
-    if (
-        !mongoose.isValidObjectId(idThread) ||
-        !mongoose.isValidObjectId(idTask)
-    ) {
+const deleteTask = async (idTask, user) => {
+    if (!mongoose.isValidObjectId(idTask)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const thread = await GroupThread.findById(idThread).lean();
-    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
-
-    const taskDoc = await GroupTask.findOne({
-        _id: idTask,
-        idThread,
-    });
-
+    const taskDoc = await GroupTask.findById(idTask);
     if (!taskDoc) throw new ApiError(404, 'Task tidak ditemukan');
+
+    const thread = await GroupThread.findById(taskDoc.idThread).lean();
+    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
     await taskDoc.deleteOne();
 

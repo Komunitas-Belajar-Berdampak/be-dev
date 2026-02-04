@@ -1,0 +1,2668 @@
+{
+	"info": {
+		"_postman_id": "sta-backend-collection-2024",
+		"name": "STA Backend API Collection",
+		"description": "Complete API collection for Student Team Activity Backend\n\nTest Users:\n- Admin: NRP: Admin, Password: password123, Role: SUPER_ADMIN\n- Dosen1: NRP: Dosen1, Password: password123, Role: DOSEN (create manually)\n- Student: NRP: 2272001, Password: password123, Role: MAHASISWA (create manually)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Login as Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set(\"token\", jsonData.data.token);",
+									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
+									"    } else {",
+									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Student",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set(\"token\", jsonData.data.token);",
+									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
+									"    } else {",
+									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nrp\": \"2272001\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Teacher",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set(\"token\", jsonData.data.token);",
+									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
+									"    } else {",
+									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nrp\": \"Dosen1\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "me"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "2. Roles (SUPER_ADMIN)",
+			"item": [
+				{
+					"name": "List Roles",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/roles",
+							"host": ["{{base_url}}"],
+							"path": ["api", "roles"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nama\": \"DOSEN\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/roles",
+							"host": ["{{base_url}}"],
+							"path": ["api", "roles"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nama\": \"MAHASISWA\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/roles/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "roles", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/roles/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "roles", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "3. Users",
+			"item": [
+				{
+					"name": "List Users (SUPER_ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users?role=MAHASISWA&status=aktif",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"],
+							"query": [
+								{
+									"key": "role",
+									"value": "MAHASISWA"
+								},
+								{
+									"key": "status",
+									"value": "aktif"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create User (SUPER_ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nrp\": \"2272001\",\n  \"idRole\": \"<role_id>\",\n  \"idProdi\": \"<prodi_id>\",\n  \"nama\": \"Mahasiswa Satu\",\n  \"angkatan\": \"2022\",\n  \"email\": \"2272001@student.edu\",\n  \"alamat\": \"Jl. Mahasiswa No. 1\",\n  \"jenisKelamin\": \"pria\",\n  \"status\": \"aktif\",\n  \"password\": \"password123\",\n  \"fotoProfil\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User (SUPER_ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nrp\": \"2272001\",\n  \"idRole\": \"<role_id>\",\n  \"idProdi\": \"<prodi_id>\",\n  \"nama\": \"Updated Name\",\n  \"angkatan\": \"2022\",\n  \"email\": \"updated@student.edu\",\n  \"alamat\": \"New Address\",\n  \"jenisKelamin\": \"pria\",\n  \"status\": \"aktif\",\n  \"password\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Own Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"passwordLama\": \"password123\",\n  \"passwordBaru\": \"newpassword123\",\n  \"nama\": \"Updated Name\",\n  \"alamat\": \"New Address\",\n  \"fotoProfil\": null\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": ["{{base_url}}"],
+							"path": ["api", "users"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "4. Faculties (SUPER_ADMIN)",
+			"item": [
+				{
+					"name": "List Faculties",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/faculties",
+							"host": ["{{base_url}}"],
+							"path": ["api", "faculties"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Faculty",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namaFakultas\": \"Fakultas Teknik\",\n  \"kodeFakultas\": \"FT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/faculties",
+							"host": ["{{base_url}}"],
+							"path": ["api", "faculties"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Faculty",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namaFakultas\": \"Fakultas Teknik Updated\",\n  \"kodeFakultas\": \"FT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/faculties/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "faculties", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "5. Majors (SUPER_ADMIN)",
+			"item": [
+				{
+					"name": "List Majors",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/majors",
+							"host": ["{{base_url}}"],
+							"path": ["api", "majors"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Major",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"kodeProdi\": \"IF\",\n  \"namaProdi\": \"Informatika\",\n  \"idFakultas\": \"<faculty_id>\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/majors",
+							"host": ["{{base_url}}"],
+							"path": ["api", "majors"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Major",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"kodeProdi\": \"IF\",\n  \"namaProdi\": \"Teknik Informatika\",\n  \"idFakultas\": \"<faculty_id>\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/majors/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "majors", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "6. Academic Terms (SUPER_ADMIN)",
+			"item": [
+				{
+					"name": "List Academic Terms",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms",
+							"host": ["{{base_url}}"],
+							"path": ["api", "academic-terms"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Academic Term",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"periode\": \"2024/2025 Ganjil\",\n  \"startDate\": \"2024-09-01T00:00:00.000Z\",\n  \"endDate\": \"2025-01-31T23:59:59.999Z\",\n  \"status\": \"aktif\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms",
+							"host": ["{{base_url}}"],
+							"path": ["api", "academic-terms"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Academic Term",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "academic-terms", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "7. Courses",
+			"item": [
+				{
+					"name": "List Courses",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses?status=aktif",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses"],
+							"query": [
+								{
+									"key": "status",
+									"value": "aktif"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Course Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"kodeMatkul\": \"IF101\",\n  \"namaMatkul\": \"Pemrograman Web\",\n  \"sks\": 3,\n  \"status\": \"aktif\",\n  \"idPeriode\": \"<period_id>\",\n  \"idPengajar\": \"<teacher_id>\",\n  \"idMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"kelas\": \"A\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"kodeMatkul\": \"IF101\",\n  \"namaMatkul\": \"Pemrograman Web Lanjut\",\n  \"sks\": 3,\n  \"status\": \"aktif\",\n  \"idPeriode\": \"<period_id>\",\n  \"idPengajar\": \"<teacher_id>\",\n  \"kelas\": \"A\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Course Description",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deskripsi\": {\n    \"ops\": [\n      {\"insert\": \"Course description content\"}\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "courses", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "8. Meetings",
+			"item": [
+				{
+					"name": "List Meetings by Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/meetings/:idCourse",
+							"host": ["{{base_url}}"],
+							"path": ["api", "meetings", ":idCourse"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Meeting Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/meetings/:pertemuan/courses/:idCourses",
+							"host": ["{{base_url}}"],
+							"path": ["api", "meetings", ":pertemuan", "courses", ":idCourses"],
+							"variable": [
+								{
+									"key": "pertemuan",
+									"value": "1"
+								},
+								{
+									"key": "idCourses",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Meeting",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"judul\": \"Pertemuan 1: Pengenalan\",\n  \"deskripsi\": {\n    \"ops\": [\n      {\"insert\": \"Meeting description\"}\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/meetings/:idPertemuan",
+							"host": ["{{base_url}}"],
+							"path": ["api", "meetings", ":idPertemuan"],
+							"variable": [
+								{
+									"key": "idPertemuan",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "9. Materials",
+			"item": [
+				{
+					"name": "List Materials by Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idCourse",
+							"host": ["{{base_url}}"],
+							"path": ["api", "materials", ":idCourse"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Materials by Meeting",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idCourse/meetings/:pertemuan",
+							"host": ["{{base_url}}"],
+							"path": ["api", "materials", ":idCourse", "meetings", ":pertemuan"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								},
+								{
+									"key": "pertemuan",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Material Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idMaterial",
+							"host": ["{{base_url}}"],
+							"path": ["api", "materials", ":idMaterial"],
+							"variable": [
+								{
+									"key": "idMaterial",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namaFile\": \"Slide Pertemuan 1.pdf\",\n  \"tipe\": \"application/pdf\",\n  \"pathFile\": \"path/to/file.pdf\",\n  \"visibility\": \"VISIBLE\",\n  \"deskripsi\": {\n    \"ops\": [\n      {\"insert\": \"Material description\"}\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idCourse/meetings/:pertemuan",
+							"host": ["{{base_url}}"],
+							"path": ["api", "materials", ":idCourse", "meetings", ":pertemuan"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								},
+								{
+									"key": "pertemuan",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"namaFile\": \"Updated Material.pdf\",\n  \"tipe\": \"application/pdf\",\n  \"pathFile\": \"path/to/updated/file.pdf\",\n  \"visibility\": \"HIDE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idMaterial",
+							"host": ["{{base_url}}"],
+							"path": ["api", "materials", ":idMaterial"],
+							"variable": [
+								{
+									"key": "idMaterial",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Material",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idMaterial",
+							"host": ["{{base_url}}"],
+							"path": ["api", "materials", ":idMaterial"],
+							"variable": [
+								{
+									"key": "idMaterial",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "10. Assignments",
+			"item": [
+				{
+					"name": "List Assignments by Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/assignments/:idCourse",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assignments", ":idCourse"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assignments by Meeting",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/assignments/:idCourse/meetings/:pertemuan",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assignments", ":idCourse", "meetings", ":pertemuan"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								},
+								{
+									"key": "pertemuan",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Assignment Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/assignments/:idAssignment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assignments", ":idAssignment"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Assignment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"judul\": \"Tugas 1: Web Development\",\n  \"statusTugas\": true,\n  \"tenggat\": \"2024-12-31T23:59:59.999Z\",\n  \"deskripsi\": {\n    \"ops\": [\n      {\"insert\": \"Assignment description\"}\n    ]\n  },\n  \"lampiran\": \"path/to/attachment.pdf\",\n  \"status\": \"VISIBLE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assignments/:idCourse/meetings/:pertemuan",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assignments", ":idCourse", "meetings", ":pertemuan"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								},
+								{
+									"key": "pertemuan",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Assignment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"judul\": \"Tugas 1: Web Development (Updated)\",\n  \"statusTugas\": false,\n  \"tenggat\": \"2024-12-31T23:59:59.999Z\",\n  \"status\": \"HIDE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/assignments/:idAssignment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assignments", ":idAssignment"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Assignment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/assignments/:idAssignment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "assignments", ":idAssignment"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "11. Submissions",
+			"item": [
+				{
+					"name": "Get My Submission",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/submissions/:idAssignment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "submissions", ":idAssignment"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Submissions (Teacher)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/submissions/:idAssignment/all",
+							"host": ["{{base_url}}"],
+							"path": ["api", "submissions", ":idAssignment", "all"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Submit Assignment",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"file\": \"path/to/submission.pdf\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/submissions/:idAssignment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "submissions", ":idAssignment"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Submission",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"file\": \"path/to/updated_submission.pdf\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/submissions/:idAssignment",
+							"host": ["{{base_url}}"],
+							"path": ["api", "submissions", ":idAssignment"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Grade Submission (Teacher)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nilai\": 85,\n  \"gradeAt\": \"2024-12-31T10:00:00.000Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/submissions/assignments/:idAssignment/submissions/:idSubmission/grade",
+							"host": ["{{base_url}}"],
+							"path": ["api", "submissions", "assignments", ":idAssignment", "submissions", ":idSubmission", "grade"],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								},
+								{
+									"key": "idSubmission",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "12. Study Groups",
+			"item": [
+				{
+					"name": "List Groups by Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sg/:idCourse?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "sg", ":idCourse"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								}
+							],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Group Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sg/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "sg", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User Detail in Group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sg/:id/user-detail/:idUser",
+							"host": ["{{base_url}}"],
+							"path": ["api", "sg", ":id", "user-detail", ":idUser"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								},
+								{
+									"key": "idUser",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nama\": \"Kelompok 1\",\n  \"deskripsi\": \"Kelompok Web Development\",\n  \"idMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"status\": false,\n  \"kapasitas\": 5\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/sg/:idCourse",
+							"host": ["{{base_url}}"],
+							"path": ["api", "sg", ":idCourse"],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nama\": \"Kelompok 1 Updated\",\n  \"deskripsi\": \"Updated description\",\n  \"status\": true,\n  \"kapasitas\": 6\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/sg/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "sg", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sg/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "sg", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "13. Memberships",
+			"item": [
+				{
+					"name": "List Memberships",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/memberships/:idStudyGroup?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "memberships", ":idStudyGroup"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								}
+							],
+							"variable": [
+								{
+									"key": "idStudyGroup",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Join Group (Student)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/memberships/:idStudyGroup/join",
+							"host": ["{{base_url}}"],
+							"path": ["api", "memberships", ":idStudyGroup", "join"],
+							"variable": [
+								{
+									"key": "idStudyGroup",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Approve Membership",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/memberships/:idMembership/sg/:idStudyGroup/approve",
+							"host": ["{{base_url}}"],
+							"path": ["api", "memberships", ":idMembership", "sg", ":idStudyGroup", "approve"],
+							"variable": [
+								{
+									"key": "idMembership",
+									"value": ""
+								},
+								{
+									"key": "idStudyGroup",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Reject Membership",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/memberships/:idMembership/sg/:idStudyGroup/reject",
+							"host": ["{{base_url}}"],
+							"path": ["api", "memberships", ":idMembership", "sg", ":idStudyGroup", "reject"],
+							"variable": [
+								{
+									"key": "idMembership",
+									"value": ""
+								},
+								{
+									"key": "idStudyGroup",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "14. Threads",
+			"item": [
+				{
+					"name": "List Threads in Group",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/threads/:idStudyGroup?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "threads", ":idStudyGroup"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								}
+							],
+							"variable": [
+								{
+									"key": "idStudyGroup",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Thread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"judul\": \"Diskusi Tugas 1\",\n  \"idAssignment\": \"<assignment_id>\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/threads/:idStudyGroup",
+							"host": ["{{base_url}}"],
+							"path": ["api", "threads", ":idStudyGroup"],
+							"variable": [
+								{
+									"key": "idStudyGroup",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "15. Posts",
+			"item": [
+				{
+					"name": "List Posts in Thread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/threads/:idThread?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "threads", ":idThread"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								}
+							],
+							"variable": [
+								{
+									"key": "idThread",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"konten\": {\n    \"ops\": [\n      {\"insert\": \"My post content\"}\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/threads/:idThread",
+							"host": ["{{base_url}}"],
+							"path": ["api", "threads", ":idThread"],
+							"variable": [
+								{
+									"key": "idThread",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"konten\": {\n    \"ops\": [\n      {\"insert\": \"Updated post content\"}\n    ]\n  }\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/posts/:idPost",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", ":idPost"],
+							"variable": [
+								{
+									"key": "idPost",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/posts/:idPost",
+							"host": ["{{base_url}}"],
+							"path": ["api", "posts", ":idPost"],
+							"variable": [
+								{
+									"key": "idPost",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "16. Tasks",
+			"item": [
+				{
+					"name": "List Tasks in Thread",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:idThread?page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":idThread"],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								}
+							],
+							"variable": [
+								{
+									"key": "idThread",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"IdMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"status\": \"DO\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:idThread",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":idThread"],
+							"variable": [
+								{
+									"key": "idThread",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"IdMahasiswa\": [\"<student_id_1>\"],\n  \"status\": \"IN PROGRESS\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:idTasks",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":idTasks"],
+							"variable": [
+								{
+									"key": "idTasks",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/tasks/:idTasks",
+							"host": ["{{base_url}}"],
+							"path": ["api", "tasks", ":idTasks"],
+							"variable": [
+								{
+									"key": "idTasks",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "17. Learning Approach",
+			"item": [
+				{
+					"name": "Get Learning Approach",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/approach/:idUser",
+							"host": ["{{base_url}}"],
+							"path": ["api", "approach", ":idUser"],
+							"variable": [
+								{
+									"key": "idUser",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Learning Approach",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gayaBelajar\": [\"visual\", \"belajar sendiri\", \"suka diskusi kelompok\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/approach/:idUser",
+							"host": ["{{base_url}}"],
+							"path": ["api", "approach", ":idUser"],
+							"variable": [
+								{
+									"key": "idUser",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Learning Approach",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"gayaBelajar\": [\"auditorial\", \"belajar lewat diskusi\"]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/approach/:idUser",
+							"host": ["{{base_url}}"],
+							"path": ["api", "approach", ":idUser"],
+							"variable": [
+								{
+									"key": "idUser",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "18. Private Files",
+			"item": [
+				{
+					"name": "List My Private Files",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/private-files",
+							"host": ["{{base_url}}"],
+							"path": ["api", "private-files"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Private File",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"filePath\": \"users/2272002/notes/bab2.pdf\",\n  \"fileSize\": \"1.9 MB\",\n  \"status\": \"PRIVATE\",\n  \"tipe\": \"application/pdf\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/private-files",
+							"host": ["{{base_url}}"],
+							"path": ["api", "private-files"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Private File Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"VISIBLE\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/private-files/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "private-files", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Private File",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/private-files/:id",
+							"host": ["{{base_url}}"],
+							"path": ["api", "private-files", ":id"],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "19. Utility",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

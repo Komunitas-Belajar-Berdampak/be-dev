@@ -1,0 +1,899 @@
+=====================================================
+API ENDPOINTS FOR POSTMAN TESTING
+STA Backend - Student Team Activity
+Based on Actual Code Implementation
+=====================================================
+
+BASE URL: http://localhost:3000
+API PREFIX: /api
+
+NOTE: Most endpoints require JWT Bearer Token
+Authorization: Bearer <your_jwt_token>
+
+=====================================================
+TEST USERS (from seed.js)
+=====================================================
+
+After running the seed script, the following user is available:
+
+1. SUPER_ADMIN (Full Access)
+   NRP:      Admin
+   Password: password123
+   Email:    admin@kampus.ac.id
+   Access:   All endpoints
+
+Note: You need to create DOSEN and MAHASISWA users manually
+through the admin account or seed additional test users.
+
+Suggested test users to create:
+- DOSEN:     NRP: "Dosen1", Role: DOSEN
+- MAHASISWA: NRP: "2272001", Role: MAHASISWA
+
+=====================================================
+1. AUTHENTICATION ENDPOINTS
+=====================================================
+
+POST   /api/auth/login
+POST   /api/auth/logout
+GET    /api/auth/me
+
+1.1 Login as SUPER_ADMIN
+POST {{base_url}}/api/auth/login
+Body:
+{
+  "nrp": "Admin",
+  "password": "password123"
+}
+
+1.1b Login as Student (if created)
+POST {{base_url}}/api/auth/login
+Body:
+{
+  "nrp": "2272001",
+  "password": "password123"
+}
+
+1.1c Login as Teacher (if created)
+POST {{base_url}}/api/auth/login
+Body:
+{
+  "nrp": "Dosen1",
+  "password": "password123"
+}
+
+1.2 Logout (Auth Required)
+POST {{base_url}}/api/auth/logout
+
+1.3 Get Current User
+GET {{base_url}}/api/auth/me
+
+=====================================================
+2. ROLES ENDPOINTS (SUPER_ADMIN only)
+=====================================================
+
+GET    /api/roles
+POST   /api/roles
+PUT    /api/roles/:id
+DELETE /api/roles/:id
+
+2.1 List Roles
+GET {{base_url}}/api/roles
+
+2.2 Create Role
+POST {{base_url}}/api/roles
+Body:
+{
+  "nama": "DOSEN"
+}
+
+2.3 Update Role
+PUT {{base_url}}/api/roles/:id
+Body:
+{
+  "nama": "MAHASISWA"
+}
+
+2.4 Delete Role
+DELETE {{base_url}}/api/roles/:id
+
+=====================================================
+3. USER MANAGEMENT (SUPER_ADMIN only)
+=====================================================
+
+GET    /api/users
+GET    /api/users/:id
+POST   /api/users
+PUT    /api/users/:id
+PATCH  /api/users
+
+3.1 List Users (with query params)
+GET {{base_url}}/api/users?role=MAHASISWA&angkatan=2022&prodi=IF&status=aktif
+
+3.2 Get User by ID
+GET {{base_url}}/api/users/:id
+
+3.3 Create User
+POST {{base_url}}/api/users
+Body:
+{
+  "nrp": "2272001",
+  "idRole": "role_id",
+  "idProdi": "prodi_id",
+  "nama": "John Doe",
+  "angkatan": "2022",
+  "email": "john@example.com",
+  "alamat": "Jl. Example No. 123",
+  "jenisKelamin": "pria",
+  "status": "aktif",
+  "password": "password123",
+  "fotoProfil": "path/to/photo.jpg"
+}
+
+3.4 Update User (Full)
+PUT {{base_url}}/api/users/:id
+Body: (same as Create User)
+
+3.5 Update Own Profile (Any authenticated user)
+PATCH {{base_url}}/api/users
+Body:
+{
+  "passwordLama": "oldPassword",
+  "passwordBaru": "newPassword",
+  "fotoProfil": "path/to/new/photo.jpg",
+  "alamat": "New Address",
+  "nama": "Updated Name"
+}
+
+=====================================================
+4. FACULTY MANAGEMENT (SUPER_ADMIN only)
+=====================================================
+
+GET    /api/faculties
+POST   /api/faculties
+PUT    /api/faculties/:id
+
+4.1 List Faculties
+GET {{base_url}}/api/faculties
+
+4.2 Create Faculty
+POST {{base_url}}/api/faculties
+Body:
+{
+  "namaFakultas": "Fakultas Teknik",
+  "kodeFakultas": "FT"
+}
+
+4.3 Update Faculty
+PUT {{base_url}}/api/faculties/:id
+Body:
+{
+  "namaFakultas": "Fakultas Teknik",
+  "kodeFakultas": "FT"
+}
+
+=====================================================
+5. MAJOR/PRODI MANAGEMENT (SUPER_ADMIN only)
+=====================================================
+
+GET    /api/majors
+POST   /api/majors
+PUT    /api/majors/:id
+
+5.1 List Majors
+GET {{base_url}}/api/majors
+
+5.2 Create Major
+POST {{base_url}}/api/majors
+Body:
+{
+  "kodeProdi": "IF",
+  "namaProdi": "Informatika",
+  "idFakultas": "faculty_id"
+}
+
+5.3 Update Major
+PUT {{base_url}}/api/majors/:id
+Body:
+{
+  "kodeProdi": "IF",
+  "namaProdi": "Teknik Informatika",
+  "idFakultas": "faculty_id"
+}
+
+=====================================================
+6. ACADEMIC TERMS (SUPER_ADMIN only)
+=====================================================
+
+GET    /api/academic-terms
+POST   /api/academic-terms
+DELETE /api/academic-terms/:id
+
+6.1 List Academic Terms
+GET {{base_url}}/api/academic-terms
+
+6.2 Create Academic Term
+POST {{base_url}}/api/academic-terms
+Body:
+{
+  "periode": "2024/2025 Ganjil",
+  "startDate": "2024-09-01T00:00:00.000Z",
+  "endDate": "2025-01-31T23:59:59.999Z",
+  "status": "aktif"
+}
+
+6.3 Delete Academic Term
+DELETE {{base_url}}/api/academic-terms/:id
+
+=====================================================
+7. COURSE MANAGEMENT
+=====================================================
+
+GET    /api/courses
+GET    /api/courses/:id
+POST   /api/courses (SUPER_ADMIN, DOSEN)
+PUT    /api/courses/:id (SUPER_ADMIN, DOSEN)
+PATCH  /api/courses/:id (SUPER_ADMIN, DOSEN)
+DELETE /api/courses/:id (SUPER_ADMIN, DOSEN)
+
+7.1 List Courses (Filtered by role)
+GET {{base_url}}/api/courses?kodeMatkul=IF101&status=aktif&periode=2024/2025&nrp=2272001&kelas=A&sks=3
+
+7.2 Get Course Detail
+GET {{base_url}}/api/courses/:id
+
+7.3 Create Course
+POST {{base_url}}/api/courses
+Body:
+{
+  "kodeMatkul": "IF101",
+  "namaMatkul": "Pemrograman Web",
+  "sks": 3,
+  "status": "aktif",
+  "idPeriode": "period_id",
+  "idPengajar": "teacher_id",
+  "idMahasiswa": ["student_id_1", "student_id_2"],
+  "kelas": "A"
+}
+
+7.4 Update Course
+PUT {{base_url}}/api/courses/:id
+Body: (same as Create)
+
+7.5 Update Course Description Only
+PATCH {{base_url}}/api/courses/:id
+Body:
+{
+  "deskripsi": {"ops": [{"insert": "Course description"}]}
+}
+
+7.6 Delete Course
+DELETE {{base_url}}/api/courses/:id
+
+=====================================================
+8. MEETING ENDPOINTS
+=====================================================
+
+GET    /api/meetings/:idCourse
+GET    /api/meetings/:pertemuan/courses/:idCourses
+PUT    /api/meetings/:idPertemuan (SUPER_ADMIN, DOSEN)
+
+8.1 List Meetings by Course
+GET {{base_url}}/api/meetings/:idCourse
+
+8.2 Get Meeting Detail by Number and Course
+GET {{base_url}}/api/meetings/:pertemuan/courses/:idCourses
+Example: GET {{base_url}}/api/meetings/1/courses/6789abc...
+
+8.3 Update Meeting
+PUT {{base_url}}/api/meetings/:idPertemuan
+Body:
+{
+  "judul": "Pertemuan 1: Pengenalan",
+  "deskripsi": {"ops": [{"insert": "Meeting description"}]}
+}
+
+=====================================================
+9. MATERIAL ENDPOINTS
+=====================================================
+
+GET    /api/materials/:idCourse
+GET    /api/materials/:idCourse/meetings/:pertemuan
+GET    /api/materials/:idMaterial
+POST   /api/materials/:idCourse/meetings/:pertemuan (SUPER_ADMIN, DOSEN)
+PUT    /api/materials/:idMaterial (SUPER_ADMIN, DOSEN)
+DELETE /api/materials/:idMaterial (SUPER_ADMIN, DOSEN)
+
+9.1 List Materials by Course
+GET {{base_url}}/api/materials/:idCourse
+
+9.2 Get Materials by Meeting
+GET {{base_url}}/api/materials/:idCourse/meetings/:pertemuan
+Example: GET {{base_url}}/api/materials/6789abc.../meetings/1
+
+9.3 Get Material Detail
+GET {{base_url}}/api/materials/:idMaterial
+
+9.4 Create Material
+POST {{base_url}}/api/materials/:idCourse/meetings/:pertemuan
+Body:
+{
+  "namaFile": "Slide Pertemuan 1.pdf",
+  "tipe": "application/pdf",
+  "pathFile": "path/to/file.pdf",
+  "visibility": "VISIBLE",
+  "deskripsi": {"ops": [{"insert": "Material description"}]}
+}
+
+9.5 Update Material
+PUT {{base_url}}/api/materials/:idMaterial
+Body: (same as Create)
+
+9.6 Delete Material
+DELETE {{base_url}}/api/materials/:idMaterial
+
+=====================================================
+10. ASSIGNMENT ENDPOINTS
+=====================================================
+
+GET    /api/assignments/:idCourse
+GET    /api/assignments/:idCourse/meetings/:pertemuan
+GET    /api/assignments/:idAssignment
+POST   /api/assignments/:idCourse/meetings/:pertemuan (SUPER_ADMIN, DOSEN)
+PUT    /api/assignments/:idAssignment (SUPER_ADMIN, DOSEN)
+DELETE /api/assignments/:idAssignment (SUPER_ADMIN, DOSEN)
+
+10.1 List Assignments by Course
+GET {{base_url}}/api/assignments/:idCourse
+
+10.2 Get Assignments by Meeting
+GET {{base_url}}/api/assignments/:idCourse/meetings/:pertemuan
+
+10.3 Get Assignment Detail
+GET {{base_url}}/api/assignments/:idAssignment
+
+10.4 Create Assignment
+POST {{base_url}}/api/assignments/:idCourse/meetings/:pertemuan
+Body:
+{
+  "judul": "Tugas 1: Web Development",
+  "statusTugas": true,
+  "tenggat": "2024-12-31T23:59:59.999Z",
+  "deskripsi": {"ops": [{"insert": "Assignment description"}]},
+  "lampiran": "path/to/attachment.pdf",
+  "status": "VISIBLE"
+}
+Note: statusTugas: true=kelompok, false=individu
+
+10.5 Update Assignment
+PUT {{base_url}}/api/assignments/:idAssignment
+Body: (same as Create)
+
+10.6 Delete Assignment
+DELETE {{base_url}}/api/assignments/:idAssignment
+
+=====================================================
+11. SUBMISSION ENDPOINTS
+=====================================================
+
+GET    /api/submissions/:idAssignment
+GET    /api/submissions/:idAssignment/all (DOSEN, SUPER_ADMIN)
+POST   /api/submissions/:idAssignment
+PATCH  /api/submissions/:idAssignment
+PATCH  /api/submissions/assignments/:idAssignment/submissions/:idSubmission/grade (DOSEN, SUPER_ADMIN)
+
+11.1 Get My Submission
+GET {{base_url}}/api/submissions/:idAssignment
+
+11.2 Get All Submissions for Assignment (Teachers only)
+GET {{base_url}}/api/submissions/:idAssignment/all
+
+11.3 Submit Assignment (Student)
+POST {{base_url}}/api/submissions/:idAssignment
+Body:
+{
+  "file": "path/to/submission.pdf"
+}
+
+11.4 Update My Submission (Student)
+PATCH {{base_url}}/api/submissions/:idAssignment
+Body:
+{
+  "file": "path/to/updated_submission.pdf"
+}
+
+11.5 Grade Submission (Teachers only)
+PATCH {{base_url}}/api/submissions/assignments/:idAssignment/submissions/:idSubmission/grade
+Body:
+{
+  "nilai": 85,
+  "gradeAt": "2024-12-31T10:00:00.000Z"
+}
+
+=====================================================
+12. STUDY GROUP ENDPOINTS
+Note: groupRoutes is mounted at /api (not /api/groups)
+=====================================================
+
+GET    /api/courses/:idCourse/groups
+GET    /api/courses/:idCourse/groups/:idGroup
+GET    /api/courses/:idCourse/groups/:idGroup/user-detail/:idUser
+POST   /api/courses/:idCourse/groups (SUPER_ADMIN, DOSEN)
+PUT    /api/courses/:idCourse/groups/:idGroup (SUPER_ADMIN, DOSEN)
+DELETE /api/courses/:idCourse/groups/:idGroup (SUPER_ADMIN, DOSEN)
+
+12.1 List Groups by Course
+GET {{base_url}}/api/courses/:idCourse/groups
+
+12.2 Get Group Detail
+GET {{base_url}}/api/courses/:idCourse/groups/:idGroup
+
+12.3 Get User Activity Detail in Group
+GET {{base_url}}/api/courses/:idCourse/groups/:idGroup/user-detail/:idUser
+
+12.4 Create Group
+POST {{base_url}}/api/courses/:idCourse/groups
+Body:
+{
+  "nama": "Kelompok 1",
+  "deskripsi": "Kelompok Web Development",
+  "idMahasiswa": ["student_id_1", "student_id_2"],
+  "status": false,
+  "kapasitas": 5
+}
+Note: status: false=can request join, true=closed
+
+12.5 Update Group
+PUT {{base_url}}/api/courses/:idCourse/groups/:idGroup
+Body: (same as Create)
+
+12.6 Delete Group
+DELETE {{base_url}}/api/courses/:idCourse/groups/:idGroup
+
+=====================================================
+13. GROUP MEMBERSHIP ENDPOINTS
+=====================================================
+
+GET    /api/groups/:idGroup/memberships (SUPER_ADMIN, DOSEN)
+POST   /api/groups/:idGroup/memberships/join (MAHASISWA)
+POST   /api/groups/:idGroup/memberships/:idMembership/approve (SUPER_ADMIN, DOSEN)
+POST   /api/groups/:idGroup/memberships/:idMembership/reject (SUPER_ADMIN, DOSEN)
+
+13.1 List Memberships
+GET {{base_url}}/api/groups/:idGroup/memberships
+
+13.2 Request to Join Group (Student)
+POST {{base_url}}/api/groups/:idGroup/memberships/join
+
+13.3 Approve Membership Request
+POST {{base_url}}/api/groups/:idGroup/memberships/:idMembership/approve
+
+13.4 Reject Membership Request
+POST {{base_url}}/api/groups/:idGroup/memberships/:idMembership/reject
+
+=====================================================
+14. THREAD ENDPOINTS (Discussion Threads)
+=====================================================
+
+GET    /api/groups/:idGroup/threads
+POST   /api/groups/:idGroup/threads (MAHASISWA, DOSEN, SUPER_ADMIN)
+
+14.1 List Threads in Group
+GET {{base_url}}/api/groups/:idGroup/threads
+
+14.2 Create Thread
+POST {{base_url}}/api/groups/:idGroup/threads
+Body:
+{
+  "judul": "Diskusi Tugas 1",
+  "idAssignment": "assignment_id"
+}
+
+=====================================================
+15. POST ENDPOINTS (Discussion Posts)
+=====================================================
+
+GET    /api/threads/:idThread/posts
+POST   /api/threads/:idThread/posts (MAHASISWA, DOSEN, SUPER_ADMIN)
+PUT    /api/threads/:idThread/posts/:idPost (MAHASISWA, DOSEN, SUPER_ADMIN)
+DELETE /api/threads/:idThread/posts/:idPost (MAHASISWA, DOSEN, SUPER_ADMIN)
+
+15.1 List Posts in Thread
+GET {{base_url}}/api/threads/:idThread/posts
+
+15.2 Create Post
+POST {{base_url}}/api/threads/:idThread/posts
+Body:
+{
+  "konten": {"ops": [{"insert": "My post content"}]}
+}
+
+15.3 Update Post
+PUT {{base_url}}/api/threads/:idThread/posts/:idPost
+Body:
+{
+  "konten": {"ops": [{"insert": "Updated content"}]}
+}
+
+15.4 Delete Post
+DELETE {{base_url}}/api/threads/:idThread/posts/:idPost
+
+=====================================================
+16. TASK ENDPOINTS (Group Task Management)
+=====================================================
+
+GET    /api/threads/:idThread/tasks
+POST   /api/threads/:idThread/tasks (MAHASISWA, DOSEN, SUPER_ADMIN)
+PUT    /api/threads/:idThread/tasks/:idTask (MAHASISWA, DOSEN, SUPER_ADMIN)
+DELETE /api/threads/:idThread/tasks/:idTask (MAHASISWA, DOSEN, SUPER_ADMIN)
+
+16.1 List Tasks in Thread
+GET {{base_url}}/api/threads/:idThread/tasks
+
+16.2 Create Task
+POST {{base_url}}/api/threads/:idThread/tasks
+Body:
+{
+  "task": "Complete frontend design",
+  "IdMahasiswa": ["student_id_1", "student_id_2"],
+  "status": "DO"
+}
+Note: status options: "DO", "IN PROGRESS", "DONE"
+
+16.3 Update Task
+PUT {{base_url}}/api/threads/:idThread/tasks/:idTask
+Body: (same as Create)
+
+16.4 Delete Task
+DELETE {{base_url}}/api/threads/:idThread/tasks/:idTask
+
+=====================================================
+17. APPROACH ENDPOINTS (Learning Style)
+=====================================================
+
+GET    /api/approach/:idUser
+POST   /api/approach/:idUser
+PATCH  /api/approach/:idUser
+
+17.1 Get Learning Approach
+GET {{base_url}}/api/approach/:idUser
+
+17.2 Create Learning Approach
+POST {{base_url}}/api/approach/:idUser
+Body:
+{
+  "gayaBelajar": ["visual", "belajar sendiri", "suka diskusi kelompok"]
+}
+
+17.3 Update Learning Approach
+PATCH {{base_url}}/api/approach/:idUser
+Body:
+{
+  "gayaBelajar": ["auditorial", "belajar lewat diskusi"]
+}
+
+=====================================================
+18. PRIVATE FILES ENDPOINTS
+=====================================================
+
+GET    /api/private-files
+POST   /api/private-files
+PATCH  /api/private-files/:id
+DELETE /api/private-files/:id
+
+18.1 List My Private Files
+GET {{base_url}}/api/private-files
+
+18.2 Create Private File Record
+POST {{base_url}}/api/private-files
+Body:
+{
+  "filePath": "users/2272002/notes/bab2.pdf",
+  "fileSize": "1.9 MB",
+  "status": "PRIVATE",
+  "tipe": "application/pdf"
+}
+
+18.3 Update Private File Status
+PATCH {{base_url}}/api/private-files/:id
+Body:
+{
+  "status": "VISIBLE"
+}
+Note: status options: "VISIBLE", "PRIVATE"
+
+18.4 Delete Private File Record
+DELETE {{base_url}}/api/private-files/:id
+
+=====================================================
+19. UTILITY ENDPOINTS
+=====================================================
+
+GET    /health
+GET    /docs
+
+19.1 Health Check (Public)
+GET {{base_url}}/health
+
+19.2 API Documentation (Swagger UI)
+GET {{base_url}}/docs
+
+=====================================================
+POSTMAN ENVIRONMENT SETUP
+=====================================================
+
+Variable Name         | Initial Value
+---------------------|---------------------------
+base_url             | http://localhost:3000
+token                | (set after login)
+user_id              | (your test user ID)
+course_id            | (test course ID)
+group_id             | (test group ID)
+assignment_id        | (test assignment ID)
+thread_id            | (test thread ID)
+meeting_id           | (test meeting ID)
+
+=====================================================
+QUICK TESTING WORKFLOW
+=====================================================
+
+STEP 0: Setup Test Users
+-------------------------
+1. Run the seed script to create SUPER_ADMIN:
+   node src/seeds/seed.js
+
+   This creates the SUPER_ADMIN user:
+   - NRP: "Admin"
+   - Password: "password123"
+
+2. Create additional test users via API:
+   a) Login as Admin
+   b) First, create DOSEN and MAHASISWA roles if they don't exist
+      POST /api/roles
+      Body: {"nama": "DOSEN"}
+      Body: {"nama": "MAHASISWA"}
+
+   c) Create a teacher user:
+      POST /api/users
+      Body: {
+        "nrp": "Dosen1",
+        "idRole": "<dosen_role_id>",
+        "idProdi": "<prodi_id>",
+        "nama": "Pak Dosen",
+        "angkatan": null,
+        "email": "dosen1@kampus.ac.id",
+        "alamat": "Jl. Dosen",
+        "jenisKelamin": "pria",
+        "status": "aktif",
+        "password": "password123"
+      }
+
+   d) Create a student user:
+      POST /api/users
+      Body: {
+        "nrp": "2272001",
+        "idRole": "<mahasiswa_role_id>",
+        "idProdi": "<prodi_id>",
+        "nama": "Mahasiswa Satu",
+        "angkatan": "2022",
+        "email": "2272001@student.edu",
+        "alamat": "Jl. Mahasiswa",
+        "jenisKelamin": "pria",
+        "status": "aktif",
+        "password": "password123"
+      }
+
+STEP 1: Login
+-------------
+POST /api/auth/login
+Body:
+{
+  "nrp": "Admin",
+  "password": "password123"
+}
+Copy the token from response
+
+STEP 2: Set Token in Postman Environment
+-----------------------------------------
+token = <paste_token_here>
+
+STEP 3: Test Endpoints Based on Role
+-------------------------------------
+
+SUPER_ADMIN (NRP: Admin):
+- All endpoints accessible
+- Create faculties, majors, academic terms
+- Manage users and roles
+- Full system administration
+
+DOSEN (NRP: Dosen1):
+- Create/manage courses
+- Create/manage assignments
+- Grade submissions
+- Manage study groups
+- View enrolled courses
+
+MAHASISWA (NRP: 2272001):
+- View enrolled courses
+- Submit assignments
+- Join study groups
+- Participate in discussions
+- Update own profile
+
+=====================================================
+COMMON REQUEST EXAMPLES
+=====================================================
+
+Authorization Header (for all protected routes):
+Authorization: Bearer {{token}}
+
+Query Parameters Example:
+GET /api/users?role=MAHASISWA&angkatan=2022&status=aktif
+
+Path Parameters Example:
+GET /api/courses/6789abcdef123456/groups/12345xyz
+
+Request Body (JSON):
+Content-Type: application/json
+
+{
+  "field": "value"
+}
+
+Rich Text Format (Quill Delta):
+{
+  "deskripsi": {
+    "ops": [
+      {"insert": "Hello "},
+      {"insert": "World", "attributes": {"bold": true}},
+      {"insert": "\n"}
+    ]
+  }
+}
+
+=====================================================
+RESPONSE FORMATS
+=====================================================
+
+Success Response:
+{
+  "status": "success",
+  "message": "Operation message",
+  "data": { ... }
+}
+
+Error Response:
+{
+  "status": "error",
+  "message": "Error description"
+}
+
+Pagination Response (if applicable):
+{
+  "status": "success",
+  "message": "data berhasil diambil!",
+  "data": [ ... ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 50
+  }
+}
+
+=====================================================
+IMPORTANT NOTES
+=====================================================
+
+1. Port: Default is 3000 (check .env or config)
+
+2. Date Format: ISO 8601
+   Example: "2024-12-31T23:59:59.999Z"
+
+3. Rich Text: Uses Quill Delta format
+   Example: {"ops": [{"insert": "text"}]}
+
+4. File Paths: Should be valid S3 or local paths
+
+5. Status Values:
+   - User status: "aktif", "tidak aktif"
+   - Visibility: "VISIBLE", "HIDE"
+   - Private file: "VISIBLE", "PRIVATE"
+   - Task status: "DO", "IN PROGRESS", "DONE"
+
+6. Gender Values: "pria", "wanita"
+
+7. Assignment Type:
+   - statusTugas: true = kelompok (group)
+   - statusTugas: false = individu (individual)
+
+8. Group Status:
+   - status: false = open for join requests
+   - status: true = closed for join requests
+
+9. Rate Limiting: 100 requests per 15 minutes
+
+10. JWT Expiration: 8 hours (default)
+
+11. Note: Line 71 in app.js has duplicate mounting:
+    app.use('/api/assignments', submissionRoutes)
+    This might be a bug - submissions should be at
+    /api/submissions
+
+=====================================================
+ENDPOINT COUNT SUMMARY
+=====================================================
+
+Authentication:        3 endpoints
+Roles:                 4 endpoints
+Users:                 5 endpoints
+Faculties:             3 endpoints
+Majors:                3 endpoints
+Academic Terms:        3 endpoints
+Courses:               6 endpoints
+Meetings:              3 endpoints
+Materials:             6 endpoints
+Assignments:           6 endpoints
+Submissions:           5 endpoints
+Study Groups:          6 endpoints
+Memberships:           4 endpoints
+Threads:               2 endpoints
+Posts:                 4 endpoints
+Tasks:                 4 endpoints
+Approach:              3 endpoints
+Private Files:         4 endpoints
+Utility:               2 endpoints
+
+TOTAL:                76 endpoints
+
+=====================================================
+QUICK REFERENCE - TEST USERS
+=====================================================
+
+Run: node src/seeds/seed.js
+
+Default Admin (Created by Seed):
+┌──────────────┬─────────────────────────────┐
+│ NRP          │ Admin                       │
+│ Password     │ password123                 │
+│ Role         │ SUPER_ADMIN                 │
+│ Email        │ admin@kampus.ac.id          │
+│ Access       │ All endpoints               │
+└──────────────┴─────────────────────────────┘
+
+Additional Users (Create Manually):
+┌──────────────┬──────────────┬─────────────┐
+│ User Type    │ NRP          │ Role        │
+├──────────────┼──────────────┼─────────────┤
+│ Teacher      │ Dosen1       │ DOSEN       │
+│ Student 1    │ 2272001      │ MAHASISWA   │
+│ Student 2    │ 2272002      │ MAHASISWA   │
+└──────────────┴──────────────┴─────────────┘
+All passwords: password123
+
+Login Example:
+POST http://localhost:3000/api/auth/login
+{
+  "nrp": "Admin",
+  "password": "password123"
+}
+
+=====================================================
+POSTMAN COLLECTION IMPORT
+=====================================================
+
+You can import this file into Postman as plain text
+and manually create requests, or use the following
+format to create a Postman Collection JSON:
+
+1. Copy all endpoints above
+2. In Postman: File > Import > Raw Text
+3. Paste the endpoints
+4. Manually adjust as needed
+
+Or create a Collection programmatically:
+- Use Postman's Collection Format v2.1
+- Set {{base_url}} = http://localhost:3000
+- Set {{token}} from login response
+
+=====================================================
+END OF API DOCUMENTATION
+=====================================================

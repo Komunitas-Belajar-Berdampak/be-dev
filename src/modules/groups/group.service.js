@@ -5,6 +5,7 @@ const Course = require('../courses/course.model');
 const User = require('../users/user.model');
 const GroupThread = require('./group-thread.model');
 const GroupPost = require('./group-post.model');
+const ContributionThread = require('./contribution-thread.model');
 const ActivityLog = require('./activity-log.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
@@ -36,12 +37,16 @@ const listGroupsByCourse = async (idCourse, queryParams) => {
         $group: {
             _id: '$idGroup',
             totalAnggota: { $sum: { $cond: [{ $eq: ['$status', 'APPROVED'] }, 1, 0] } },
+            totalRequest: { $sum: { $cond: [{ $eq: ['$status', 'PENDING'] }, 1, 0] } },
         },
         },
     ]);
 
     const memberMap = members.reduce((acc, m) => {
-        acc[m._id.toString()] = m.totalAnggota;
+        acc[m._id.toString()] = {
+            totalAnggota: m.totalAnggota,
+            totalRequest: m.totalRequest,
+        };
         return acc;
     }, {});
 
@@ -50,23 +55,21 @@ const listGroupsByCourse = async (idCourse, queryParams) => {
         id: g._id.toString(),
         nama: g.nama,
         kapasitas: g.kapasitas,
-        totalAnggota: memberMap[g._id.toString()] || 0,
+        totalAnggota: memberMap[g._id.toString()]?.totalAnggota || 0,
         status: g.status,
+        totalRequest: memberMap[g._id.toString()]?.totalRequest || 0,
         totalKontribusi: g.totalKontribusi || 0,
         })),
         pagination: buildPagination({ page, limit, totalItems }),
     };
 };
 
-const getGroupDetail = async (idCourse, idGroup) => {
-    if (!mongoose.isValidObjectId(idCourse) || !mongoose.isValidObjectId(idGroup)) {
+const getGroupDetail = async (idGroup) => {
+    if (!mongoose.isValidObjectId(idGroup)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const group = await StudyGroup.findOne({
-        _id: idGroup,
-        idCourse,
-    }).lean();
+    const group = await StudyGroup.findById(idGroup).lean();
 
     if (!group) {
         throw new ApiError(404, 'Kelompok tidak ditemukan');
@@ -95,19 +98,15 @@ const getGroupDetail = async (idCourse, idGroup) => {
     };
 };
 
-const getUserDetailInGroup = async (idCourse, idGroup, idUser) => {
+const getUserDetailInGroup = async (idGroup, idUser) => {
     if (
-        !mongoose.isValidObjectId(idCourse) ||
         !mongoose.isValidObjectId(idGroup) ||
         !mongoose.isValidObjectId(idUser)
     ) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const group = await StudyGroup.findOne({
-        _id: idGroup,
-        idCourse,
-    }).lean();
+    const group = await StudyGroup.findById(idGroup).lean();
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
     const mahasiswa = await User.findById(idUser).lean();
@@ -127,30 +126,20 @@ const getUserDetailInGroup = async (idCourse, idGroup, idUser) => {
 
     let kontribusiList = [];
     if (threadIds.length > 0) {
-        const aggregate = await GroupPost.aggregate([
-        {
-            $match: {
+        // Use ContributionThread for faster lookup instead of aggregation
+        const contributions = await ContributionThread.find({
             idThread: { $in: threadIds },
-            idAuthor: new mongoose.Types.ObjectId(idUser),
-            },
-        },
-        {
-            $group: {
-            _id: '$idThread',
-            count: { $sum: 1 },
-            },
-        },
-        ]);
+            idMahasiswa: idUser,
+        }).lean();
 
-        kontribusiList = aggregate.map((row) => {
-        const threadId = row._id.toString();
-        const judulThread = threadMap[threadId] || '(thread tidak ditemukan)';
-        const totalPoin = (row.count || 0) * POINT_PER_POST;
+        kontribusiList = contributions.map((contrib) => {
+            const threadId = contrib.idThread.toString();
+            const judulThread = threadMap[threadId] || '(thread tidak ditemukan)';
 
-        return {
-            thread: judulThread,
-            kontribusi: totalPoin,
-        };
+            return {
+                thread: judulThread,
+                kontribusi: contrib.kontribusi,
+            };
         });
     }
 
@@ -233,15 +222,12 @@ const createGroup = async (idCourse, payload) => {
     };
 };
 
-const updateGroup = async (idCourse, idGroup, payload) => {
-    if (!mongoose.isValidObjectId(idCourse) || !mongoose.isValidObjectId(idGroup)) {
+const updateGroup = async (idGroup, payload) => {
+    if (!mongoose.isValidObjectId(idGroup)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const group = await StudyGroup.findOne({
-        _id: idGroup,
-        idCourse,
-    });
+    const group = await StudyGroup.findById(idGroup);
 
     if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
@@ -277,15 +263,12 @@ const updateGroup = async (idCourse, idGroup, payload) => {
     await group.save();
 };
 
-const deleteGroup = async (idCourse, idGroup) => {
-    if (!mongoose.isValidObjectId(idCourse) || !mongoose.isValidObjectId(idGroup)) {
+const deleteGroup = async (idGroup) => {
+    if (!mongoose.isValidObjectId(idGroup)) {
         throw new ApiError(400, 'ID tidak valid');
     }
 
-    const deleted = await StudyGroup.findOneAndDelete({
-        _id: idGroup,
-        idCourse,
-    });
+    const deleted = await StudyGroup.findByIdAndDelete(idGroup);
 
     if (!deleted) throw new ApiError(404, 'Kelompok tidak ditemukan');
 
