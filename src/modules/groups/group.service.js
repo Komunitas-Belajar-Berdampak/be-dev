@@ -200,15 +200,27 @@ const createGroup = async (idCourse, payload) => {
         mongoose.isValidObjectId(x),
         );
 
+        if (uniqueIds.length > 0) {
+        // Verify all student IDs exist
+        const existingUsers = await User.find({
+            _id: { $in: uniqueIds },
+        }).select('_id');
+
+        const existingUserIds = existingUsers.map(u => u._id.toString());
+        const invalidIds = uniqueIds.filter(id => !existingUserIds.includes(id));
+
+        if (invalidIds.length > 0) {
+            throw new ApiError(400, `ID mahasiswa tidak valid: ${invalidIds.join(', ')}`);
+        }
+
         const docs = uniqueIds.map((idMhs) => ({
-        idGroup: group._id,
-        idMahasiswa: idMhs,
-        status: 'APPROVED',
-        kontribusi: 0,
+            idGroup: group._id,
+            idMahasiswa: idMhs,
+            status: 'APPROVED',
+            kontribusi: 0,
         }));
 
-        if (docs.length > 0) {
-        await GroupMember.insertMany(docs, { ordered: false }).catch(() => {});
+        await GroupMember.insertMany(docs, { ordered: false });
         }
     }
 
@@ -249,15 +261,27 @@ const updateGroup = async (idGroup, payload) => {
         status: 'APPROVED',
         });
 
+        if (uniqueIds.length > 0) {
+        // Verify all student IDs exist
+        const existingUsers = await User.find({
+            _id: { $in: uniqueIds },
+        }).select('_id');
+
+        const existingUserIds = existingUsers.map(u => u._id.toString());
+        const invalidIds = uniqueIds.filter(id => !existingUserIds.includes(id));
+
+        if (invalidIds.length > 0) {
+            throw new ApiError(400, `ID mahasiswa tidak valid: ${invalidIds.join(', ')}`);
+        }
+
         const docs = uniqueIds.map((idMhs) => ({
-        idGroup,
-        idMahasiswa: idMhs,
-        status: 'APPROVED',
-        kontribusi: 0,
+            idGroup,
+            idMahasiswa: idMhs,
+            status: 'APPROVED',
+            kontribusi: 0,
         }));
 
-        if (docs.length > 0) {
-        await GroupMember.insertMany(docs, { ordered: false }).catch(() => {});
+        await GroupMember.insertMany(docs, { ordered: false });
         }
     }
 
