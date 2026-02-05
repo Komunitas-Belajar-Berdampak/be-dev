@@ -1735,7 +1735,7 @@
 					"response": []
 				},
 				{
-					"name": "Get User Detail in Group (GET /sg/group/:id/user-detail/:idUser)",
+					"name": "Get User Detail in Group (GET /sg/:id/user-detail/:idUser)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1750,9 +1750,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/sg/group/:id/user-detail/:idUser",
+							"raw": "{{base_url}}/api/sg/:id/user-detail/:idUser",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "group", ":id", "user-detail", ":idUser"],
+							"path": ["api", "sg", ":id", "user-detail", ":idUser"],
 							"variable": [
 								{
 									"key": "id",
@@ -1771,7 +1771,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Group (POST /sg/course/:idCourse)",
+					"name": "Create Group (POST /sg/:idCourse)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1795,9 +1795,9 @@
 							"raw": "{\n  \"nama\": \"Kelompok 1\",\n  \"deskripsi\": \"Kelompok Web Development\",\n  \"idMahasiswa\": [],\n  \"status\": false,\n  \"kapasitas\": 5\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/sg/course/:idCourse",
+							"raw": "{{base_url}}/api/sg/:idCourse",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "course", ":idCourse"],
+							"path": ["api", "sg", ":idCourse"],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1811,7 +1811,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Group (PUT /sg/group/:id)",
+					"name": "Update Group (PUT /sg/:id)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1835,9 +1835,9 @@
 							"raw": "{\n  \"nama\": \"Kelompok 1 Updated\",\n  \"deskripsi\": \"Updated description\",\n  \"status\": true,\n  \"kapasitas\": 6\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/sg/group/:id",
+							"raw": "{{base_url}}/api/sg/:id",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "group", ":id"],
+							"path": ["api", "sg", ":id"],
 							"variable": [
 								{
 									"key": "id",
@@ -1851,7 +1851,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Group (DELETE /sg/group/:id)",
+					"name": "Delete Group (DELETE /sg/:id)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1866,9 +1866,9 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/sg/group/:id",
+							"raw": "{{base_url}}/api/sg/:id",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "group", ":id"],
+							"path": ["api", "sg", ":id"],
 							"variable": [
 								{
 									"key": "id",
