@@ -217,8 +217,9 @@ const createGroup = async (idCourse, payload) => {
         nama: group.nama,
         deskripsi: group.deskripsi || null,
         kapasitas: group.kapasitas,
-        anggota: [], 
+        anggota: [],
         status: group.status,
+        totalKontribusi: group.totalKontribusi || 0,
     };
 };
 
