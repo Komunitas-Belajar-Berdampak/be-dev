@@ -9,7 +9,7 @@ router.use(auth);
 
 /**
  * @swagger
- * /api/sg/{idCourse}:
+ * /api/sg/course/{idCourse}:
  *   get:
  *     summary: List kelompok belajar di 1 course
  *     tags: [StudyGroups]
@@ -34,11 +34,11 @@ router.use(auth);
  *                   items:
  *                     $ref: '#/components/schemas/StudyGroupSummary'
  */
-router.get('/sg/:idCourse', controller.getGroupsByCourse);
+router.get('/sg/course/:idCourse', controller.getGroupsByCourse);
 
 /**
  * @swagger
- * /api/sg/{id}:
+ * /api/sg/group/{id}:
  *   get:
  *     summary: Detail kelompok belajar
  *     tags: [StudyGroups]
@@ -61,11 +61,11 @@ router.get('/sg/:idCourse', controller.getGroupsByCourse);
  *                 data:
  *                   $ref: '#/components/schemas/StudyGroupDetail'
  */
-router.get('/sg/:id', controller.getGroupDetail);
+router.get('/sg/group/:id', controller.getGroupDetail);
 
 /**
  * @swagger
- * /api/sg/{id}/user-detail/{idUser}:
+ * /api/sg/group/{id}/user-detail/{idUser}:
  *   get:
  *     summary: Detail kontribusi & aktivitas 1 mahasiswa dalam 1 kelompok
  *     tags: [StudyGroups]
@@ -83,13 +83,13 @@ router.get('/sg/:id', controller.getGroupDetail);
  *         description: data berhasil diambil!
  */
 router.get(
-    '/sg/:id/user-detail/:idUser',
+    '/sg/group/:id/user-detail/:idUser',
     controller.getUserDetailInGroup,
 );
 
 /**
  * @swagger
- * /api/sg/{idCourse}:
+ * /api/sg/course/{idCourse}:
  *   post:
  *     summary: Buat kelompok belajar
  *     tags: [StudyGroups]
@@ -121,14 +121,14 @@ router.get(
  *         description: kelompok berhasil dibuat!
  */
 router.post(
-    '/sg/:idCourse',
+    '/sg/course/:idCourse',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.createGroup,
 );
 
 /**
  * @swagger
- * /api/sg/{id}:
+ * /api/sg/group/{id}:
  *   put:
  *     summary: Update kelompok belajar
  *     tags: [StudyGroups]
@@ -157,14 +157,14 @@ router.post(
  *         description: kelompok berhasil diubah!
  */
 router.put(
-    '/sg/:id',
+    '/sg/group/:id',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.updateGroup,
 );
 
 /**
  * @swagger
- * /api/sg/{id}:
+ * /api/sg/group/{id}:
  *   delete:
  *     summary: Hapus kelompok belajar
  *     tags: [StudyGroups]
@@ -179,7 +179,7 @@ router.put(
  *         description: kelompok berhasil dihapus!
  */
 router.delete(
-    '/sg/:id',
+    '/sg/group/:id',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
     controller.deleteGroup,
 );

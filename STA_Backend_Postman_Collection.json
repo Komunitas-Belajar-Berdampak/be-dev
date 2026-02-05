@@ -1661,7 +1661,7 @@
 			"name": "12. Study Groups",
 			"item": [
 				{
-					"name": "List Groups by Course",
+					"name": "List Groups by Course (GET /sg/course/:idCourse)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1676,9 +1676,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/sg/:idCourse?page=1&limit=10",
+							"raw": "{{base_url}}/api/sg/course/:idCourse?page=1&limit=10",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":idCourse"],
+							"path": ["api", "sg", "course", ":idCourse"],
 							"query": [
 								{
 									"key": "page",
@@ -1694,15 +1694,17 @@
 							"variable": [
 								{
 									"key": "idCourse",
-									"value": ""
+									"value": "",
+									"description": "Course ID (from GET /api/courses) - Returns ARRAY of groups"
 								}
 							]
-						}
+						},
+						"description": "📋 LIST ALL groups in a course\n\nReturns ARRAY with: id, nama, kapasitas, totalAnggota, status, totalRequest, totalKontribusi\n\nResponse has pagination."
 					},
 					"response": []
 				},
 				{
-					"name": "Get Group Detail",
+					"name": "Get Group Detail (GET /sg/group/:id)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1717,21 +1719,23 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/sg/:id",
+							"raw": "{{base_url}}/api/sg/group/:id",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id"],
+							"path": ["api", "sg", "group", ":id"],
 							"variable": [
 								{
 									"key": "id",
-									"value": ""
+									"value": "",
+									"description": "Group ID (from previous 'List Groups' response) - Returns SINGLE group object"
 								}
 							]
-						}
+						},
+						"description": "📖 GET SINGLE group details with members\n\nReturns SINGLE OBJECT (not array) with: id, nama, deskripsi, kapasitas, anggota[], status, totalKontribusi\n\nNo pagination. Use Group ID here, NOT Course ID!"
 					},
 					"response": []
 				},
 				{
-					"name": "Get User Detail in Group",
+					"name": "Get User Detail in Group (GET /sg/group/:id/user-detail/:idUser)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1746,25 +1750,28 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/sg/:id/user-detail/:idUser",
+							"raw": "{{base_url}}/api/sg/group/:id/user-detail/:idUser",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id", "user-detail", ":idUser"],
+							"path": ["api", "sg", "group", ":id", "user-detail", ":idUser"],
 							"variable": [
 								{
 									"key": "id",
-									"value": ""
+									"value": "",
+									"description": "Group ID"
 								},
 								{
 									"key": "idUser",
-									"value": ""
+									"value": "",
+									"description": "User/Student ID"
 								}
 							]
-						}
+						},
+						"description": "👤 GET user's contributions and activity in a specific group\n\nReturns: mahasiswa info, kontribusi by thread, aktivitas log"
 					},
 					"response": []
 				},
 				{
-					"name": "Create Group",
+					"name": "Create Group (POST /sg/course/:idCourse)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1785,24 +1792,26 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"nama\": \"Kelompok 1\",\n  \"deskripsi\": \"Kelompok Web Development\",\n  \"idMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"status\": false,\n  \"kapasitas\": 5\n}"
+							"raw": "{\n  \"nama\": \"Kelompok 1\",\n  \"deskripsi\": \"Kelompok Web Development\",\n  \"idMahasiswa\": [],\n  \"status\": false,\n  \"kapasitas\": 5\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/sg/:idCourse",
+							"raw": "{{base_url}}/api/sg/course/:idCourse",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":idCourse"],
+							"path": ["api", "sg", "course", ":idCourse"],
 							"variable": [
 								{
 									"key": "idCourse",
-									"value": ""
+									"value": "",
+									"description": "Course ID where this group belongs"
 								}
 							]
-						}
+						},
+						"description": "➕ CREATE new study group\n\nRequired: kapasitas\nOptional: nama, deskripsi, idMahasiswa[], status\n\nReturns: created group with totalKontribusi: 0"
 					},
 					"response": []
 				},
 				{
-					"name": "Update Group",
+					"name": "Update Group (PUT /sg/group/:id)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1826,21 +1835,23 @@
 							"raw": "{\n  \"nama\": \"Kelompok 1 Updated\",\n  \"deskripsi\": \"Updated description\",\n  \"status\": true,\n  \"kapasitas\": 6\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/sg/:id",
+							"raw": "{{base_url}}/api/sg/group/:id",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id"],
+							"path": ["api", "sg", "group", ":id"],
 							"variable": [
 								{
 									"key": "id",
-									"value": ""
+									"value": "",
+									"description": "Group ID to update"
 								}
 							]
-						}
+						},
+						"description": "✏️ UPDATE existing group\n\nAll fields optional: nama, deskripsi, status, kapasitas, idMahasiswa[]"
 					},
 					"response": []
 				},
 				{
-					"name": "Delete Group",
+					"name": "Delete Group (DELETE /sg/group/:id)",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -1855,16 +1866,18 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/sg/:id",
+							"raw": "{{base_url}}/api/sg/group/:id",
 							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id"],
+							"path": ["api", "sg", "group", ":id"],
 							"variable": [
 								{
 									"key": "id",
-									"value": ""
+									"value": "",
+									"description": "Group ID to delete"
 								}
 							]
-						}
+						},
+						"description": "🗑️ DELETE study group\n\nDeletes group and all associated members"
 					},
 					"response": []
 				}
