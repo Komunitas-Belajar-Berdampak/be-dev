@@ -59,6 +59,7 @@ const createTask = async (idThread, payload, user) => {
         aktivitas: `Menambahkan task di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: 0,
     });
 
     const populated = await GroupTask.findById(doc._id)
@@ -101,6 +102,7 @@ const updateTask = async (idTask, payload, user) => {
         aktivitas: `Mengubah task di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: 0,
     });
 };
 
@@ -121,6 +123,7 @@ const deleteTask = async (idTask, user) => {
         aktivitas: `Menghapus task di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: 0,
     });
 };
 

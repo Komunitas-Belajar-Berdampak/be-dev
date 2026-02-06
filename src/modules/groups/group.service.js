@@ -154,26 +154,22 @@ const getUserDetailInGroup = async (idGroup, idUser) => {
         .lean();
 
     const aktivitasList = logs.map((log) => ({
-        id: log._id.toString(),
+        thread: log.idContribusionThread?.judul || null,
         aktivitas: log.aktivitas,
-        thread: log.idContribusionThread
-        ? {
-            id: log.idContribusionThread._id.toString(),
-            judul: log.idContribusionThread.judul,
-            }
-        : null,
-        createdAt: log.createdAt,
+        kontribusi: log.kontribusi || 0,
+        timestamp: log.createdAt,
     }));
 
     return {
-        id: member?._id?.toString() || null,
+        id: group._id.toString(),
+        totalKontribusi: member?.kontribusi || 0,
         mahasiswa: {
         id: mahasiswa._id.toString(),
         nrp: mahasiswa.nrp,
         nama: mahasiswa.nama,
         },
-        kontribusi: kontribusiList,  
-        aktivitas: aktivitasList,     
+        kontribusiTotalByThread: kontribusiList,
+        aktivitas: aktivitasList,
     };
 };
 

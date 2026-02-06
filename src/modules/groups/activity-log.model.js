@@ -18,6 +18,10 @@ const activityLogSchema = new Schema(
         type: Schema.Types.ObjectId,
         ref: 'GroupThread',
         },
+        kontribusi: {
+        type: Number,
+        default: 0,
+        },
     },
     { timestamps: true },
 );

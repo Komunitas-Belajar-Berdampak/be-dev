@@ -86,6 +86,7 @@ const createPost = async (idThread, user, konten) => {
         aktivitas: `Menambahkan post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: POINT_PER_POST,
     });
 
     return {
@@ -125,6 +126,7 @@ const updatePost = async (idPost, user, konten) => {
         aktivitas: `Mengedit post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: 0,
     });
 };
 
@@ -179,6 +181,7 @@ const deletePost = async (idPost, user) => {
         aktivitas: `Menghapus post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: -POINT_PER_POST,
     });
 };
 

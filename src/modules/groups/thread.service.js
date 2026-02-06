@@ -63,6 +63,7 @@ const createThread = async (idGroup, payload, user) => {
         aktivitas: `Membuat thread: ${judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
+        kontribusi: 0,
     });
 
     let assignmentName = null;
