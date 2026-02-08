@@ -35,10 +35,14 @@ const studyGroupSchema = new Schema(
     { timestamps: true },
 );
 
+// Indexes for performance optimization
 studyGroupSchema.index(
     { idCourse: 1, nama: 1 },
     { unique: true },
 );
+studyGroupSchema.index({ idCourse: 1 });               // For listing groups by course
+studyGroupSchema.index({ createdAt: -1 });             // For sorting by creation date
+studyGroupSchema.index({ status: 1 });                 // For filtering by status
 
 const StudyGroup = mongoose.model('StudyGroup', studyGroupSchema);
 

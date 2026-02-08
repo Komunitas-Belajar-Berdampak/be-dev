@@ -37,6 +37,7 @@ const submissionSchema = new Schema(
     },
 );
 
+// Indexes for performance optimization
 submissionSchema.index(
     { idAssignment: 1, idStudent: 1 },
     {
@@ -44,6 +45,10 @@ submissionSchema.index(
         partialFilterExpression: { idStudent: { $exists: true, $ne: null } },
     },
 );
+submissionSchema.index({ idAssignment: 1 });           // For listing all assignment submissions
+submissionSchema.index({ idStudent: 1 });              // For student's submissions
+submissionSchema.index({ submittedAt: -1 });           // For sorting by submission date
+submissionSchema.index({ idStudent: 1, submittedAt: -1 }); // Compound: student's recent submissions
 
 const Submission = mongoose.model('Submission', submissionSchema);
 

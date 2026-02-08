@@ -29,7 +29,9 @@ const meetingSchema = new Schema(
     },
 );
 
-meetingSchema.index({ idCourse: 1, pertemuan: 1 }, { unique: true });
+// Indexes for performance optimization
+meetingSchema.index({ idCourse: 1, pertemuan: 1 }, { unique: true }); // Existing: compound unique
+meetingSchema.index({ idCourse: 1 });                  // For listing all meetings by course
 
 const Meeting = mongoose.model('Meeting', meetingSchema);
 

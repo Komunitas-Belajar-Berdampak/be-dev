@@ -65,6 +65,14 @@ const userSchema = new Schema(
     },
 );
 
+// Indexes for performance optimization
+userSchema.index({ roleIds: 1 });                      // For role filtering
+userSchema.index({ idProdi: 1 });                      // For prodi filtering
+userSchema.index({ angkatan: 1 });                     // For angkatan filtering
+userSchema.index({ status: 1 });                       // For status filtering
+userSchema.index({ roleIds: 1, status: 1 });           // Compound: role + status filter
+userSchema.index({ idProdi: 1, angkatan: 1 });         // Compound: prodi + angkatan filter
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;

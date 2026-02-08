@@ -22,7 +22,11 @@ const groupPostSchema = new Schema(
     { timestamps: true },
 );
 
-groupPostSchema.index({ idThread: 1 });
+// Indexes for performance optimization
+groupPostSchema.index({ idThread: 1 });                // Existing: for thread filtering
+groupPostSchema.index({ idAuthor: 1 });                // For author's posts
+groupPostSchema.index({ updatedAt: 1 });               // For sorting by update time
+groupPostSchema.index({ idThread: 1, updatedAt: 1 });  // Compound: posts in thread sorted
 
 const GroupPost = mongoose.model('GroupPost', groupPostSchema);
 

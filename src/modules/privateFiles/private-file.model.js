@@ -35,7 +35,11 @@ const privateFileSchema = new Schema(
     { timestamps: true },
 );
 
-privateFileSchema.index({ idMahasiswa: 1 });
+// Indexes for performance optimization
+privateFileSchema.index({ idMahasiswa: 1 });           // Existing: for student's files
+privateFileSchema.index({ status: 1 });                // For filtering by visibility
+privateFileSchema.index({ createdAt: -1 });            // For sorting by upload date
+privateFileSchema.index({ idMahasiswa: 1, createdAt: -1 }); // Compound: student's recent files
 
 const PrivateFile = mongoose.model('PrivateFile', privateFileSchema);
 

@@ -55,6 +55,17 @@ const courseSchema = new Schema(
     },
 );
 
+// Indexes for performance optimization
+courseSchema.index({ idPeriode: 1 });                  // For periode filtering
+courseSchema.index({ idPengajar: 1 });                 // For teacher filtering
+courseSchema.index({ idMahasiswa: 1 });                // For student filtering (array index)
+courseSchema.index({ status: 1 });                     // For status filtering
+courseSchema.index({ kelas: 1 });                      // For class filtering
+courseSchema.index({ sks: 1 });                        // For sks filtering
+courseSchema.index({ idPeriode: 1, status: 1 });       // Compound: periode + status
+courseSchema.index({ idPengajar: 1, idPeriode: 1 });   // Compound: teacher's courses in period
+courseSchema.index({ idMahasiswa: 1, idPeriode: 1 });  // Compound: student's courses in period
+
 const Course = mongoose.model('Course', courseSchema);
 
 module.exports = Course;

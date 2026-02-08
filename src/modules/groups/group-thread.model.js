@@ -26,7 +26,11 @@ const groupThreadSchema = new Schema(
     { timestamps: true },
 );
 
-groupThreadSchema.index({ idGroup: 1 });
+// Indexes for performance optimization
+groupThreadSchema.index({ idGroup: 1 });               // Existing: for group filtering
+groupThreadSchema.index({ idAssignment: 1 });          // For assignment-related threads
+groupThreadSchema.index({ createdAt: -1 });            // For sorting by creation date
+groupThreadSchema.index({ idGroup: 1, createdAt: -1 }); // Compound: group threads sorted
 
 const GroupThread = mongoose.model('GroupThread', groupThreadSchema);
 

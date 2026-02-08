@@ -27,6 +27,10 @@ const academicTermSchema = new Schema(
     },
 );
 
+// Indexes for performance optimization
+academicTermSchema.index({ status: 1 });               // For filtering active/inactive periods
+academicTermSchema.index({ startDate: 1, endDate: 1 }); // For date range queries
+
 const AcademicTerm = mongoose.model('AcademicTerm', academicTermSchema);
 
 module.exports = AcademicTerm;

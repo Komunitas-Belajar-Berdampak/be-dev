@@ -43,7 +43,13 @@ const materialSchema = new Schema(
     },
 );
 
-materialSchema.index({ idCourse: 1, idMeeting: 1 });
+// Indexes for performance optimization
+materialSchema.index({ idCourse: 1, idMeeting: 1 });   // Existing: compound index
+materialSchema.index({ idCourse: 1 });                 // For course materials
+materialSchema.index({ idMeeting: 1 });                // For meeting materials
+materialSchema.index({ status: 1 });                   // For visibility filtering
+materialSchema.index({ idCourse: 1, status: 1 });      // Compound: course + visibility
+materialSchema.index({ idMeeting: 1, status: 1 });     // Compound: meeting + visibility
 
 const Material = mongoose.model('Material', materialSchema);
 

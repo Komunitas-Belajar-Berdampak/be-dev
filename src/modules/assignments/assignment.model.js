@@ -40,7 +40,11 @@ const assignmentSchema = new Schema(
     },
 );
 
-assignmentSchema.index({ idMeeting: 1 });
+// Indexes for performance optimization
+assignmentSchema.index({ idMeeting: 1 });              // Existing: for meeting filtering
+assignmentSchema.index({ status: 1 });                 // For visibility filtering
+assignmentSchema.index({ tenggat: 1 });                // For sorting by deadline
+assignmentSchema.index({ idMeeting: 1, status: 1 });   // Compound: common query pattern
 
 const Assignment = mongoose.model('Assignment', assignmentSchema);
 
