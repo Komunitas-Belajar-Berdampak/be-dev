@@ -8,6 +8,7 @@ const config = require('./config');
 
 const { httpLogger } = require('./libs/logger');
 const errorHandler = require('./middlewares/error');
+const performanceLogger = require('./middlewares/performance-logger');
 
 const authRoutes = require('./modules/auth/auth.routes');
 const rolesRoutes = require('./modules/roles/roles.routes');
@@ -29,6 +30,7 @@ const swaggerSpec = require('./docs/swagger');
 const app = express();
 
 app.use(httpLogger);
+app.use(performanceLogger); // Log response times
 
 app.use(helmet());
 app.use(
