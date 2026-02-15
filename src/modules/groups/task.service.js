@@ -27,7 +27,10 @@ const listTasksByThread = async (idThread, query) => {
         items: tasks.map((t) => ({
             id: t._id.toString(),
             task: t.task,
-            mahasiswa: (t.idMahasiswa || []).map((m) => m.nama),
+            mahasiswa: (t.idMahasiswa || []).map((m) => ({
+                id: m._id.toString(),
+                nama: m.nama,
+            })),
             status: t.status,
         })),
         pagination: buildPagination({ page, limit, totalItems }),
@@ -47,6 +50,20 @@ const createTask = async (idThread, payload, user) => {
     const mhsIds = Array.from(new Set(IdMahasiswa || [])).filter((id) =>
         mongoose.isValidObjectId(id),
     );
+
+    // Verify all student IDs exist
+    if (mhsIds.length > 0) {
+        const existingUsers = await User.find({
+            _id: { $in: mhsIds },
+        }).select('_id');
+
+        const existingUserIds = existingUsers.map(u => u._id.toString());
+        const invalidIds = mhsIds.filter(id => !existingUserIds.includes(id));
+
+        if (invalidIds.length > 0) {
+            throw new ApiError(400, `ID mahasiswa tidak valid: ${invalidIds.join(', ')}`);
+        }
+    }
 
     const doc = await GroupTask.create({
         idThread,
@@ -69,7 +86,10 @@ const createTask = async (idThread, payload, user) => {
     return {
         id: populated._id.toString(),
         task: populated.task,
-        mahasiswa: (populated.idMahasiswa || []).map((m) => m.nama),
+        mahasiswa: (populated.idMahasiswa || []).map((m) => ({
+            id: m._id.toString(),
+            nama: m.nama,
+        })),
         status: populated.status,
     };
 };
@@ -93,6 +113,21 @@ const updateTask = async (idTask, payload, user) => {
         const mhsIds = Array.from(new Set(IdMahasiswa)).filter((id) =>
         mongoose.isValidObjectId(id),
         );
+
+        // Verify all student IDs exist
+        if (mhsIds.length > 0) {
+            const existingUsers = await User.find({
+                _id: { $in: mhsIds },
+            }).select('_id');
+
+            const existingUserIds = existingUsers.map(u => u._id.toString());
+            const invalidIds = mhsIds.filter(id => !existingUserIds.includes(id));
+
+            if (invalidIds.length > 0) {
+                throw new ApiError(400, `ID mahasiswa tidak valid: ${invalidIds.join(', ')}`);
+            }
+        }
+
         taskDoc.idMahasiswa = mhsIds;
     }
 

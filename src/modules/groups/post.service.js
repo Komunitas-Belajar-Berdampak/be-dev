@@ -40,6 +40,28 @@ const listPostsByThread = async (idThread, query) => {
     };
 };
 
+const getPostById = async (idPost) => {
+    if (!mongoose.isValidObjectId(idPost)) {
+        throw new ApiError(400, 'ID tidak valid');
+    }
+
+    const post = await GroupPost.findById(idPost)
+        .populate('idAuthor', 'nrp nama')
+        .lean();
+
+    if (!post) throw new ApiError(404, 'Post tidak ditemukan');
+
+    return {
+        id: post._id.toString(),
+        author: {
+            nrp: post.idAuthor.nrp,
+            nama: post.idAuthor.nama,
+        },
+        konten: post.konten,
+        updatedAt: post.updatedAt,
+    };
+};
+
 const createPost = async (idThread, user, konten) => {
     if (!mongoose.isValidObjectId(idThread)) {
         throw new ApiError(400, 'ID thread tidak valid');
@@ -187,6 +209,7 @@ const deletePost = async (idPost, user) => {
 
 module.exports = {
     listPostsByThread,
+    getPostById,
     createPost,
     updatePost,
     deletePost,

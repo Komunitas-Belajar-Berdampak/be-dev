@@ -65,6 +65,25 @@ const joinGroup = async (idStudyGroup, userId) => {
         }
     }
 
+    // Validation: Check if student is already in another group in this course
+    const groupsInCourse = await StudyGroup.find({
+        idCourse: group.idCourse,
+        _id: { $ne: idStudyGroup }  // Exclude current group
+    }).select('_id').lean();
+    const groupIdsInCourse = groupsInCourse.map(g => g._id);
+
+    if (groupIdsInCourse.length > 0) {
+        const existingMembership = await GroupMember.findOne({
+            idGroup: { $in: groupIdsInCourse },
+            idMahasiswa: userId,
+            status: 'APPROVED',
+        }).lean();
+
+        if (existingMembership) {
+            throw new ApiError(400, 'Anda sudah terdaftar di kelompok lain dalam mata kuliah ini');
+        }
+    }
+
     const doc = await GroupMember.create({
         idGroup: idStudyGroup,
         idMahasiswa: userId,

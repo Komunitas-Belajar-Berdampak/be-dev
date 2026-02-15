@@ -57,6 +57,17 @@ const getGroupsByCourse = async (req, res, next) => {
     } catch (err) { return next(err); }
 };
 
+const getGroupsWithMembershipStatus = async (req, res, next) => {
+    try {
+        const result = await groupService.listGroupsWithMembershipStatus(
+            req.params.idCourse,
+            req.user.sub,
+            req.query
+        );
+        return successResponse(res, { message: 'data berhasil diambil!', data: result.items, pagination: result.pagination });
+    } catch (err) { return next(err); }
+};
+
 const getGroupDetail = async (req, res, next) => {
     try {
         const data = await groupService.getGroupDetail(
@@ -236,6 +247,13 @@ const getPostsByThread = async (req, res, next) => {
     } catch (err) { return next(err); }
 };
 
+const getPostById = async (req, res, next) => {
+    try {
+        const data = await postService.getPostById(req.params.idPost);
+        return successResponse(res, { message: 'data berhasil diambil!', data });
+    } catch (err) { return next(err); }
+};
+
 const createPost = async (req, res, next) => {
     try {
         const { error, value } = createPostSchema.validate(req.body);
@@ -400,6 +418,7 @@ const rejectMembership = async (req, res, next) => {
 
 module.exports = {
     getGroupsByCourse,
+    getGroupsWithMembershipStatus,
     getGroupDetail,
     getUserDetailInGroup,
     createGroup,
@@ -414,6 +433,7 @@ module.exports = {
     getThreadsOrPosts,
     createThreadOrPost,
     getPostsByThread,
+    getPostById,
     createPost,
     updatePostController,
     deletePostController,

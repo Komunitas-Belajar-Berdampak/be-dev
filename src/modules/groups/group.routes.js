@@ -38,6 +38,49 @@ router.get('/sg/course/:idCourse', controller.getGroupsByCourse);
 
 /**
  * @swagger
+ * /api/sg/course-membership/{idCourse}:
+ *   get:
+ *     summary: List kelompok belajar dengan status membership mahasiswa
+ *     description: Endpoint khusus untuk mahasiswa - menampilkan status membership di setiap study group
+ *     tags: [StudyGroups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idCourse
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string }
+ *                       nama: { type: string }
+ *                       deskripsi: { type: string }
+ *                       kapasitas: { type: integer }
+ *                       totalAnggota: { type: integer }
+ *                       status: { type: boolean }
+ *                       statusMember: { type: string, enum: [PENDING, APPROVED, REJECTED] }
+ *                       totalKontribusi: { type: integer }
+ */
+router.get(
+    '/sg/course-membership/:idCourse',
+    requireRoles('MAHASISWA'),
+    controller.getGroupsWithMembershipStatus,
+);
+
+/**
+ * @swagger
  * /api/sg/group/{id}:
  *   get:
  *     summary: Detail kelompok belajar
@@ -289,62 +332,206 @@ router.post(
 
 /**
  * @swagger
- * /api/threads/{id}:
+ * /api/threads/sg/{idStudyGroup}:
  *   get:
- *     summary: List threads in study group OR list posts in thread
- *     tags: [Threads, Posts]
+ *     summary: List threads in study group
+ *     tags: [Threads]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: idStudyGroup
  *         required: true
- *         description: Study Group ID or Thread ID
  *     responses:
  *       200:
  *         description: data berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string }
+ *                       judul: { type: string }
+ *                       assignment: { type: string }
  */
 router.get(
-    '/threads/:id',
-    controller.getThreadsOrPosts,
+    '/threads/sg/:idStudyGroup',
+    controller.getThreadsByGroup,
 );
 
 /**
  * @swagger
- * /api/threads/{id}:
+ * /api/threads/sg/{idStudyGroup}:
  *   post:
- *     summary: Create thread in study group OR create post in thread
- *     tags: [Threads, Posts]
+ *     summary: Create thread in study group
+ *     tags: [Threads]
  *     security:
  *       - BearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: idStudyGroup
  *         required: true
- *         description: Study Group ID or Thread ID
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
- *             oneOf:
- *               - type: object
- *                 required: [judul]
- *                 properties:
- *                   judul: { type: string }
- *                   idAssignment: { type: string }
- *               - type: object
- *                 required: [konten]
- *                 properties:
- *                   konten: { type: object }
+ *             type: object
+ *             required: [judul]
+ *             properties:
+ *               judul: { type: string }
+ *               idAssignment: { type: string }
  *     responses:
  *       201:
- *         description: thread dibuat! OR post dibuat!
+ *         description: thread dibuat!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string }
+ *                     judul: { type: string }
+ *                     assignment: { type: string }
  */
 router.post(
-    '/threads/:id',
+    '/threads/sg/:idStudyGroup',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
-    controller.createThreadOrPost,
+    controller.createThread,
+);
+
+/**
+ * @swagger
+ * /api/threads/{idThread}:
+ *   get:
+ *     summary: List posts in thread
+ *     tags: [Posts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idThread
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string }
+ *                       author:
+ *                         type: object
+ *                         properties:
+ *                           nrp: { type: string }
+ *                           nama: { type: string }
+ *                       konten: { type: object }
+ *                       updatedAt: { type: string }
+ */
+router.get(
+    '/threads/:idThread',
+    controller.getPostsByThread,
+);
+
+/**
+ * @swagger
+ * /api/threads/{idThread}:
+ *   post:
+ *     summary: Create post in thread
+ *     tags: [Posts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idThread
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [konten]
+ *             properties:
+ *               konten: { type: object }
+ *     responses:
+ *       201:
+ *         description: post dibuat!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string }
+ *                     author:
+ *                       type: object
+ *                       properties:
+ *                         nrp: { type: string }
+ *                         nama: { type: string }
+ *                     konten: { type: object }
+ */
+router.post(
+    '/threads/:idThread',
+    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    controller.createPost,
+);
+
+/**
+ * @swagger
+ * /api/posts/{idPost}:
+ *   get:
+ *     summary: Get single post
+ *     tags: [Posts]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idPost
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string }
+ *                     author:
+ *                       type: object
+ *                       properties:
+ *                         nrp: { type: string }
+ *                         nama: { type: string }
+ *                     konten: { type: object }
+ *                     updatedAt: { type: string }
+ */
+router.get(
+    '/posts/:idPost',
+    controller.getPostById,
 );
 
 /**
@@ -403,7 +590,7 @@ router.delete(
 
 /**
  * @swagger
- * /api/tasks/{idThread}:
+ * /api/tasks/thread/{idThread}:
  *   get:
  *     summary: List task dalam thread
  *     tags: [Tasks]
@@ -416,15 +603,36 @@ router.delete(
  *     responses:
  *       200:
  *         description: data berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id: { type: string }
+ *                       task: { type: string }
+ *                       mahasiswa:
+ *                         type: array
+ *                         items:
+ *                           type: object
+ *                           properties:
+ *                             id: { type: string }
+ *                             nama: { type: string }
+ *                       status: { type: string, enum: [DO, IN PROGRESS, DONE] }
  */
 router.get(
-    '/tasks/:idThread',
+    '/tasks/thread/:idThread',
     controller.getTasksByThread,
 );
 
 /**
  * @swagger
- * /api/tasks/{idThread}:
+ * /api/tasks/thread/{idThread}:
  *   post:
  *     summary: Buat task baru
  *     tags: [Tasks]
@@ -452,9 +660,28 @@ router.get(
  *     responses:
  *       201:
  *         description: data berhasil ditambah!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string }
+ *                     task: { type: string }
+ *                     mahasiswa:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: string }
+ *                           nama: { type: string }
+ *                     status: { type: string, enum: [DO, IN PROGRESS, DONE] }
  */
 router.post(
-    '/tasks/:idThread',
+    '/tasks/thread/:idThread',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.createTask,
 );

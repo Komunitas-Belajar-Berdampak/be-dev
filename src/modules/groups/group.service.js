@@ -64,6 +64,78 @@ const listGroupsByCourse = async (idCourse, queryParams) => {
     };
 };
 
+const listGroupsWithMembershipStatus = async (idCourse, userId, queryParams) => {
+    if (!mongoose.isValidObjectId(idCourse)) throw new ApiError(400, 'ID course tidak valid');
+    if (!mongoose.isValidObjectId(userId)) throw new ApiError(400, 'ID user tidak valid');
+
+    const course = await Course.findById(idCourse).lean();
+    if (!course) throw new ApiError(404, 'Course tidak ditemukan');
+
+    const { page, limit, skip } = parsePagination(queryParams);
+
+    const filter = { idCourse };
+    const totalItems = await StudyGroup.countDocuments(filter);
+
+    const groups = await StudyGroup.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    const groupIds = groups.map((g) => g._id);
+
+    // Get total members per group
+    const members = await GroupMember.aggregate([
+        { $match: { idGroup: { $in: groupIds } } },
+        {
+        $group: {
+            _id: '$idGroup',
+            totalAnggota: { $sum: { $cond: [{ $eq: ['$status', 'APPROVED'] }, 1, 0] } },
+        },
+        },
+    ]);
+
+    const memberMap = members.reduce((acc, m) => {
+        acc[m._id.toString()] = {
+            totalAnggota: m.totalAnggota,
+        };
+        return acc;
+    }, {});
+
+    // Get user's membership status in each group
+    const userMemberships = await GroupMember.find({
+        idGroup: { $in: groupIds },
+        idMahasiswa: userId,
+    }).lean();
+
+    const userMembershipMap = userMemberships.reduce((acc, m) => {
+        acc[m.idGroup.toString()] = {
+            status: m.status,
+            kontribusi: m.kontribusi || 0,
+        };
+        return acc;
+    }, {});
+
+    return {
+        items: groups.map((g) => {
+            const groupId = g._id.toString();
+            const userMembership = userMembershipMap[groupId];
+
+            return {
+                id: groupId,
+                nama: g.nama,
+                deskripsi: g.deskripsi || null,
+                kapasitas: g.kapasitas,
+                totalAnggota: memberMap[groupId]?.totalAnggota || 0,
+                status: g.status,
+                statusMember: userMembership ? userMembership.status : null,
+                totalKontribusi: userMembership ? userMembership.kontribusi : 0,
+            };
+        }),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
+};
+
 const getGroupDetail = async (idGroup) => {
     if (!mongoose.isValidObjectId(idGroup)) {
         throw new ApiError(400, 'ID tidak valid');
@@ -197,6 +269,11 @@ const createGroup = async (idCourse, payload) => {
         );
 
         if (uniqueIds.length > 0) {
+        // Validation 1: Check capacity
+        if (uniqueIds.length > kapasitas) {
+            throw new ApiError(400, `Jumlah anggota (${uniqueIds.length}) melebihi kapasitas kelompok (${kapasitas})`);
+        }
+
         // Verify all student IDs exist
         const existingUsers = await User.find({
             _id: { $in: uniqueIds },
@@ -209,6 +286,24 @@ const createGroup = async (idCourse, payload) => {
             throw new ApiError(400, `ID mahasiswa tidak valid: ${invalidIds.join(', ')}`);
         }
 
+        // Validation 2: Check if any student is already in another group in this course
+        const groupsInCourse = await StudyGroup.find({ idCourse }).select('_id').lean();
+        const groupIdsInCourse = groupsInCourse.map(g => g._id);
+
+        const existingMemberships = await GroupMember.find({
+            idGroup: { $in: groupIdsInCourse },
+            idMahasiswa: { $in: uniqueIds },
+            status: 'APPROVED',
+        }).populate('idMahasiswa', 'nama nrp').lean();
+
+        if (existingMemberships.length > 0) {
+            const conflictNames = existingMemberships.map(m =>
+                `${m.idMahasiswa.nama} (${m.idMahasiswa.nrp})`
+            ).join(', ');
+            throw new ApiError(400, `Mahasiswa berikut sudah terdaftar di kelompok lain dalam mata kuliah ini: ${conflictNames}`);
+        }
+
+        // Issue 3: Auto-approve when lecturer adds members
         const docs = uniqueIds.map((idMhs) => ({
             idGroup: group._id,
             idMahasiswa: idMhs,
@@ -252,10 +347,11 @@ const updateGroup = async (idGroup, payload) => {
         mongoose.isValidObjectId(x),
         );
 
-        await GroupMember.deleteMany({
-        idGroup,
-        status: 'APPROVED',
-        });
+        // Validation 1: Check capacity
+        const finalKapasitas = kapasitas !== undefined ? kapasitas : group.kapasitas;
+        if (uniqueIds.length > finalKapasitas) {
+            throw new ApiError(400, `Jumlah anggota (${uniqueIds.length}) melebihi kapasitas kelompok (${finalKapasitas})`);
+        }
 
         if (uniqueIds.length > 0) {
         // Verify all student IDs exist
@@ -270,6 +366,36 @@ const updateGroup = async (idGroup, payload) => {
             throw new ApiError(400, `ID mahasiswa tidak valid: ${invalidIds.join(', ')}`);
         }
 
+        // Validation 2: Check if any student is already in another group in this course (excluding current group)
+        const groupsInCourse = await StudyGroup.find({
+            idCourse: group.idCourse,
+            _id: { $ne: idGroup }  // Exclude current group
+        }).select('_id').lean();
+        const groupIdsInCourse = groupsInCourse.map(g => g._id);
+
+        if (groupIdsInCourse.length > 0) {
+            const existingMemberships = await GroupMember.find({
+                idGroup: { $in: groupIdsInCourse },
+                idMahasiswa: { $in: uniqueIds },
+                status: 'APPROVED',
+            }).populate('idMahasiswa', 'nama nrp').lean();
+
+            if (existingMemberships.length > 0) {
+                const conflictNames = existingMemberships.map(m =>
+                    `${m.idMahasiswa.nama} (${m.idMahasiswa.nrp})`
+                ).join(', ');
+                throw new ApiError(400, `Mahasiswa berikut sudah terdaftar di kelompok lain dalam mata kuliah ini: ${conflictNames}`);
+            }
+        }
+        }
+
+        await GroupMember.deleteMany({
+        idGroup,
+        status: 'APPROVED',
+        });
+
+        if (uniqueIds.length > 0) {
+        // Issue 3: Auto-approve when lecturer adds members
         const docs = uniqueIds.map((idMhs) => ({
             idGroup,
             idMahasiswa: idMhs,
@@ -298,6 +424,7 @@ const deleteGroup = async (idGroup) => {
 
 module.exports = {
     listGroupsByCourse,
+    listGroupsWithMembershipStatus,
     getGroupDetail,
     getUserDetailInGroup,
     createGroup,

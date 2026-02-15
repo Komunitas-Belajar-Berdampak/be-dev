@@ -1704,49 +1704,6 @@
 					"response": []
 				},
 				{
-					"name": "List Groups with Membership Status (GET /sg/course-membership/:idCourse)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/sg/course-membership/:idCourse?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "course-membership", ":idCourse"],
-							"query": [
-								{
-									"key": "page",
-									"value": "1",
-									"description": "Page number"
-								},
-								{
-									"key": "limit",
-									"value": "10",
-									"description": "Items per page"
-								}
-							],
-							"variable": [
-								{
-									"key": "idCourse",
-									"value": "",
-									"description": "Course ID - For STUDENTS only"
-								}
-							]
-						},
-						"description": "👤 LIST groups with student's membership status (MAHASISWA only)\n\nReturns ARRAY with: id, nama, deskripsi, kapasitas, totalAnggota, status, statusMember, totalKontribusi\n\nstatusMember shows if student is PENDING/APPROVED/REJECTED or null\ntotalKontribusi shows student's contribution in that group"
-					},
-					"response": []
-				},
-				{
 					"name": "Get Group Detail (GET /sg/group/:id)",
 					"request": {
 						"auth": {
@@ -2071,7 +2028,7 @@
 			"name": "14. Threads",
 			"item": [
 				{
-					"name": "List Threads in Group (GET /threads/sg/:idStudyGroup)",
+					"name": "List Threads in Group",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2086,9 +2043,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/threads/sg/:idStudyGroup?page=1&limit=10",
+							"raw": "{{base_url}}/api/threads/:idStudyGroup?page=1&limit=10",
 							"host": ["{{base_url}}"],
-							"path": ["api", "threads", "sg", ":idStudyGroup"],
+							"path": ["api", "threads", ":idStudyGroup"],
 							"query": [
 								{
 									"key": "page",
@@ -2112,7 +2069,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Thread (POST /threads/sg/:idStudyGroup)",
+					"name": "Create Thread",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2136,9 +2093,9 @@
 							"raw": "{\n  \"judul\": \"Diskusi Tugas 1\",\n  \"idAssignment\": \"<assignment_id>\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/threads/sg/:idStudyGroup",
+							"raw": "{{base_url}}/api/threads/:idStudyGroup",
 							"host": ["{{base_url}}"],
-							"path": ["api", "threads", "sg", ":idStudyGroup"],
+							"path": ["api", "threads", ":idStudyGroup"],
 							"variable": [
 								{
 									"key": "idStudyGroup",
@@ -2155,7 +2112,7 @@
 			"name": "15. Posts",
 			"item": [
 				{
-					"name": "List Posts in Thread (GET /threads/:idThread)",
+					"name": "List Posts in Thread",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2196,7 +2153,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Post (POST /threads/:idThread)",
+					"name": "Create Post",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2217,7 +2174,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"konten\": {\n    \"type\": \"doc\",\n    \"content\": [\n      {\n        \"type\": \"paragraph\",\n        \"content\": [\n          {\"type\": \"text\", \"text\": \"My post content\"}\n        ]\n      }\n    ]\n  }\n}"
+							"raw": "{\n  \"konten\": {\n    \"ops\": [\n      {\"insert\": \"My post content\"}\n    ]\n  }\n}"
 						},
 						"url": {
 							"raw": "{{base_url}}/api/threads/:idThread",
@@ -2234,38 +2191,7 @@
 					"response": []
 				},
 				{
-					"name": "Get Post by ID (GET /posts/:idPost)",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/api/posts/:idPost",
-							"host": ["{{base_url}}"],
-							"path": ["api", "posts", ":idPost"],
-							"variable": [
-								{
-									"key": "idPost",
-									"value": "",
-									"description": "Post ID"
-								}
-							]
-						},
-						"description": "📖 GET single post details\n\nReturns: id, author (nrp, nama), konten, updatedAt"
-					},
-					"response": []
-				},
-				{
-					"name": "Update Post (PUT /posts/:idPost)",
+					"name": "Update Post",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2303,7 +2229,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Post (DELETE /posts/:idPost)",
+					"name": "Delete Post",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2337,7 +2263,7 @@
 			"name": "16. Tasks",
 			"item": [
 				{
-					"name": "List Tasks in Thread (GET /tasks/thread/:idThread)",
+					"name": "List Tasks in Thread",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2352,9 +2278,9 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/api/tasks/thread/:idThread?page=1&limit=10",
+							"raw": "{{base_url}}/api/tasks/:idThread?page=1&limit=10",
 							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", "thread", ":idThread"],
+							"path": ["api", "tasks", ":idThread"],
 							"query": [
 								{
 									"key": "page",
@@ -2378,7 +2304,7 @@
 					"response": []
 				},
 				{
-					"name": "Create Task (POST /tasks/thread/:idThread)",
+					"name": "Create Task",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2402,9 +2328,9 @@
 							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"IdMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"status\": \"DO\"\n}"
 						},
 						"url": {
-							"raw": "{{base_url}}/api/tasks/thread/:idThread",
+							"raw": "{{base_url}}/api/tasks/:idThread",
 							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", "thread", ":idThread"],
+							"path": ["api", "tasks", ":idThread"],
 							"variable": [
 								{
 									"key": "idThread",
@@ -2416,7 +2342,7 @@
 					"response": []
 				},
 				{
-					"name": "Update Task (PUT /tasks/:idTasks)",
+					"name": "Update Task",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -2454,7 +2380,7 @@
 					"response": []
 				},
 				{
-					"name": "Delete Task (DELETE /tasks/:idTasks)",
+					"name": "Delete Task",
 					"request": {
 						"auth": {
 							"type": "bearer",
