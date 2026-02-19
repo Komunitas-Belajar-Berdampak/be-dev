@@ -201,7 +201,7 @@ router.post(
  */
 router.put(
     '/sg/:id',
-    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    requireRoles('SUPER_ADMIN', 'DOSEN', 'MAHASISWA'),
     controller.updateGroup,
 );
 
@@ -682,7 +682,7 @@ router.get(
  */
 router.post(
     '/tasks/thread/:idThread',
-    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    requireRoles('MAHASISWA', 'SUPER_ADMIN'),
     controller.createTask,
 );
 
@@ -718,7 +718,7 @@ router.post(
  */
 router.put(
     '/tasks/:idTasks',
-    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    requireRoles('MAHASISWA', 'SUPER_ADMIN'),
     controller.updateTaskController,
 );
 
@@ -740,7 +740,7 @@ router.put(
  */
 router.delete(
     '/tasks/:idTasks',
-    requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
+    requireRoles('MAHASISWA', 'SUPER_ADMIN'),
     controller.deleteTaskController,
 );
 
