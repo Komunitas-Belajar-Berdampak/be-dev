@@ -37,7 +37,7 @@ const updatePostSchema = Joi.object({
 
 const createTaskSchema = Joi.object({
     task: Joi.string().required(),
-    IdMahasiswa: Joi.array().items(Joi.string()).required(),
+    idMahasiswa: Joi.array().items(Joi.string()).required(),
     status: Joi.string()
         .valid('DO', 'IN PROGRESS', 'DONE')
         .required(),
@@ -45,7 +45,7 @@ const createTaskSchema = Joi.object({
 
 const updateTaskSchema = Joi.object({
     task: Joi.string().optional(),
-    IdMahasiswa: Joi.array().items(Joi.string()).optional(),
+    idMahasiswa: Joi.array().items(Joi.string()).optional(),
     status: Joi.string().valid('DO', 'IN PROGRESS', 'DONE').optional(),
 }).min(1);
 

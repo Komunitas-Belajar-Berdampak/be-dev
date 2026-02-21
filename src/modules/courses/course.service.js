@@ -14,7 +14,7 @@ const mapCourseListItem = (c) => ({
     status: c.status,
     periode: c.idPeriode?.periode || null,
     deskripsi: c.deskripsi || null,
-    pengajar: c.idPengajar?.nama || null,
+    pengajar: (c.idPengajar || []).map((p) => ({ id: p._id.toString(), nama: p.nama })),
     kelas: c.kelas,
 });
 
@@ -110,13 +110,11 @@ const getCourseById = async (id) => {
             status: course.idPeriode.status,
             }
         : null,
-        pengajar: course.idPengajar
-        ? {
-            id: course.idPengajar._id.toString(),
-            nrp: course.idPengajar.nrp,
-            nama: course.idPengajar.nama,
-            }
-        : null,
+        pengajar: (course.idPengajar || []).map((p) => ({
+            id: p._id.toString(),
+            nrp: p.nrp,
+            nama: p.nama,
+        })),
         mahasiswa: (course.idMahasiswa || []).map((m) => ({
         id: m._id.toString(),
         nrp: m.nrp,
@@ -137,6 +135,7 @@ const createCourse = async (payload) => {
         idPengajar,
         idMahasiswa,
         kelas,
+        deskripsi,
     } = payload;
 
     const exists = await Course.findOne({ kodeMatkul }).lean();
@@ -152,12 +151,15 @@ const createCourse = async (payload) => {
         throw new ApiError(404, 'Periode akademik tidak ditemukan');
     }
 
-    if (!mongoose.isValidObjectId(idPengajar)) {
+    const uniquePengajarIds = Array.from(new Set(idPengajar || [])).filter((id) =>
+        mongoose.isValidObjectId(id),
+    );
+    if (uniquePengajarIds.length === 0) {
         throw new ApiError(400, 'idPengajar tidak valid');
     }
-    const dosen = await User.findById(idPengajar).lean();
-    if (!dosen) {
-        throw new ApiError(404, 'Pengajar tidak ditemukan');
+    const dosenCount = await User.countDocuments({ _id: { $in: uniquePengajarIds } });
+    if (dosenCount !== uniquePengajarIds.length) {
+        throw new ApiError(404, 'Satu atau lebih pengajar tidak ditemukan');
     }
 
     const uniqueMhsIds = Array.from(new Set(idMahasiswa || [])).filter((id) =>
@@ -170,15 +172,16 @@ const createCourse = async (payload) => {
         sks,
         status,
         idPeriode,
-        idPengajar,
+        idPengajar: uniquePengajarIds,
         idMahasiswa: uniqueMhsIds,
         kelas,
+        deskripsi,
     });
 
     const populated = await Course.findById(course._id)
         .populate('idPeriode', 'periode')
-        .populate('idPengajar', 'nama')
-        .populate('idMahasiswa', 'nama')
+        .populate('idPengajar', 'nrp nama')
+        .populate('idMahasiswa', 'nrp nama')
         .lean();
 
     return {
@@ -188,9 +191,10 @@ const createCourse = async (payload) => {
         sks: populated.sks,
         status: populated.status,
         periode: populated.idPeriode?.periode || null,
-        pengajar: populated.idPengajar?.nama || null,
-        mahasiswa: (populated.idMahasiswa || []).map((m) => m.nama),
+        pengajar: (populated.idPengajar || []).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
+        mahasiswa: (populated.idMahasiswa || []).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
         kelas: populated.kelas,
+        deskripsi: populated.deskripsi || null,
     };
 };
 
@@ -211,6 +215,7 @@ const updateCourse = async (id, payload) => {
         idPengajar,
         idMahasiswa,
         kelas,
+        deskripsi,
     } = payload;
 
     if (kodeMatkul && kodeMatkul !== course.kodeMatkul) {
@@ -226,6 +231,7 @@ const updateCourse = async (id, payload) => {
     if (sks !== undefined) course.sks = sks;
     if (status !== undefined) course.status = status;
     if (kelas !== undefined) course.kelas = kelas;
+    if (deskripsi !== undefined) course.deskripsi = deskripsi;
 
     if (idPeriode) {
         if (!mongoose.isValidObjectId(idPeriode)) {
@@ -237,12 +243,17 @@ const updateCourse = async (id, payload) => {
     }
 
     if (idPengajar) {
-        if (!mongoose.isValidObjectId(idPengajar)) {
-        throw new ApiError(400, 'idPengajar tidak valid');
+        const uniquePengajarIds = Array.from(new Set(idPengajar)).filter((x) =>
+            mongoose.isValidObjectId(x),
+        );
+        if (uniquePengajarIds.length === 0) {
+            throw new ApiError(400, 'idPengajar tidak valid');
         }
-        const dosen = await User.findById(idPengajar).lean();
-        if (!dosen) throw new ApiError(404, 'Pengajar tidak ditemukan');
-        course.idPengajar = idPengajar;
+        const dosenCount = await User.countDocuments({ _id: { $in: uniquePengajarIds } });
+        if (dosenCount !== uniquePengajarIds.length) {
+            throw new ApiError(404, 'Satu atau lebih pengajar tidak ditemukan');
+        }
+        course.idPengajar = uniquePengajarIds;
     }
 
     if (idMahasiswa) {
@@ -256,8 +267,8 @@ const updateCourse = async (id, payload) => {
 
     const populated = await Course.findById(course._id)
         .populate('idPeriode', 'periode')
-        .populate('idPengajar', 'nama')
-        .populate('idMahasiswa', 'nama')
+        .populate('idPengajar', 'nrp nama')
+        .populate('idMahasiswa', 'nrp nama')
         .lean();
 
     return {
@@ -267,9 +278,10 @@ const updateCourse = async (id, payload) => {
         sks: populated.sks,
         status: populated.status,
         periode: populated.idPeriode?.periode || null,
-        pengajar: populated.idPengajar?.nama || null,
-        mahasiswa: (populated.idMahasiswa || []).map((m) => m.nama),
+        pengajar: (populated.idPengajar || []).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
+        mahasiswa: (populated.idMahasiswa || []).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
         kelas: populated.kelas,
+        deskripsi: populated.deskripsi || null,
     };
 };
 

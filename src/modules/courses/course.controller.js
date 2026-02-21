@@ -8,9 +8,10 @@ const createCourseSchema = Joi.object({
     sks: Joi.number().integer().min(1).required(),
     status: Joi.string().valid('aktif', 'tidak aktif').required(),
     idPeriode: Joi.string().required(),
-    idPengajar: Joi.string().required(),
+    idPengajar: Joi.array().items(Joi.string()).min(1).required(),
     idMahasiswa: Joi.array().items(Joi.string()).default([]),
     kelas: Joi.string().required(),
+    deskripsi: Joi.object().optional(),
 });
 
 const updateCourseSchema = Joi.object({
@@ -19,9 +20,10 @@ const updateCourseSchema = Joi.object({
     sks: Joi.number().integer().min(1).optional(),
     status: Joi.string().valid('aktif', 'tidak aktif').optional(),
     idPeriode: Joi.string().optional(),
-    idPengajar: Joi.string().optional(),
+    idPengajar: Joi.array().items(Joi.string()).min(1).optional(),
     idMahasiswa: Joi.array().items(Joi.string()).optional(),
     kelas: Joi.string().optional(),
+    deskripsi: Joi.object().optional(),
 }).min(1);
 
 const patchDeskripsiSchema = Joi.object({

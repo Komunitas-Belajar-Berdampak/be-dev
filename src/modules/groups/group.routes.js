@@ -648,10 +648,10 @@ router.get(
  *         application/json:
  *           schema:
  *             type: object
- *             required: [task, IdMahasiswa, status]
+ *             required: [task, idMahasiswa, status]
  *             properties:
  *               task: { type: string }
- *               IdMahasiswa:
+ *               idMahasiswa:
  *                 type: array
  *                 items: { type: string }
  *               status:
@@ -706,7 +706,7 @@ router.post(
  *             type: object
  *             properties:
  *               task: { type: string }
- *               IdMahasiswa:
+ *               idMahasiswa:
  *                 type: array
  *                 items: { type: string }
  *               status:

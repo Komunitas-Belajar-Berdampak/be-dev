@@ -30,11 +30,12 @@ const courseSchema = new Schema(
         ref: 'AcademicTerm',
         required: true,
         },
-        idPengajar: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-        required: true,
+        idPengajar: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
         },
+        ],
         idMahasiswa: [
         {
             type: Schema.Types.ObjectId,

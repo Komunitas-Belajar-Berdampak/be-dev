@@ -45,9 +45,9 @@ const createTask = async (idThread, payload, user) => {
     const thread = await GroupThread.findById(idThread).lean();
     if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
-    const { task, IdMahasiswa, status } = payload;
+    const { task, idMahasiswa, status } = payload;
 
-    const mhsIds = Array.from(new Set(IdMahasiswa || [])).filter((id) =>
+    const mhsIds = Array.from(new Set(idMahasiswa || [])).filter((id) =>
         mongoose.isValidObjectId(id),
     );
 
@@ -105,12 +105,12 @@ const updateTask = async (idTask, payload, user) => {
     const thread = await GroupThread.findById(taskDoc.idThread).lean();
     if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
-    const { task, IdMahasiswa, status } = payload;
+    const { task, idMahasiswa, status } = payload;
 
     if (task !== undefined) taskDoc.task = task;
     if (status !== undefined) taskDoc.status = status;
-    if (Array.isArray(IdMahasiswa)) {
-        const mhsIds = Array.from(new Set(IdMahasiswa)).filter((id) =>
+    if (Array.isArray(idMahasiswa)) {
+        const mhsIds = Array.from(new Set(idMahasiswa)).filter((id) =>
         mongoose.isValidObjectId(id),
         );
 
