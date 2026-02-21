@@ -7,7 +7,7 @@ const materialCreateSchema = Joi.object({
     tipe: Joi.string().required(),
     pathFile: Joi.string().required(),
     visibility: Joi.string().valid('HIDE', 'VISIBLE').optional(),
-    deskripsi: Joi.object().optional(),
+    deskripsi: Joi.alternatives().try(Joi.object(), Joi.string()).optional(),
 });
 
 const materialUpdateSchema = Joi.object({
@@ -15,7 +15,7 @@ const materialUpdateSchema = Joi.object({
     tipe: Joi.string().optional(),
     pathFile: Joi.string().optional(),
     visibility: Joi.string().valid('HIDE', 'VISIBLE').optional(),
-    deskripsi: Joi.object().optional(),
+    deskripsi: Joi.alternatives().try(Joi.object(), Joi.string()).optional(),
 }).min(1);
 
 const getMaterialsByCourse = async (req, res, next) => {
