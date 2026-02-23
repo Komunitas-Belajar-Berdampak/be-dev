@@ -14,7 +14,7 @@ const mapCourseListItem = (c) => ({
     status: c.status,
     periode: c.idPeriode?.periode || null,
     deskripsi: c.deskripsi || null,
-    pengajar: (c.idPengajar || []).map((p) => ({ id: p._id.toString(), nama: p.nama })),
+    pengajar: (c.idPengajar || []).filter(Boolean).map((p) => ({ id: p._id.toString(), nama: p.nama })),
     kelas: c.kelas,
 });
 
@@ -110,12 +110,12 @@ const getCourseById = async (id) => {
             status: course.idPeriode.status,
             }
         : null,
-        pengajar: (course.idPengajar || []).map((p) => ({
+        pengajar: (course.idPengajar || []).filter(Boolean).map((p) => ({
             id: p._id.toString(),
             nrp: p.nrp,
             nama: p.nama,
         })),
-        mahasiswa: (course.idMahasiswa || []).map((m) => ({
+        mahasiswa: (course.idMahasiswa || []).filter(Boolean).map((m) => ({
         id: m._id.toString(),
         nrp: m.nrp,
         nama: m.nama,
@@ -191,8 +191,8 @@ const createCourse = async (payload) => {
         sks: populated.sks,
         status: populated.status,
         periode: populated.idPeriode?.periode || null,
-        pengajar: (populated.idPengajar || []).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
-        mahasiswa: (populated.idMahasiswa || []).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
+        pengajar: (populated.idPengajar || []).filter(Boolean).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
+        mahasiswa: (populated.idMahasiswa || []).filter(Boolean).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
         kelas: populated.kelas,
         deskripsi: populated.deskripsi || null,
     };
@@ -278,8 +278,8 @@ const updateCourse = async (id, payload) => {
         sks: populated.sks,
         status: populated.status,
         periode: populated.idPeriode?.periode || null,
-        pengajar: (populated.idPengajar || []).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
-        mahasiswa: (populated.idMahasiswa || []).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
+        pengajar: (populated.idPengajar || []).filter(Boolean).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
+        mahasiswa: (populated.idMahasiswa || []).filter(Boolean).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
         kelas: populated.kelas,
         deskripsi: populated.deskripsi || null,
     };

@@ -10,6 +10,15 @@ const academicTermSchema = new Schema(
         unique: true,
         trim: true,
         },
+        semesterType: {
+        type: String,
+        enum: ['Ganjil', 'Genap'],
+        default: null,
+        },
+        semesters: {
+        type: [Number],
+        default: undefined,
+        },
         startDate: {
         type: Date,
         },

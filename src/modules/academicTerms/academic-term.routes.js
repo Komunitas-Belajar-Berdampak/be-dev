@@ -9,6 +9,7 @@ const router = express.Router();
 
 const createTermSchema = Joi.object({
     periode: Joi.string().trim().required(),
+    semesterType: Joi.string().valid('Ganjil', 'Genap').optional(),
     startDate: Joi.date().optional(),
     endDate: Joi.date().optional(),
     status: Joi.string().valid('aktif', 'tidak aktif').optional(),
