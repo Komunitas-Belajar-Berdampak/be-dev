@@ -27,6 +27,10 @@ const patchTermSemesterSchema = Joi.object({
     semesterType: Joi.string().valid('Ganjil', 'Genap').allow(null).required(),
 });
 
+const addSemestersSchema = Joi.object({
+    semesters: Joi.array().items(Joi.number().integer().min(1)).min(1).required(),
+});
+
 router.use(auth, requireRoles('SUPER_ADMIN'));
 
 /**
@@ -179,6 +183,39 @@ router.put('/:id', validate(updateTermSchema), controller.updateTerm);
  *         description: Semester periode berhasil diperbarui!
  */
 router.patch('/:id', validate(patchTermSemesterSchema), controller.patchTermSemester);
+
+/**
+ * @swagger
+ * /api/academic-terms/{id}/semesters:
+ *   post:
+ *     summary: Tambah semester ke periode akademik
+ *     tags: [AcademicTerms]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [semesters]
+ *             properties:
+ *               semesters:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1, 2, 3, 4, 5]
+ *     responses:
+ *       201:
+ *         description: Semester berhasil ditambahkan!
+ */
+router.post('/:id/semesters', validate(addSemestersSchema), controller.setSemesters);
 
 /**
  * @swagger

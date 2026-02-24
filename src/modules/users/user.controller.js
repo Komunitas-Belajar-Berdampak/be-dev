@@ -1,4 +1,4 @@
-const { successResponse } = require('../../utils/http');
+const { successResponse, ApiError } = require('../../utils/http');
 const userService = require('./user.service');
 
 const getUsers = async (req, res, next) => {
@@ -16,6 +16,11 @@ const getUsers = async (req, res, next) => {
 
 const getUserById = async (req, res, next) => {
     try {
+        const isSuperAdmin = Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN');
+        if (!isSuperAdmin && req.params.id !== req.user.sub) {
+            throw new ApiError(403, 'Akses ditolak');
+        }
+
         const user = await userService.getUserById(req.params.id);
         return successResponse(res, {
         message: 'data berhasil diambil!',

@@ -10,7 +10,7 @@ const SEMESTER_GENAP = [2, 4, 6, 8, 10, 12, 14];
 const getSemesters = (semesterType) => {
     if (semesterType === 'Ganjil') return SEMESTER_GANJIL;
     if (semesterType === 'Genap') return SEMESTER_GENAP;
-    return null;
+    return [];
 };
 
 const mapTerm = (t) => ({
@@ -45,12 +45,10 @@ const createTerm = async ({ periode, semesterType, startDate, endDate, status })
         throw new ApiError(400, 'Periode sudah ada');
     }
 
-    const computedSemesters = getSemesters(semesterType);
-
     const doc = new AcademicTerm({
         periode,
         semesterType: semesterType || null,
-        semesters: computedSemesters || undefined,
+        semesters: getSemesters(semesterType),
         startDate,
         endDate,
         status: status || 'tidak aktif',
@@ -100,7 +98,7 @@ const updateTerm = async (id, { periode, semesterType, startDate, endDate, statu
 
     if (semesterType !== undefined) {
         term.semesterType = semesterType || null;
-        term.semesters = getSemesters(semesterType) || undefined;
+        term.semesters = getSemesters(semesterType);
     }
 
     if (startDate !== undefined) term.startDate = startDate;
@@ -131,9 +129,26 @@ const patchTermSemester = async (id, semesterType) => {
     }
 
     term.semesterType = semesterType || null;
-    term.semesters = getSemesters(semesterType) || undefined;
+    term.semesters = getSemesters(semesterType);
 
     await term.save();
+    return mapTerm(term.toObject());
+};
+
+const setSemesters = async (id, semesters) => {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(400, 'ID periode tidak valid');
+    }
+
+    const term = await AcademicTerm.findByIdAndUpdate(
+        id,
+        { $set: { semesters } },
+        { new: true },
+    );
+    if (!term) {
+        throw new ApiError(404, 'Periode akademik tidak ditemukan');
+    }
+
     return mapTerm(term.toObject());
 };
 
@@ -164,5 +179,6 @@ module.exports = {
     createTerm,
     updateTerm,
     patchTermSemester,
+    setSemesters,
     deleteTerm,
 };

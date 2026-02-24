@@ -63,6 +63,18 @@ const patchTermSemester = async (req, res, next) => {
     }
 };
 
+const setSemesters = async (req, res, next) => {
+    try {
+        const term = await service.setSemesters(req.params.id, req.body.semesters);
+        return successResponse(res, {
+            message: 'Semester berhasil disimpan!',
+            data: term,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const deleteTerm = async (req, res, next) => {
     try {
         await service.deleteTerm(req.params.id);
@@ -80,5 +92,6 @@ module.exports = {
     createTerm,
     updateTerm,
     patchTermSemester,
+    setSemesters,
     deleteTerm,
 };

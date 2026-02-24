@@ -14,7 +14,7 @@ const getDosenRoleId = async () => {
 
 const validatePengajarIds = async (ids) => {
     const unique = Array.from(new Set(ids || [])).filter((id) => mongoose.isValidObjectId(id));
-    if (unique.length === 0) throw new ApiError(400, 'idPengajar tidak valid');
+    if (unique.length === 0) return [];
     const dosenRoleId = await getDosenRoleId();
     const count = await User.countDocuments({ _id: { $in: unique }, roleIds: dosenRoleId });
     if (count !== unique.length) {

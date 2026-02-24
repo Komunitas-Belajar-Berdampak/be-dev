@@ -12,7 +12,9 @@
     "test": "jest --runInBand",
     "lint": "eslint .",
     "format": "prettier -w .",
-    "migrate:contributions": "node src/migrations/migrate-contributions.js"
+    "migrate:contributions": "node src/migrations/migrate-contributions.js",
+    "seed": "node src/seeds/seed.js",
+    "seed:course": "node src/seeds/seed-course.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.664.0",

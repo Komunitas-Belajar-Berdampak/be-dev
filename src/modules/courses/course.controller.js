@@ -8,7 +8,7 @@ const createCourseSchema = Joi.object({
     sks: Joi.number().integer().min(1).required(),
     status: Joi.string().valid('aktif', 'tidak aktif').required(),
     idPeriode: Joi.string().required(),
-    idPengajar: Joi.array().items(Joi.string()).min(1).required(),
+    idPengajar: Joi.array().items(Joi.string()).default([]),
     idMahasiswa: Joi.array().items(Joi.string()).default([]),
     kelas: Joi.string().required(),
     deskripsi: Joi.object().optional(),

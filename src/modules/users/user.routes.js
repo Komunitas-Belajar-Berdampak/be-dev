@@ -68,6 +68,9 @@ router.get('/', auth, requireRoles('SUPER_ADMIN'), controller.getUsers);
  *     tags:
  *       - Users
  *     summary: Detail user
+ *     description: SUPER_ADMIN bisa akses profil siapapun. Mahasiswa/Dosen hanya bisa akses profil sendiri.
+ *     security:
+ *       - BearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
@@ -88,14 +91,12 @@ router.get('/', auth, requireRoles('SUPER_ADMIN'), controller.getUsers);
  *                   type: string
  *                 data:
  *                   $ref: '#/components/schemas/UserDetail'
+ *       403:
+ *         description: Akses ditolak (bukan profil sendiri)
  *       404:
  *         description: User tidak ditemukan
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/ErrorResponse'
  */
-router.get('/:id', auth, requireRoles('SUPER_ADMIN'), controller.getUserById);
+router.get('/:id', auth, controller.getUserById);
 
 /**
  * @openapi

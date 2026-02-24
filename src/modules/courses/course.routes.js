@@ -117,7 +117,6 @@ router.get('/:id', controller.getCourseById);
  *               - sks
  *               - status
  *               - idPeriode
- *               - idPengajar
  *               - kelas
  *             properties:
  *               kodeMatkul: { type: string }
@@ -125,7 +124,9 @@ router.get('/:id', controller.getCourseById);
  *               sks: { type: integer }
  *               status: { type: string }
  *               idPeriode: { type: string }
- *               idPengajar: { type: string }
+ *               idPengajar:
+ *                 type: array
+ *                 items: { type: string }
  *               idMahasiswa:
  *                 type: array
  *                 items: { type: string }
@@ -165,7 +166,9 @@ router.post(
  *               sks: { type: integer }
  *               status: { type: string }
  *               idPeriode: { type: string }
- *               idPengajar: { type: string }
+ *               idPengajar:
+ *                 type: array
+ *                 items: { type: string }
  *               idMahasiswa:
  *                 type: array
  *                 items: { type: string }
