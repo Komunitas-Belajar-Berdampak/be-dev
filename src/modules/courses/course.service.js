@@ -2,8 +2,26 @@ const mongoose = require('mongoose');
 const Course = require('./course.model');
 const AcademicTerm = require('../academicTerms/academic-term.model');
 const User = require('../users/user.model');
+const Role = require('../roles/roles.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
+
+const getDosenRoleId = async () => {
+    const role = await Role.findOne({ nama: 'DOSEN' }).lean();
+    if (!role) throw new ApiError(500, 'Role DOSEN tidak ditemukan di database');
+    return role._id;
+};
+
+const validatePengajarIds = async (ids) => {
+    const unique = Array.from(new Set(ids || [])).filter((id) => mongoose.isValidObjectId(id));
+    if (unique.length === 0) throw new ApiError(400, 'idPengajar tidak valid');
+    const dosenRoleId = await getDosenRoleId();
+    const count = await User.countDocuments({ _id: { $in: unique }, roleIds: dosenRoleId });
+    if (count !== unique.length) {
+        throw new ApiError(404, 'Satu atau lebih user tidak ditemukan atau bukan DOSEN');
+    }
+    return unique;
+};
 
 
 const mapCourseListItem = (c) => ({
@@ -151,16 +169,7 @@ const createCourse = async (payload) => {
         throw new ApiError(404, 'Periode akademik tidak ditemukan');
     }
 
-    const uniquePengajarIds = Array.from(new Set(idPengajar || [])).filter((id) =>
-        mongoose.isValidObjectId(id),
-    );
-    if (uniquePengajarIds.length === 0) {
-        throw new ApiError(400, 'idPengajar tidak valid');
-    }
-    const dosenCount = await User.countDocuments({ _id: { $in: uniquePengajarIds } });
-    if (dosenCount !== uniquePengajarIds.length) {
-        throw new ApiError(404, 'Satu atau lebih pengajar tidak ditemukan');
-    }
+    const uniquePengajarIds = await validatePengajarIds(idPengajar);
 
     const uniqueMhsIds = Array.from(new Set(idMahasiswa || [])).filter((id) =>
         mongoose.isValidObjectId(id),
@@ -243,16 +252,7 @@ const updateCourse = async (id, payload) => {
     }
 
     if (idPengajar) {
-        const uniquePengajarIds = Array.from(new Set(idPengajar)).filter((x) =>
-            mongoose.isValidObjectId(x),
-        );
-        if (uniquePengajarIds.length === 0) {
-            throw new ApiError(400, 'idPengajar tidak valid');
-        }
-        const dosenCount = await User.countDocuments({ _id: { $in: uniquePengajarIds } });
-        if (dosenCount !== uniquePengajarIds.length) {
-            throw new ApiError(404, 'Satu atau lebih pengajar tidak ditemukan');
-        }
+        const uniquePengajarIds = await validatePengajarIds(idPengajar);
         course.idPengajar = uniquePengajarIds;
     }
 
@@ -303,6 +303,63 @@ const deleteCourse = async (id) => {
     if (!deleted) throw new ApiError(404, 'Course tidak ditemukan');
 };
 
+const addPengajar = async (courseId, idPengajar) => {
+    if (!mongoose.isValidObjectId(courseId)) {
+        throw new ApiError(400, 'ID course tidak valid');
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) throw new ApiError(404, 'Course tidak ditemukan');
+
+    const uniquePengajarIds = await validatePengajarIds(idPengajar);
+
+    const existing = course.idPengajar.map((id) => id.toString());
+    const toAdd = uniquePengajarIds.filter((id) => !existing.includes(id.toString()));
+
+    if (toAdd.length === 0) {
+        throw new ApiError(400, 'Semua dosen yang dikirim sudah terdaftar di matakuliah ini');
+    }
+
+    course.idPengajar.push(...toAdd);
+    await course.save();
+
+    const populated = await Course.findById(course._id)
+        .populate('idPengajar', 'nrp nama')
+        .lean();
+
+    return {
+        id: populated._id.toString(),
+        pengajar: (populated.idPengajar || []).filter(Boolean).map((p) => ({
+            id: p._id.toString(),
+            nrp: p.nrp,
+            nama: p.nama,
+        })),
+    };
+};
+
+const removePengajar = async (courseId, dosenId) => {
+    if (!mongoose.isValidObjectId(courseId)) {
+        throw new ApiError(400, 'ID course tidak valid');
+    }
+    if (!mongoose.isValidObjectId(dosenId)) {
+        throw new ApiError(400, 'ID dosen tidak valid');
+    }
+
+    const course = await Course.findById(courseId);
+    if (!course) throw new ApiError(404, 'Course tidak ditemukan');
+
+    const before = course.idPengajar.length;
+    course.idPengajar = course.idPengajar.filter(
+        (id) => id.toString() !== dosenId,
+    );
+
+    if (course.idPengajar.length === before) {
+        throw new ApiError(404, 'Dosen tidak terdaftar di matakuliah ini');
+    }
+
+    await course.save();
+};
+
 module.exports = {
     listCourses,
     getCourseById,
@@ -310,4 +367,6 @@ module.exports = {
     updateCourse,
     patchDeskripsi,
     deleteCourse,
+    addPengajar,
+    removePengajar,
 };

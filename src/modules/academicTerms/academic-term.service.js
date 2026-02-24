@@ -69,6 +69,74 @@ const createTerm = async ({ periode, semesterType, startDate, endDate, status })
     return mapTerm(doc.toObject());
 };
 
+const getTermById = async (id) => {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(400, 'ID periode tidak valid');
+    }
+
+    const term = await AcademicTerm.findById(id).lean();
+    if (!term) {
+        throw new ApiError(404, 'Periode akademik tidak ditemukan');
+    }
+
+    return mapTerm(term);
+};
+
+const updateTerm = async (id, { periode, semesterType, startDate, endDate, status }) => {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(400, 'ID periode tidak valid');
+    }
+
+    const term = await AcademicTerm.findById(id);
+    if (!term) {
+        throw new ApiError(404, 'Periode akademik tidak ditemukan');
+    }
+
+    if (periode && periode !== term.periode) {
+        const exists = await AcademicTerm.findOne({ periode, _id: { $ne: id } }).lean();
+        if (exists) throw new ApiError(400, 'Periode sudah ada');
+        term.periode = periode;
+    }
+
+    if (semesterType !== undefined) {
+        term.semesterType = semesterType || null;
+        term.semesters = getSemesters(semesterType) || undefined;
+    }
+
+    if (startDate !== undefined) term.startDate = startDate;
+    if (endDate !== undefined) term.endDate = endDate;
+
+    if (status !== undefined) {
+        term.status = status;
+        if (status === 'aktif') {
+            await AcademicTerm.updateMany(
+                { _id: { $ne: id } },
+                { $set: { status: 'tidak aktif' } },
+            );
+        }
+    }
+
+    await term.save();
+    return mapTerm(term.toObject());
+};
+
+const patchTermSemester = async (id, semesterType) => {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(400, 'ID periode tidak valid');
+    }
+
+    const term = await AcademicTerm.findById(id);
+    if (!term) {
+        throw new ApiError(404, 'Periode akademik tidak ditemukan');
+    }
+
+    term.semesterType = semesterType || null;
+    term.semesters = getSemesters(semesterType) || undefined;
+
+    await term.save();
+    return mapTerm(term.toObject());
+};
+
 const deleteTerm = async (id) => {
     if (!mongoose.isValidObjectId(id)) {
         throw new ApiError(400, 'ID periode tidak valid');
@@ -92,6 +160,9 @@ const deleteTerm = async (id) => {
 
 module.exports = {
     listTerms,
+    getTermById,
     createTerm,
+    updateTerm,
+    patchTermSemester,
     deleteTerm,
 };

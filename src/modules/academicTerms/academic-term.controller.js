@@ -27,6 +27,42 @@ const createTerm = async (req, res, next) => {
     }
 };
 
+const getTermById = async (req, res, next) => {
+    try {
+        const term = await service.getTermById(req.params.id);
+        return successResponse(res, {
+        message: 'data berhasil diambil!',
+        data: term,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const updateTerm = async (req, res, next) => {
+    try {
+        const term = await service.updateTerm(req.params.id, req.body);
+        return successResponse(res, {
+        message: 'Periode akademik berhasil diperbarui!',
+        data: term,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const patchTermSemester = async (req, res, next) => {
+    try {
+        const term = await service.patchTermSemester(req.params.id, req.body.semesterType);
+        return successResponse(res, {
+        message: 'Semester periode berhasil diperbarui!',
+        data: term,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const deleteTerm = async (req, res, next) => {
     try {
         await service.deleteTerm(req.params.id);
@@ -40,6 +76,9 @@ const deleteTerm = async (req, res, next) => {
 
 module.exports = {
     getTerms,
+    getTermById,
     createTerm,
+    updateTerm,
+    patchTermSemester,
     deleteTerm,
 };

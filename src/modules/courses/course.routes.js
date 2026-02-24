@@ -234,4 +234,65 @@ router.delete(
     controller.deleteCourse,
 );
 
+/**
+ * @swagger
+ * /api/courses/{id}/pengajar:
+ *   post:
+ *     summary: Tambah dosen ke matakuliah (hanya user ber-role DOSEN)
+ *     tags: [Courses]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [idPengajar]
+ *             properties:
+ *               idPengajar:
+ *                 type: array
+ *                 items: { type: string }
+ *     responses:
+ *       201:
+ *         description: Dosen berhasil ditambahkan ke matakuliah!
+ */
+router.post(
+    '/:id/pengajar',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.addPengajar,
+);
+
+/**
+ * @swagger
+ * /api/courses/{id}/pengajar/{dosenId}:
+ *   delete:
+ *     summary: Hapus satu dosen dari matakuliah
+ *     tags: [Courses]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *       - in: path
+ *         name: dosenId
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Dosen berhasil dihapus dari matakuliah!
+ */
+router.delete(
+    '/:id/pengajar/:dosenId',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.removePengajar,
+);
+
 module.exports = router;

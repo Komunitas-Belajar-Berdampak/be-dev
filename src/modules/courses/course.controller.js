@@ -111,6 +111,37 @@ const deleteCourse = async (req, res, next) => {
     }
 };
 
+const addPengajarSchema = Joi.object({
+    idPengajar: Joi.array().items(Joi.string()).min(1).required(),
+});
+
+const addPengajar = async (req, res, next) => {
+    try {
+        const { error, value } = addPengajarSchema.validate(req.body);
+        if (error) throw error;
+
+        const data = await courseService.addPengajar(req.params.id, value.idPengajar);
+        return successResponse(res, {
+        statusCode: 201,
+        message: 'Dosen berhasil ditambahkan ke matakuliah!',
+        data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const removePengajar = async (req, res, next) => {
+    try {
+        await courseService.removePengajar(req.params.id, req.params.dosenId);
+        return successResponse(res, {
+        message: 'Dosen berhasil dihapus dari matakuliah!',
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 module.exports = {
     getCourses,
     getCourseById,
@@ -118,4 +149,6 @@ module.exports = {
     updateCourse,
     patchDeskripsi,
     deleteCourse,
+    addPengajar,
+    removePengajar,
 };

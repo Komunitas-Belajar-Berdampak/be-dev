@@ -15,6 +15,18 @@ const createTermSchema = Joi.object({
     status: Joi.string().valid('aktif', 'tidak aktif').optional(),
 });
 
+const updateTermSchema = Joi.object({
+    periode: Joi.string().trim().optional(),
+    semesterType: Joi.string().valid('Ganjil', 'Genap').allow(null).optional(),
+    startDate: Joi.date().allow(null).optional(),
+    endDate: Joi.date().allow(null).optional(),
+    status: Joi.string().valid('aktif', 'tidak aktif').optional(),
+}).min(1);
+
+const patchTermSemesterSchema = Joi.object({
+    semesterType: Joi.string().valid('Ganjil', 'Genap').allow(null).required(),
+});
+
 router.use(auth, requireRoles('SUPER_ADMIN'));
 
 /**
@@ -41,6 +53,28 @@ router.use(auth, requireRoles('SUPER_ADMIN'));
  *                     $ref: '#/components/schemas/AcademicTerm'
  */
 router.get('/', controller.getTerms);
+
+/**
+ * @swagger
+ * /api/academic-terms/{id}:
+ *   get:
+ *     summary: Ambil detail periode akademik
+ *     tags: [AcademicTerms]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *       404:
+ *         description: Periode akademik tidak ditemukan
+ */
+router.get('/:id', controller.getTermById);
 
 /**
  * @swagger
@@ -73,6 +107,78 @@ router.get('/', controller.getTerms);
  *         description: Periode akademik berhasil dibuat!
  */
 router.post('/', validate(createTermSchema), controller.createTerm);
+
+/**
+ * @swagger
+ * /api/academic-terms/{id}:
+ *   put:
+ *     summary: Update semua field periode akademik
+ *     tags: [AcademicTerms]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               periode: { type: string }
+ *               semesterType:
+ *                 type: string
+ *                 enum: [Ganjil, Genap]
+ *               startDate:
+ *                 type: string
+ *                 format: date-time
+ *               endDate:
+ *                 type: string
+ *                 format: date-time
+ *               status:
+ *                 type: string
+ *                 enum: [aktif, tidak aktif]
+ *     responses:
+ *       200:
+ *         description: Periode akademik berhasil diperbarui!
+ */
+router.put('/:id', validate(updateTermSchema), controller.updateTerm);
+
+/**
+ * @swagger
+ * /api/academic-terms/{id}:
+ *   patch:
+ *     summary: Update semesterType saja (semesters otomatis mengikuti)
+ *     tags: [AcademicTerms]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [semesterType]
+ *             properties:
+ *               semesterType:
+ *                 type: string
+ *                 enum: [Ganjil, Genap]
+ *                 nullable: true
+ *     responses:
+ *       200:
+ *         description: Semester periode berhasil diperbarui!
+ */
+router.patch('/:id', validate(patchTermSemesterSchema), controller.patchTermSemester);
 
 /**
  * @swagger
