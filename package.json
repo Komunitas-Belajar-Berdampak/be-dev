@@ -14,7 +14,8 @@
     "format": "prettier -w .",
     "migrate:contributions": "node src/migrations/migrate-contributions.js",
     "seed": "node src/seeds/seed.js",
-    "seed:course": "node src/seeds/seed-course.js"
+    "seed:course": "node src/seeds/seed-course.js",
+    "seed:meeting": "node src/seeds/seed-meeting.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.664.0",

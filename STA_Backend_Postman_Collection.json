@@ -44,8 +44,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["api", "auth", "login"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": []
@@ -85,8 +91,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["api", "auth", "login"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": []
@@ -126,8 +138,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["api", "auth", "login"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
 						}
 					},
 					"response": []
@@ -149,8 +167,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/auth/logout",
-							"host": ["{{base_url}}"],
-							"path": ["api", "auth", "logout"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"logout"
+							]
 						}
 					},
 					"response": []
@@ -172,8 +196,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/auth/me",
-							"host": ["{{base_url}}"],
-							"path": ["api", "auth", "me"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
 						}
 					},
 					"response": []
@@ -200,8 +230,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/roles",
-							"host": ["{{base_url}}"],
-							"path": ["api", "roles"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
 						}
 					},
 					"response": []
@@ -232,8 +267,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/roles",
-							"host": ["{{base_url}}"],
-							"path": ["api", "roles"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
 						}
 					},
 					"response": []
@@ -264,8 +304,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/roles/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "roles", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -293,8 +339,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/roles/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "roles", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -327,8 +379,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/users?role=MAHASISWA&status=aktif",
-							"host": ["{{base_url}}"],
-							"path": ["api", "users"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
 							"query": [
 								{
 									"key": "role",
@@ -360,8 +417,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/users/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "users", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -398,8 +461,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
-							"host": ["{{base_url}}"],
-							"path": ["api", "users"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
 						}
 					},
 					"response": []
@@ -430,8 +498,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "users", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -468,8 +542,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
-							"host": ["{{base_url}}"],
-							"path": ["api", "users"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
 						}
 					},
 					"response": []
@@ -496,8 +575,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/faculties",
-							"host": ["{{base_url}}"],
-							"path": ["api", "faculties"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"faculties"
+							]
 						}
 					},
 					"response": []
@@ -528,8 +612,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/faculties",
-							"host": ["{{base_url}}"],
-							"path": ["api", "faculties"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"faculties"
+							]
 						}
 					},
 					"response": []
@@ -560,8 +649,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/faculties/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "faculties", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"faculties",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -594,8 +689,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/majors",
-							"host": ["{{base_url}}"],
-							"path": ["api", "majors"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"majors"
+							]
 						}
 					},
 					"response": []
@@ -626,8 +726,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/majors",
-							"host": ["{{base_url}}"],
-							"path": ["api", "majors"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"majors"
+							]
 						}
 					},
 					"response": []
@@ -658,8 +763,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/majors/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "majors", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"majors",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -692,11 +803,55 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/academic-terms",
-							"host": ["{{base_url}}"],
-							"path": ["api", "academic-terms"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms"
+							]
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Get Academic Term Detail",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{academic_term_id}}"
+								}
+							]
+						}
+					}
 				},
 				{
 					"name": "Create Academic Term",
@@ -724,11 +879,146 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/academic-terms",
-							"host": ["{{base_url}}"],
-							"path": ["api", "academic-terms"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms"
+							]
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Update Academic Term",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{academic_term_id}}"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"periode\": \"2025/2026\",\n  \"semesterType\": \"Ganjil\",\n  \"startDate\": \"2025-08-01T00:00:00.000Z\",\n  \"endDate\": \"2026-01-31T00:00:00.000Z\",\n  \"status\": \"aktif\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Patch Academic Term Semester",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms/:id",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{academic_term_id}}"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"semesterType\": \"Ganjil\"\n}"
+						}
+					}
+				},
+				{
+					"name": "Add Semesters to Academic Term",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/academic-terms/:id/semesters",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms",
+								":id",
+								"semesters"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{academic_term_id}}"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"semesters\": [\n    1,\n    2,\n    3,\n    4,\n    5,\n    6,\n    7,\n    8\n  ]\n}"
+						}
+					}
 				},
 				{
 					"name": "Delete Academic Term",
@@ -747,8 +1037,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/academic-terms/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "academic-terms", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"academic-terms",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -781,8 +1077,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/courses?status=aktif",
-							"host": ["{{base_url}}"],
-							"path": ["api", "courses"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							],
 							"query": [
 								{
 									"key": "status",
@@ -810,8 +1111,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/courses/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "courses", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -848,8 +1155,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/courses",
-							"host": ["{{base_url}}"],
-							"path": ["api", "courses"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses"
+							]
 						}
 					},
 					"response": []
@@ -880,8 +1192,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/courses/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "courses", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -918,8 +1236,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/courses/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "courses", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -947,8 +1271,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/courses/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "courses", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -958,6 +1288,95 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Add Pengajar to Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id/pengajar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id",
+								"pengajar"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{course_id}}"
+								}
+							]
+						},
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idPengajar\": [\n    \"{{dosen_id}}\"\n  ]\n}"
+						}
+					}
+				},
+				{
+					"name": "Remove Pengajar from Course",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/courses/:id/pengajar/:dosenId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"courses",
+								":id",
+								"pengajar",
+								":dosenId"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{course_id}}"
+								},
+								{
+									"key": "dosenId",
+									"value": "{{dosen_id}}"
+								}
+							]
+						}
+					}
 				}
 			]
 		},
@@ -981,8 +1400,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/meetings/:idCourse",
-							"host": ["{{base_url}}"],
-							"path": ["api", "meetings", ":idCourse"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meetings",
+								":idCourse"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1010,8 +1435,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/meetings/:pertemuan/courses/:idCourses",
-							"host": ["{{base_url}}"],
-							"path": ["api", "meetings", ":pertemuan", "courses", ":idCourses"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meetings",
+								":pertemuan",
+								"courses",
+								":idCourses"
+							],
 							"variable": [
 								{
 									"key": "pertemuan",
@@ -1052,8 +1485,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/meetings/:idPertemuan",
-							"host": ["{{base_url}}"],
-							"path": ["api", "meetings", ":idPertemuan"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meetings",
+								":idPertemuan"
+							],
 							"variable": [
 								{
 									"key": "idPertemuan",
@@ -1086,8 +1525,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/materials/:idCourse",
-							"host": ["{{base_url}}"],
-							"path": ["api", "materials", ":idCourse"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idCourse"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1115,8 +1560,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/materials/:idCourse/meetings/:pertemuan",
-							"host": ["{{base_url}}"],
-							"path": ["api", "materials", ":idCourse", "meetings", ":pertemuan"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idCourse",
+								"meetings",
+								":pertemuan"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1148,8 +1601,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/materials/:idMaterial",
-							"host": ["{{base_url}}"],
-							"path": ["api", "materials", ":idMaterial"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idMaterial"
+							],
 							"variable": [
 								{
 									"key": "idMaterial",
@@ -1186,8 +1645,16 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/materials/:idCourse/meetings/:pertemuan",
-							"host": ["{{base_url}}"],
-							"path": ["api", "materials", ":idCourse", "meetings", ":pertemuan"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idCourse",
+								"meetings",
+								":pertemuan"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1228,8 +1695,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/materials/:idMaterial",
-							"host": ["{{base_url}}"],
-							"path": ["api", "materials", ":idMaterial"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idMaterial"
+							],
 							"variable": [
 								{
 									"key": "idMaterial",
@@ -1257,8 +1730,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/materials/:idMaterial",
-							"host": ["{{base_url}}"],
-							"path": ["api", "materials", ":idMaterial"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idMaterial"
+							],
 							"variable": [
 								{
 									"key": "idMaterial",
@@ -1291,8 +1770,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/assignments/:idCourse",
-							"host": ["{{base_url}}"],
-							"path": ["api", "assignments", ":idCourse"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								":idCourse"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1320,8 +1805,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/assignments/:idCourse/meetings/:pertemuan",
-							"host": ["{{base_url}}"],
-							"path": ["api", "assignments", ":idCourse", "meetings", ":pertemuan"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								":idCourse",
+								"meetings",
+								":pertemuan"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1353,8 +1846,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/assignments/:idAssignment",
-							"host": ["{{base_url}}"],
-							"path": ["api", "assignments", ":idAssignment"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								":idAssignment"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1391,8 +1890,16 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/assignments/:idCourse/meetings/:pertemuan",
-							"host": ["{{base_url}}"],
-							"path": ["api", "assignments", ":idCourse", "meetings", ":pertemuan"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								":idCourse",
+								"meetings",
+								":pertemuan"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1433,8 +1940,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/assignments/:idAssignment",
-							"host": ["{{base_url}}"],
-							"path": ["api", "assignments", ":idAssignment"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								":idAssignment"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1462,8 +1975,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/assignments/:idAssignment",
-							"host": ["{{base_url}}"],
-							"path": ["api", "assignments", ":idAssignment"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"assignments",
+								":idAssignment"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1496,8 +2015,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/submissions/:idAssignment",
-							"host": ["{{base_url}}"],
-							"path": ["api", "submissions", ":idAssignment"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"submissions",
+								":idAssignment"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1525,8 +2050,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/submissions/:idAssignment/all",
-							"host": ["{{base_url}}"],
-							"path": ["api", "submissions", ":idAssignment", "all"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"submissions",
+								":idAssignment",
+								"all"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1563,8 +2095,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/submissions/:idAssignment",
-							"host": ["{{base_url}}"],
-							"path": ["api", "submissions", ":idAssignment"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"submissions",
+								":idAssignment"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1601,8 +2139,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/submissions/:idAssignment",
-							"host": ["{{base_url}}"],
-							"path": ["api", "submissions", ":idAssignment"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"submissions",
+								":idAssignment"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1639,8 +2183,18 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/submissions/assignments/:idAssignment/submissions/:idSubmission/grade",
-							"host": ["{{base_url}}"],
-							"path": ["api", "submissions", "assignments", ":idAssignment", "submissions", ":idSubmission", "grade"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"submissions",
+								"assignments",
+								":idAssignment",
+								"submissions",
+								":idSubmission",
+								"grade"
+							],
 							"variable": [
 								{
 									"key": "idAssignment",
@@ -1677,8 +2231,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/sg/course/:idCourse?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "course", ":idCourse"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								"course",
+								":idCourse"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1720,8 +2281,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/sg/course-membership/:idCourse?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "course-membership", ":idCourse"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								"course-membership",
+								":idCourse"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1763,8 +2331,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/sg/group/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", "group", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								"group",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1794,8 +2369,16 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/sg/:id/user-detail/:idUser",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id", "user-detail", ":idUser"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								":id",
+								"user-detail",
+								":idUser"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1839,8 +2422,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/sg/:idCourse",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":idCourse"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								":idCourse"
+							],
 							"variable": [
 								{
 									"key": "idCourse",
@@ -1879,8 +2468,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/sg/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1910,8 +2505,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/sg/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "sg", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -1946,8 +2547,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/memberships/:idStudyGroup?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "memberships", ":idStudyGroup"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"memberships",
+								":idStudyGroup"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -1987,8 +2594,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/memberships/:idStudyGroup/join",
-							"host": ["{{base_url}}"],
-							"path": ["api", "memberships", ":idStudyGroup", "join"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"memberships",
+								":idStudyGroup",
+								"join"
+							],
 							"variable": [
 								{
 									"key": "idStudyGroup",
@@ -2016,8 +2630,17 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/memberships/:idMembership/sg/:idStudyGroup/approve",
-							"host": ["{{base_url}}"],
-							"path": ["api", "memberships", ":idMembership", "sg", ":idStudyGroup", "approve"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"memberships",
+								":idMembership",
+								"sg",
+								":idStudyGroup",
+								"approve"
+							],
 							"variable": [
 								{
 									"key": "idMembership",
@@ -2049,8 +2672,17 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/memberships/:idMembership/sg/:idStudyGroup/reject",
-							"host": ["{{base_url}}"],
-							"path": ["api", "memberships", ":idMembership", "sg", ":idStudyGroup", "reject"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"memberships",
+								":idMembership",
+								"sg",
+								":idStudyGroup",
+								"reject"
+							],
 							"variable": [
 								{
 									"key": "idMembership",
@@ -2087,8 +2719,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/threads/sg/:idStudyGroup?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "threads", "sg", ":idStudyGroup"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"threads",
+								"sg",
+								":idStudyGroup"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -2137,8 +2776,15 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/threads/sg/:idStudyGroup",
-							"host": ["{{base_url}}"],
-							"path": ["api", "threads", "sg", ":idStudyGroup"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"threads",
+								"sg",
+								":idStudyGroup"
+							],
 							"variable": [
 								{
 									"key": "idStudyGroup",
@@ -2171,8 +2817,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/threads/:idThread?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "threads", ":idThread"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"threads",
+								":idThread"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -2221,8 +2873,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/threads/:idThread",
-							"host": ["{{base_url}}"],
-							"path": ["api", "threads", ":idThread"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"threads",
+								":idThread"
+							],
 							"variable": [
 								{
 									"key": "idThread",
@@ -2250,8 +2908,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/posts/:idPost",
-							"host": ["{{base_url}}"],
-							"path": ["api", "posts", ":idPost"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								":idPost"
+							],
 							"variable": [
 								{
 									"key": "idPost",
@@ -2290,8 +2954,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/posts/:idPost",
-							"host": ["{{base_url}}"],
-							"path": ["api", "posts", ":idPost"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								":idPost"
+							],
 							"variable": [
 								{
 									"key": "idPost",
@@ -2319,8 +2989,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/posts/:idPost",
-							"host": ["{{base_url}}"],
-							"path": ["api", "posts", ":idPost"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"posts",
+								":idPost"
+							],
 							"variable": [
 								{
 									"key": "idPost",
@@ -2353,8 +3029,15 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/tasks/thread/:idThread?page=1&limit=10",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", "thread", ":idThread"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"thread",
+								":idThread"
+							],
 							"query": [
 								{
 									"key": "page",
@@ -2403,8 +3086,15 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/tasks/thread/:idThread",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", "thread", ":idThread"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								"thread",
+								":idThread"
+							],
 							"variable": [
 								{
 									"key": "idThread",
@@ -2441,8 +3131,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/tasks/:idTasks",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", ":idTasks"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								":idTasks"
+							],
 							"variable": [
 								{
 									"key": "idTasks",
@@ -2470,8 +3166,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/tasks/:idTasks",
-							"host": ["{{base_url}}"],
-							"path": ["api", "tasks", ":idTasks"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								":idTasks"
+							],
 							"variable": [
 								{
 									"key": "idTasks",
@@ -2504,8 +3206,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/approach/:idUser",
-							"host": ["{{base_url}}"],
-							"path": ["api", "approach", ":idUser"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"approach",
+								":idUser"
+							],
 							"variable": [
 								{
 									"key": "idUser",
@@ -2542,8 +3250,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/approach/:idUser",
-							"host": ["{{base_url}}"],
-							"path": ["api", "approach", ":idUser"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"approach",
+								":idUser"
+							],
 							"variable": [
 								{
 									"key": "idUser",
@@ -2580,8 +3294,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/approach/:idUser",
-							"host": ["{{base_url}}"],
-							"path": ["api", "approach", ":idUser"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"approach",
+								":idUser"
+							],
 							"variable": [
 								{
 									"key": "idUser",
@@ -2614,8 +3334,13 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/private-files",
-							"host": ["{{base_url}}"],
-							"path": ["api", "private-files"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"private-files"
+							]
 						}
 					},
 					"response": []
@@ -2646,8 +3371,13 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/private-files",
-							"host": ["{{base_url}}"],
-							"path": ["api", "private-files"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"private-files"
+							]
 						}
 					},
 					"response": []
@@ -2678,8 +3408,14 @@
 						},
 						"url": {
 							"raw": "{{base_url}}/api/private-files/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "private-files", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"private-files",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -2707,8 +3443,14 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/api/private-files/:id",
-							"host": ["{{base_url}}"],
-							"path": ["api", "private-files", ":id"],
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"private-files",
+								":id"
+							],
 							"variable": [
 								{
 									"key": "id",
@@ -2731,8 +3473,12 @@
 						"header": [],
 						"url": {
 							"raw": "{{base_url}}/health",
-							"host": ["{{base_url}}"],
-							"path": ["health"]
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"health"
+							]
 						}
 					},
 					"response": []

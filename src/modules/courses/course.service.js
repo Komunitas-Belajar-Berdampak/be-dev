@@ -3,6 +3,7 @@ const Course = require('./course.model');
 const AcademicTerm = require('../academicTerms/academic-term.model');
 const User = require('../users/user.model');
 const Role = require('../roles/roles.model');
+const Meeting = require('../meetings/meeting.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 
@@ -186,6 +187,13 @@ const createCourse = async (payload) => {
         kelas,
         deskripsi,
     });
+
+    const defaultMeetings = Array.from({ length: 16 }, (_, i) => ({
+        idCourse: course._id,
+        pertemuan: i + 1,
+        judul: `Pertemuan ${i + 1}`,
+    }));
+    await Meeting.insertMany(defaultMeetings);
 
     const populated = await Course.findById(course._id)
         .populate('idPeriode', 'periode')

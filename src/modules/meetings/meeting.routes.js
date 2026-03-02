@@ -17,6 +17,49 @@ router.use(auth);
 /**
  * @swagger
  * /api/meetings/{idCourse}:
+ *   post:
+ *     summary: Tambah pertemuan baru dalam suatu mata kuliah
+ *     tags: [Meetings]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: idCourse
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID mata kuliah
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - pertemuan
+ *               - judul
+ *             properties:
+ *               pertemuan:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 16
+ *               judul:
+ *                 type: string
+ *               deskripsi:
+ *                 type: object
+ *     responses:
+ *       201:
+ *         description: pertemuan ke-x berhasil dibuat!
+ */
+router.post(
+    '/:idCourse',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.postMeeting
+);
+
+/**
+ * @swagger
+ * /api/meetings/{idCourse}:
  *   get:
  *     summary: Ambil semua pertemuan dalam suatu mata kuliah
  *     tags: [Meetings]

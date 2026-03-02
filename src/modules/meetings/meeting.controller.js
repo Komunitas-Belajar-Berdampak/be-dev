@@ -2,10 +2,37 @@ const Joi = require('joi');
 const { successResponse } = require('../../utils/http');
 const meetingService = require('./meeting.service');
 
+const postMeetingSchema = Joi.object({
+    pertemuan: Joi.number().integer().min(1).max(16).required(),
+    judul: Joi.string().required(),
+    deskripsi: Joi.object().optional(),
+});
+
 const upsertMeetingSchema = Joi.object({
     judul: Joi.string().optional(),
     deskripsi: Joi.object().optional(),
 }).min(1);
+
+const postMeeting = async (req, res, next) => {
+    try {
+        const { error, value } = postMeetingSchema.validate(req.body);
+        if (error) throw error;
+
+        const m = await meetingService.upsertMeeting(
+            req.params.idCourse,
+            value.pertemuan,
+            { judul: value.judul, deskripsi: value.deskripsi }
+        );
+
+        return successResponse(res, {
+            statusCode: 201,
+            message: `pertemuan ke-${m.pertemuan} berhasil dibuat!`,
+            data: m,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
 
 const getMeetings = async (req, res, next) => {
     try {
@@ -54,6 +81,7 @@ const putMeeting = async (req, res, next) => {
 };
 
 module.exports = {
+    postMeeting,
     getMeetings,
     getMeetingDetail,
     putMeeting,
