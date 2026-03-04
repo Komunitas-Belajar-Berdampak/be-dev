@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const User = require('./user.model');
 const Role = require('../roles/roles.model');
+const Approach = require('../approach/approach.model');
 const { ApiError } = require('../../utils/http');
 const { hashPassword, comparePassword } = require('../auth/auth.utils');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
@@ -102,7 +103,12 @@ const getUserById = async (id) => {
         throw new ApiError(404, 'User tidak ditemukan');
     }
 
-    return mapUserDetail(user);
+    const approach = await Approach.findOne({ idMahasiswa: id }).lean();
+
+    return {
+        ...mapUserDetail(user),
+        gayaBelajar: approach ? approach.gayaBelajar : null,
+    };
 };
 
 const createUser = async (payload) => {
