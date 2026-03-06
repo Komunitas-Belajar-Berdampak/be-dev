@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const Major = require('./major.model');
 const Faculty = require('../faculties/faculty.model');
+const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const listMajors = async (query) => {
