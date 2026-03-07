@@ -307,8 +307,15 @@ const deleteCourse = async (id) => {
     if (!mongoose.isValidObjectId(id)) {
         throw new ApiError(400, 'ID course tidak valid');
     }
-    const deleted = await Course.findByIdAndDelete(id);
-    if (!deleted) throw new ApiError(404, 'Course tidak ditemukan');
+
+    const course = await Course.findById(id).populate('idPeriode').lean();
+    if (!course) throw new ApiError(404, 'Course tidak ditemukan');
+
+    if (course.idPeriode?.status === 'aktif') {
+        throw new ApiError(400, 'Matakuliah tidak dapat dihapus karena periode masih aktif');
+    }
+
+    await Course.findByIdAndDelete(id);
 };
 
 const addPengajar = async (courseId, idPengajar) => {
