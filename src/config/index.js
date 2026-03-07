@@ -41,6 +41,8 @@ const config = {
         windowMs: Number(process.env.RATE_WINDOW_MS) || 15 * 60 * 1000,
         max: Number(process.env.RATE_MAX) || 100,
     },
+
+    baseUrl: process.env.BASE_URL || 'http://localhost:3000',
 };
 
 module.exports = config;

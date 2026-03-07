@@ -43,20 +43,19 @@ const createThread = async (idGroup, payload, user) => {
 
     const { judul, idAssignment } = payload;
 
-    let assignmentId = null;
-    if (idAssignment) {
-        if (!mongoose.isValidObjectId(idAssignment)) {
-        throw new ApiError(400, 'ID assignment tidak valid');
-        }
-        const assignment = await Assignment.findById(idAssignment).lean();
-        if (!assignment) throw new ApiError(404, 'Assignment tidak ditemukan');
-        assignmentId = assignment._id;
-    }
+    if (!idAssignment) throw new ApiError(400, 'ID assignment wajib diisi');
+    if (!mongoose.isValidObjectId(idAssignment)) throw new ApiError(400, 'ID assignment tidak valid');
+
+    const assignment = await Assignment.findById(idAssignment).lean();
+    if (!assignment) throw new ApiError(404, 'Assignment tidak ditemukan');
+
+    const existing = await GroupThread.findOne({ idGroup, idAssignment }).lean();
+    if (existing) throw new ApiError(409, 'Assignment sudah digunakan di thread lain');
 
     const thread = await GroupThread.create({
         idGroup,
         judul,
-        idAssignment: assignmentId,
+        idAssignment: assignment._id,
     });
 
     await logActivity({
@@ -66,16 +65,10 @@ const createThread = async (idGroup, payload, user) => {
         kontribusi: 0,
     });
 
-    let assignmentName = null;
-    if (assignmentId) {
-        const a = await Assignment.findById(assignmentId).lean();
-        assignmentName = a?.judul || null;
-    }
-
     return {
         id: thread._id.toString(),
         judul: thread.judul,
-        assignment: assignmentName,
+        assignment: assignment.judul,
     };
 };
 
