@@ -18,8 +18,14 @@ const listByUser = async (userId, query) => {
     if (!mongoose.isValidObjectId(userId)) throw new ApiError(400, 'ID user tidak valid');
 
     const { page, limit, skip } = parsePagination(query);
+    const { search, tipe, status } = query;
 
     const filter = { idMahasiswa: userId };
+
+    if (search) filter.namaFile = { $regex: search, $options: 'i' };
+    if (tipe) filter.tipe = tipe;
+    if (status) filter.status = status;
+
     const totalItems = await PrivateFile.countDocuments(filter);
 
     const docs = await PrivateFile.find(filter)
