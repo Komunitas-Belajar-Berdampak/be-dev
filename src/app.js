@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -44,8 +43,6 @@ app.use(compression());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize());
-
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(
     rateLimit({
