@@ -32,6 +32,43 @@ const mapSubmission = (s, mahasiswaMap) => {
     };
 };
 
+const getSubmissionSummary = async (idAssignment, user) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
+    }
+
+    if (!isDosenOrAdmin(user)) {
+        throw new ApiError(403, 'Hanya dosen/admin yang boleh melihat summary');
+    }
+
+    const assignment = await Assignment.findById(idAssignment).lean();
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
+    const [totalItems, butuhPenilaian, telat, meeting] = await Promise.all([
+        Submission.countDocuments({ idAssignment }),
+        Submission.countDocuments({ idAssignment, nilai: { $exists: false } }),
+        assignment.tenggat
+            ? Submission.countDocuments({ idAssignment, submittedAt: { $gt: assignment.tenggat } })
+            : Promise.resolve(0),
+        Meeting.findById(assignment.idMeeting).select('idCourse').lean(),
+    ]);
+
+    let totalMahasiswa = 0;
+    if (meeting?.idCourse) {
+        const course = await Course.findById(meeting.idCourse).select('idMahasiswa').lean();
+        totalMahasiswa = course?.idMahasiswa?.length || 0;
+    }
+
+    return {
+        totalMahasiswa,
+        telahSubmit: totalItems,
+        butuhPenilaian,
+        telat,
+        tenggat: assignment.tenggat || null,
+        tugasJudul: assignment.judul || '',
+    };
+};
+
 const listAllSubmissions = async (idAssignment, user, queryParams) => {
     if (!mongoose.isValidObjectId(idAssignment)) throw new ApiError(400, 'ID assignment tidak valid');
 
@@ -236,6 +273,7 @@ const gradeSubmission = async (idAssignment, idSubmission, user, nilai, gradeAt)
 };
 
 module.exports = {
+    getSubmissionSummary,
     listAllSubmissions,
     getMySubmission,
     createSubmission,

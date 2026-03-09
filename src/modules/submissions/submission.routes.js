@@ -17,70 +17,27 @@ const gradeSchema = Joi.object({
 
 router.use(auth);
 
-/**
- * @swagger
- * tags:
- *   name: Submissions
- *   description: Pengumpulan tugas
- */
+// ── Summary ──────────────────────────────────────────────────────────────────
+router.get(
+    '/:idAssignment/summary',
+    requireRoles('DOSEN', 'SUPER_ADMIN'),
+    async (req, res, next) => {
+        try {
+            const data = await service.getSubmissionSummary(
+                req.params.idAssignment,
+                req.user
+            );
+            return successResponse(res, {
+                message: 'data berhasil diambil!',
+                data,
+            });
+        } catch (err) {
+            return next(err);
+        }
+    }
+);
 
-// Register more specific routes first
-/**
- * @swagger
- * /api/submissions/{idAssignment}/all:
- *   get:
- *     summary: Ambil semua submissions untuk assignment (untuk dosen/admin)
- *     tags: [Submissions]
- *     description: Dosen/admin dapat melihat semua submissions untuk assignment tertentu
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - name: idAssignment
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: ID assignment
- *     responses:
- *       200:
- *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: array
- *                   items:
- *                     type: object
- *                     properties:
- *                       id:
- *                         type: string
- *                       mahasiswa:
- *                         type: object
- *                         properties:
- *                           id:
- *                             type: string
- *                           nrp:
- *                             type: string
- *                           nama:
- *                             type: string
- *                       submittedAt:
- *                         type: string
- *                         format: date-time
- *                       file:
- *                         type: string
- *                         description: pathFile
- *                       grade:
- *                         type: number
- *                       gradeAt:
- *                         type: string
- *                         format: date-time
- */
+// ── All submissions (dosen/admin) ─────────────────────────────────────────────
 router.get('/:idAssignment/all', requireRoles('DOSEN', 'SUPER_ADMIN'), async (req, res, next) => {
     try {
         const result = await service.listAllSubmissions(req.params.idAssignment, req.user, req.query);
@@ -95,56 +52,7 @@ router.get('/:idAssignment/all', requireRoles('DOSEN', 'SUPER_ADMIN'), async (re
     }
 });
 
-/**
- * @swagger
- * /api/submissions/{idAssignment}:
- *   get:
- *     summary: Ambil submission mahasiswa sendiri untuk assignment tertentu
- *     tags: [Submissions]
- *     description: Mahasiswa dapat melihat submission mereka sendiri
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - name: idAssignment
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: ID assignment
- *     responses:
- *       200:
- *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       nullable: true
- *                     submittedAt:
- *                       type: string
- *                       format: date-time
- *                       nullable: true
- *                     file:
- *                       type: string
- *                       description: pathFile
- *                       nullable: true
- *                     grade:
- *                       type: number
- *                       nullable: true
- *                     gradeAt:
- *                       type: string
- *                       format: date-time
- *                       nullable: true
- */
+// ── My submission (mahasiswa) ─────────────────────────────────────────────────
 router.get('/:idAssignment', async (req, res, next) => {
     try {
         const data = await service.getMySubmission(req.params.idAssignment, req.user);
@@ -157,70 +65,15 @@ router.get('/:idAssignment', async (req, res, next) => {
     }
 });
 
-/**
- * @swagger
- * /api/submissions/{idAssignment}:
- *   post:
- *     summary: Submit tugas (mahasiswa)
- *     tags: [Submissions]
- *     description: Mahasiswa submit tugas untuk assignment tertentu. submittedAt otomatis menggunakan waktu sekarang.
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - name: idAssignment
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: ID assignment
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - file
- *             properties:
- *               file:
- *                 type: string
- *                 description: Path file submission
- *     responses:
- *       201:
- *         description: tugas sudah tersubmit!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     file:
- *                       type: string
- *                       description: pathFile
- *                     submittedAt:
- *                       type: string
- *                       format: date-time
- *       400:
- *         description: Sudah submit sebelumnya, gunakan PATCH untuk mengubah
- *       422:
- *         description: Tenggat waktu telah lewat
- */
+// ── Submit tugas (mahasiswa) ──────────────────────────────────────────────────
 router.post('/:idAssignment', createUpload('file', { required: true }), async (req, res, next) => {
     try {
         const fileUrl = await uploadFile(req.file, 'submissions');
-
         const data = await service.createSubmission(
             req.params.idAssignment,
             req.user,
             fileUrl,
         );
-
         return successResponse(res, {
             statusCode: 201,
             message: 'tugas sudah tersubmit!',
@@ -231,67 +84,15 @@ router.post('/:idAssignment', createUpload('file', { required: true }), async (r
     }
 });
 
-/**
- * @swagger
- * /api/submissions/{idAssignment}:
- *   patch:
- *     summary: Edit submission (mahasiswa)
- *     tags: [Submissions]
- *     description: Mahasiswa dapat mengubah submission mereka jika belum melewati deadline. submittedAt otomatis diupdate ke waktu sekarang.
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - name: idAssignment
- *         in: path
- *         required: true
- *         schema:
- *           type: string
- *         description: ID assignment
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               file:
- *                 type: string
- *                 description: Path file submission baru (optional)
- *     responses:
- *       200:
- *         description: submissions telah diubah!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     file:
- *                       type: string
- *                     submittedAt:
- *                       type: string
- *                       format: date-time
- *       404:
- *         description: Submission tidak ditemukan, silakan submit terlebih dahulu
- *       422:
- *         description: Tenggat waktu telah lewat, tidak bisa mengubah submission
- */
+// ── Edit submission (mahasiswa) ───────────────────────────────────────────────
 router.patch('/:idAssignment', createUpload('file', { required: false }), async (req, res, next) => {
     try {
         const fileUrl = req.file ? await uploadFile(req.file, 'submissions') : undefined;
-
         const data = await service.updateMySubmission(
             req.params.idAssignment,
             req.user,
             fileUrl,
         );
-
         return successResponse(res, {
             message: 'submissions telah diubah!',
             data,
@@ -301,50 +102,7 @@ router.patch('/:idAssignment', createUpload('file', { required: false }), async 
     }
 });
 
-/**
- * @swagger
- * /api/submissions/assignments/{idAssignment}/submissions/{idSubmission}/grade:
- *   patch:
- *     summary: Beri nilai submission (untuk dosen/admin)
- *     tags: [Submissions]
- *     description: Dosen/admin dapat memberi nilai pada submission mahasiswa. gradeAt otomatis menggunakan waktu sekarang jika tidak diisi.
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: idAssignment
- *         required: true
- *         schema:
- *           type: string
- *         description: ID assignment
- *       - in: path
- *         name: idSubmission
- *         required: true
- *         schema:
- *           type: string
- *         description: ID submission
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - nilai
- *             properties:
- *               nilai:
- *                 type: number
- *                 minimum: 0
- *                 maximum: 100
- *                 description: Nilai submission (0-100)
- *               gradeAt:
- *                 type: string
- *                 format: date-time
- *                 description: Waktu penilaian (otomatis jika tidak diisi)
- *     responses:
- *       200:
- *         description: nilai berhasil disimpan!
- */
+// ── Grade submission (dosen/admin) ────────────────────────────────────────────
 router.patch(
     '/assignments/:idAssignment/submissions/:idSubmission/grade',
     requireRoles('DOSEN', 'SUPER_ADMIN'),

@@ -25,13 +25,14 @@ const groupRoutes = require('./modules/groups/group.routes');
 const approachRoutes = require('./modules/approach/approach.routes');
 const privateFileRoutes = require('./modules/privateFiles/private-file.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
+const courseDashboardRoutes = require('./modules/courseDashboard/course-dashboard.routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 
 const app = express();
 
 app.use(httpLogger);
-app.use(performanceLogger); // Log response times
+app.use(performanceLogger);
 
 app.use(helmet());
 app.use(
@@ -71,11 +72,12 @@ app.use('/api/meetings', meetingRoutes);
 app.use('/api/materials', materialRoutes);
 app.use('/api/assignments', assignmentRoutes);
 app.use('/api/submissions', submissionRoutes);
-app.use('/api/assignments', submissionRoutes);
 app.use('/api', groupRoutes);
 app.use('/api/approach', approachRoutes);
 app.use('/api/private-files', privateFileRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/course-dashboard', courseDashboardRoutes);
+
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res) => {
