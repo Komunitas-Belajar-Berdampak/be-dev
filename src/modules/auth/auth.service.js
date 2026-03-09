@@ -32,6 +32,7 @@ const login = async (nrp, password) => {
         nrp: user.nrp,
         nama: user.nama,
         namaRole: roleNames.join(','),
+        isDefaultPassword: user.isDefaultPassword ?? true,
         },
     };
 };
