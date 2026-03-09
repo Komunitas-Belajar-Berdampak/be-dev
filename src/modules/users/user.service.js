@@ -41,6 +41,7 @@ const mapUserDetail = (u) => {
         jenisKelamin: u.jenisKelamin,
         status: u.status,
         fotoProfil: u.fotoProfil || null,
+        isDefaultPassword: u.isDefaultPassword ?? true,
     };
 };
 
@@ -275,6 +276,7 @@ const patchUser = async (id, payload) => {
             throw new ApiError(400, 'Password lama tidak cocok');
         }
         user.passwordHash = await hashPassword(passwordBaru);
+        user.isDefaultPassword = false;
     }
 
     if (fotoProfil !== undefined) user.fotoProfil = fotoProfil;

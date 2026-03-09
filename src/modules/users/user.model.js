@@ -46,6 +46,10 @@ const userSchema = new Schema(
         passwordHash: {
         type: String,
         required: true,
+        isDefaultPassword: {
+        type: Boolean,
+        default: true,
+    },
         },
         roleIds: [
         {
