@@ -1,6 +1,7 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const requireRoles = require('../../middlewares/rbac');
+const { createUpload } = require('../../middlewares/upload');
 const controller = require('./material.controller');
 
 const router = express.Router();
@@ -138,6 +139,7 @@ router.get('/:idCourse/meetings/:pertemuan', controller.getMaterialsByMeeting);
 router.post(
     '/:idCourse/meetings/:pertemuan',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
+    createUpload('file', { required: true }),
     controller.createMaterial
 );
 
@@ -284,6 +286,7 @@ router.get('/:idMaterial', controller.getMaterialDetail);
 router.put(
     '/:idMaterial',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
+    createUpload('file', { required: false }),
     controller.updateMaterial
 );
 

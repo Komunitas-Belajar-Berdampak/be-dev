@@ -1,14 +1,7 @@
 const Joi = require('joi');
 const { successResponse } = require('../../utils/http');
+const { uploadFile } = require('../../libs/s3');
 const materialService = require('./material.service');
-
-const materialCreateSchema = Joi.object({
-    namaFile: Joi.string().required(),
-    tipe: Joi.string().required(),
-    pathFile: Joi.string().required(),
-    visibility: Joi.string().valid('HIDE', 'VISIBLE').optional(),
-    deskripsi: Joi.alternatives().try(Joi.object(), Joi.string()).optional(),
-});
 
 const materialUpdateSchema = Joi.object({
     namaFile: Joi.string().optional(),
@@ -17,6 +10,11 @@ const materialUpdateSchema = Joi.object({
     visibility: Joi.string().valid('HIDE', 'VISIBLE').optional(),
     deskripsi: Joi.alternatives().try(Joi.object(), Joi.string()).optional(),
 }).min(1);
+
+const parseJsonField = (value) => {
+    if (!value || typeof value !== 'string') return value;
+    try { return JSON.parse(value); } catch { return undefined; }
+};
 
 const getMaterialsByCourse = async (req, res, next) => {
     try {
@@ -51,13 +49,24 @@ const getMaterialDetail = async (req, res, next) => {
 
 const createMaterial = async (req, res, next) => {
     try {
-        const { error, value } = materialCreateSchema.validate(req.body);
-        if (error) throw error;
+        if (!req.file) {
+            return next(new (require('../../utils/http').ApiError)(400, 'File materi wajib disertakan'));
+        }
+
+        const pathFile = await uploadFile(req.file, 'materials');
+
+        const payload = {
+            namaFile: req.body.namaFile || req.file.originalname,
+            tipe: req.file.mimetype,
+            pathFile,
+            visibility: req.body.visibility,
+            deskripsi: parseJsonField(req.body.deskripsi),
+        };
 
         const data = await materialService.createMaterial(
             req.params.idCourse,
             Number(req.params.pertemuan),
-            value
+            payload
         );
 
         return successResponse(res, {
@@ -72,8 +81,19 @@ const createMaterial = async (req, res, next) => {
 
 const updateMaterial = async (req, res, next) => {
     try {
-        const { error, value } = materialUpdateSchema.validate(req.body);
+        const body = {
+            ...req.body,
+            deskripsi: parseJsonField(req.body.deskripsi),
+        };
+
+        const { error, value } = materialUpdateSchema.validate(body);
         if (error) throw error;
+
+        if (req.file) {
+            value.pathFile = await uploadFile(req.file, 'materials');
+            value.tipe = req.file.mimetype;
+            if (!value.namaFile) value.namaFile = req.file.originalname;
+        }
 
         await materialService.updateMaterialById(
             req.params.idMaterial,

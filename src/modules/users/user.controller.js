@@ -1,4 +1,5 @@
 const { successResponse, ApiError } = require('../../utils/http');
+const { uploadFile } = require('../../libs/s3');
 const userService = require('./user.service');
 
 const getUsers = async (req, res, next) => {
@@ -70,10 +71,24 @@ const patchUser = async (req, res, next) => {
     }
 };
 
+const uploadAvatar = async (req, res, next) => {
+    try {
+        const avatarUrl = await uploadFile(req.file, 'profiles');
+        await userService.patchUser(req.user.sub, { fotoProfil: avatarUrl });
+        return successResponse(res, {
+            message: 'foto profil berhasil diperbarui!',
+            data: { fotoProfil: avatarUrl },
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 module.exports = {
     getUsers,
     getUserById,
     createUser,
     updateUser,
     patchUser,
+    uploadAvatar,
 };

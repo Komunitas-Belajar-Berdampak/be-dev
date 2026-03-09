@@ -1,13 +1,7 @@
 const Joi = require('joi');
 const { successResponse } = require('../../utils/http');
+const { uploadFile } = require('../../libs/s3');
 const service = require('./private-file.service');
-
-const createSchema = Joi.object({
-    filePath: Joi.string().required(),
-    fileSize: Joi.string().required(),
-    status: Joi.string().valid('VISIBLE', 'PRIVATE').optional(),
-    tipe: Joi.string().optional(), // kalau mau kirim MIME type
-});
 
 const patchSchema = Joi.object({
     status: Joi.string().valid('VISIBLE', 'PRIVATE').required(),
@@ -28,15 +22,20 @@ const listPrivateFiles = async (req, res, next) => {
 
 const createPrivateFile = async (req, res, next) => {
     try {
-        const { error, value } = createSchema.validate(req.body);
-        if (error) throw error;
+        const filePath = await uploadFile(req.file, 'private-files');
+        const fileSize = `${(req.file.size / 1024).toFixed(1)} KB`;
 
-        const data = await service.createForUser(req.user.sub, value);
+        const data = await service.createForUser(req.user.sub, {
+            filePath,
+            fileSize,
+            tipe: req.file.mimetype,
+            status: req.body.status,
+        });
 
         return successResponse(res, {
-        statusCode: 201,
-        message: 'data berhasil disimpan!',
-        data,
+            statusCode: 201,
+            message: 'data berhasil disimpan!',
+            data,
         });
     } catch (err) {
         return next(err);

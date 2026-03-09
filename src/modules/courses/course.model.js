@@ -48,7 +48,12 @@ const courseSchema = new Schema(
         trim: true,
         },
         deskripsi: {
-        type: Schema.Types.Mixed, 
+        type: Schema.Types.Mixed,
+        },
+        semesterType: {
+        type: String,
+        enum: ['Ganjil', 'Genap'],
+        default: null,
         },
     },
     {
@@ -63,6 +68,7 @@ courseSchema.index({ idMahasiswa: 1 });                // For student filtering 
 courseSchema.index({ status: 1 });                     // For status filtering
 courseSchema.index({ kelas: 1 });                      // For class filtering
 courseSchema.index({ sks: 1 });                        // For sks filtering
+courseSchema.index({ semesterType: 1 });               // For semester type filtering
 courseSchema.index({ idPeriode: 1, status: 1 });       // Compound: periode + status
 courseSchema.index({ idPengajar: 1, idPeriode: 1 });   // Compound: teacher's courses in period
 courseSchema.index({ idMahasiswa: 1, idPeriode: 1 });  // Compound: student's courses in period

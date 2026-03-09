@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
+const { createUpload } = require('../../middlewares/upload');
 const controller = require('./private-file.controller');
 
 const router = express.Router();
@@ -93,7 +94,7 @@ router.get('/', controller.listPrivateFiles);
  *       401:
  *         description: Unauthorized
  */
-router.post('/', controller.createPrivateFile);
+router.post('/', createUpload('file', { required: true }), controller.createPrivateFile);
 
 
 /**

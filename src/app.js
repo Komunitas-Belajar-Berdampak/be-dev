@@ -25,6 +25,7 @@ const submissionRoutes = require('./modules/submissions/submission.routes');
 const groupRoutes = require('./modules/groups/group.routes');
 const approachRoutes = require('./modules/approach/approach.routes');
 const privateFileRoutes = require('./modules/privateFiles/private-file.routes');
+const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 
@@ -77,6 +78,7 @@ app.use('/api/assignments', submissionRoutes);
 app.use('/api', groupRoutes);
 app.use('/api/approach', approachRoutes);
 app.use('/api/private-files', privateFileRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res) => {

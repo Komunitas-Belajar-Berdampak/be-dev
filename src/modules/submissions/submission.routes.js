@@ -1,19 +1,14 @@
 const express = require('express');
-const Joi = require('joi');
 const auth = require('../../middlewares/auth');
 const requireRoles = require('../../middlewares/rbac');
+const { createUpload } = require('../../middlewares/upload');
+const { uploadFile } = require('../../libs/s3');
 const { successResponse } = require('../../utils/http');
 const service = require('./submission.service');
 
 const router = express.Router();
 
-const createSchema = Joi.object({
-    file: Joi.string().required(),
-});
-
-const updateSchema = Joi.object({
-    file: Joi.string().optional(),
-}).min(1);
+const Joi = require('joi');
 
 const gradeSchema = Joi.object({
     nilai: Joi.number().min(0).max(100).required(),
@@ -91,6 +86,7 @@ router.get('/:idAssignment/all', requireRoles('DOSEN', 'SUPER_ADMIN'), async (re
         const result = await service.listAllSubmissions(req.params.idAssignment, req.user, req.query);
         return successResponse(res, {
             message: 'data berhasil diambil!',
+            summary: result.summary,
             data: result.items,
             pagination: result.pagination,
         });
@@ -215,15 +211,14 @@ router.get('/:idAssignment', async (req, res, next) => {
  *       422:
  *         description: Tenggat waktu telah lewat
  */
-router.post('/:idAssignment', async (req, res, next) => {
+router.post('/:idAssignment', createUpload('file', { required: true }), async (req, res, next) => {
     try {
-        const { error, value } = createSchema.validate(req.body);
-        if (error) throw error;
+        const fileUrl = await uploadFile(req.file, 'submissions');
 
         const data = await service.createSubmission(
             req.params.idAssignment,
             req.user,
-            value.file,
+            fileUrl,
         );
 
         return successResponse(res, {
@@ -287,15 +282,14 @@ router.post('/:idAssignment', async (req, res, next) => {
  *       422:
  *         description: Tenggat waktu telah lewat, tidak bisa mengubah submission
  */
-router.patch('/:idAssignment', async (req, res, next) => {
+router.patch('/:idAssignment', createUpload('file', { required: false }), async (req, res, next) => {
     try {
-        const { error, value } = updateSchema.validate(req.body);
-        if (error) throw error;
+        const fileUrl = req.file ? await uploadFile(req.file, 'submissions') : undefined;
 
         const data = await service.updateMySubmission(
             req.params.idAssignment,
             req.user,
-            value.file,
+            fileUrl,
         );
 
         return successResponse(res, {

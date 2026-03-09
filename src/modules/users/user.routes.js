@@ -2,6 +2,7 @@ const express = require('express');
 const auth = require('../../middlewares/auth');
 const requireRoles = require('../../middlewares/rbac');
 const validate = require('../../middlewares/validate');
+const { createUpload } = require('../../middlewares/upload');
 const {
     createUserSchema,
     updateUserSchema,
@@ -254,6 +255,13 @@ router.patch(
     auth,
     validate(patchUserSchema),
     controller.patchUser,
+);
+
+router.patch(
+    '/avatar',
+    auth,
+    createUpload('avatar', { required: true, maxSizeMB: 5 }),
+    controller.uploadAvatar,
 );
 
 module.exports = router;

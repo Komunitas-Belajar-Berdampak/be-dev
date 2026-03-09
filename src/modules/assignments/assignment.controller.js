@@ -1,6 +1,12 @@
 const Joi = require('joi');
 const { successResponse } = require('../../utils/http');
+const { uploadFile } = require('../../libs/s3');
 const assignmentService = require('./assignment.service');
+
+const parseJsonField = (value) => {
+    if (!value || typeof value !== 'string') return value;
+    try { return JSON.parse(value); } catch { return undefined; }
+};
 
 const createSchema = Joi.object({
     judul: Joi.string().required(),
@@ -53,8 +59,17 @@ const getAssignmentDetail = async (req, res, next) => {
 
 const createAssignment = async (req, res, next) => {
     try {
-        const { error, value } = createSchema.validate(req.body);
+        const body = {
+            ...req.body,
+            deskripsi: parseJsonField(req.body.deskripsi),
+        };
+
+        const { error, value } = createSchema.validate(body);
         if (error) throw error;
+
+        if (req.file) {
+            value.lampiran = await uploadFile(req.file, 'assignments');
+        }
 
         const data = await assignmentService.createAssignment(
             req.params.idCourse,
@@ -74,8 +89,17 @@ const createAssignment = async (req, res, next) => {
 
 const updateAssignment = async (req, res, next) => {
     try {
-        const { error, value } = updateSchema.validate(req.body);
+        const body = {
+            ...req.body,
+            deskripsi: parseJsonField(req.body.deskripsi),
+        };
+
+        const { error, value } = updateSchema.validate(body);
         if (error) throw error;
+
+        if (req.file) {
+            value.lampiran = await uploadFile(req.file, 'assignments');
+        }
 
         await assignmentService.updateAssignmentById(
             req.params.idAssignment,

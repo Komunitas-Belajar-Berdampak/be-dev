@@ -1,6 +1,7 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
 const requireRoles = require('../../middlewares/rbac');
+const { createUpload } = require('../../middlewares/upload');
 const controller = require('./assignment.controller');
 
 const router = express.Router();
@@ -122,6 +123,7 @@ router.get('/:idCourse/meetings/:pertemuan', controller.getAssignmentsByMeeting)
 router.post(
     '/:idCourse/meetings/:pertemuan',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
+    createUpload('lampiran', { required: false }),
     controller.createAssignment
 );
 
@@ -273,6 +275,7 @@ router.get('/:idAssignment', controller.getAssignmentDetail);
 router.put(
     '/:idAssignment',
     requireRoles('SUPER_ADMIN', 'DOSEN'),
+    createUpload('lampiran', { required: false }),
     controller.updateAssignment
 );
 

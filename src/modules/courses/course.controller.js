@@ -12,6 +12,7 @@ const createCourseSchema = Joi.object({
     idMahasiswa: Joi.array().items(Joi.string()).default([]),
     kelas: Joi.string().required(),
     deskripsi: Joi.object().optional(),
+    semesterType: Joi.string().valid('Ganjil', 'Genap').optional().allow(null),
 });
 
 const updateCourseSchema = Joi.object({
@@ -24,6 +25,7 @@ const updateCourseSchema = Joi.object({
     idMahasiswa: Joi.array().items(Joi.string()).optional(),
     kelas: Joi.string().optional(),
     deskripsi: Joi.object().optional(),
+    semesterType: Joi.string().valid('Ganjil', 'Genap').optional().allow(null),
 }).min(1);
 
 const patchDeskripsiSchema = Joi.object({

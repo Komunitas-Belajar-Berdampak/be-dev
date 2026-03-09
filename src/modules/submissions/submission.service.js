@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Submission = require('./submission.model');
 const Assignment = require('../assignments/assignment.model');
+const Meeting = require('../meetings/meeting.model');
+const Course = require('../courses/course.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
@@ -46,11 +48,20 @@ const listAllSubmissions = async (idAssignment, user, queryParams) => {
 
     const totalItems = await Submission.countDocuments(query);
 
-    const subs = await Submission.find(query)
-        .sort({ submittedAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [subs, butuhPenilaian, telat, meeting] = await Promise.all([
+        Submission.find(query).sort({ submittedAt: -1 }).skip(skip).limit(limit).lean(),
+        Submission.countDocuments({ idAssignment, nilai: { $exists: false } }),
+        assignment.tenggat
+            ? Submission.countDocuments({ idAssignment, submittedAt: { $gt: assignment.tenggat } })
+            : Promise.resolve(0),
+        Meeting.findById(assignment.idMeeting).select('idCourse').lean(),
+    ]);
+
+    let totalMahasiswa = 0;
+    if (meeting?.idCourse) {
+        const course = await Course.findById(meeting.idCourse).select('idMahasiswa').lean();
+        totalMahasiswa = course?.idMahasiswa?.length || 0;
+    }
 
     const studentIds = subs
         .map((s) => s.idStudent)
@@ -69,6 +80,13 @@ const listAllSubmissions = async (idAssignment, user, queryParams) => {
     }
 
     return {
+        summary: {
+            totalMahasiswa,
+            telahSubmit: totalItems,
+            butuhPenilaian,
+            telat,
+            tenggat: assignment.tenggat || null,
+        },
         items: subs.map((s) => mapSubmission(s, mahasiswaMap)),
         pagination: buildPagination({ page, limit, totalItems }),
     };

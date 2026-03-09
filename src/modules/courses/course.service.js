@@ -31,6 +31,7 @@ const mapCourseListItem = (c) => ({
     namaMatkul: c.namaMatkul,
     sks: c.sks,
     status: c.status,
+    semesterType: c.semesterType || null,
     periode: c.idPeriode?.periode || null,
     deskripsi: c.deskripsi || null,
     pengajar: (c.idPengajar || []).filter(Boolean).map((p) => ({ id: p._id.toString(), nama: p.nama })),
@@ -39,13 +40,14 @@ const mapCourseListItem = (c) => ({
 
 const listCourses = async (filters, currentUser) => {
     const { page, limit, skip } = parsePagination(filters);
-    const { kodeMatkul, status, periode, nrp, kelas, sks } = filters;
+    const { kodeMatkul, status, periode, nrp, kelas, sks, semesterType } = filters;
 
     const query = {};
     if (kodeMatkul) query.kodeMatkul = kodeMatkul;
     if (status) query.status = status;
     if (kelas) query.kelas = kelas;
     if (sks) query.sks = Number(sks);
+    if (semesterType) query.semesterType = semesterType;
 
     if (periode) {
         if (mongoose.isValidObjectId(periode)) {
@@ -120,6 +122,7 @@ const getCourseById = async (id) => {
         namaMatkul: course.namaMatkul,
         sks: course.sks,
         status: course.status,
+        semesterType: course.semesterType || null,
         periode: course.idPeriode
         ? {
             id: course.idPeriode._id.toString(),
@@ -155,6 +158,7 @@ const createCourse = async (payload) => {
         idMahasiswa,
         kelas,
         deskripsi,
+        semesterType,
     } = payload;
 
     const exists = await Course.findOne({ kodeMatkul }).lean();
@@ -186,6 +190,7 @@ const createCourse = async (payload) => {
         idMahasiswa: uniqueMhsIds,
         kelas,
         deskripsi,
+        semesterType: semesterType || null,
     });
 
     const defaultMeetings = Array.from({ length: 16 }, (_, i) => ({
@@ -207,6 +212,7 @@ const createCourse = async (payload) => {
         namaMatkul: populated.namaMatkul,
         sks: populated.sks,
         status: populated.status,
+        semesterType: populated.semesterType || null,
         periode: populated.idPeriode?.periode || null,
         pengajar: (populated.idPengajar || []).filter(Boolean).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
         mahasiswa: (populated.idMahasiswa || []).filter(Boolean).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),
@@ -233,6 +239,7 @@ const updateCourse = async (id, payload) => {
         idMahasiswa,
         kelas,
         deskripsi,
+        semesterType,
     } = payload;
 
     if (kodeMatkul && kodeMatkul !== course.kodeMatkul) {
@@ -249,6 +256,7 @@ const updateCourse = async (id, payload) => {
     if (status !== undefined) course.status = status;
     if (kelas !== undefined) course.kelas = kelas;
     if (deskripsi !== undefined) course.deskripsi = deskripsi;
+    if (semesterType !== undefined) course.semesterType = semesterType || null;
 
     if (idPeriode) {
         if (!mongoose.isValidObjectId(idPeriode)) {
@@ -285,6 +293,7 @@ const updateCourse = async (id, payload) => {
         namaMatkul: populated.namaMatkul,
         sks: populated.sks,
         status: populated.status,
+        semesterType: populated.semesterType || null,
         periode: populated.idPeriode?.periode || null,
         pengajar: (populated.idPengajar || []).filter(Boolean).map((p) => ({ id: p._id.toString(), nrp: p.nrp, nama: p.nama })),
         mahasiswa: (populated.idMahasiswa || []).filter(Boolean).map((m) => ({ id: m._id.toString(), nrp: m.nrp, nama: m.nama })),

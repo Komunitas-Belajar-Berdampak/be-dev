@@ -1,7 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const { randomUUID } = require('crypto');
 const mongoose = require('mongoose');
-const { nanoid } = require('nanoid');
 const GroupThread = require('./group-thread.model');
 const GroupPost = require('./group-post.model');
 const StudyGroup = require('./group.model');
@@ -9,13 +7,11 @@ const GroupMember = require('./group-member.model');
 const ContributionThread = require('./contribution-thread.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
+const { uploadBuffer } = require('../../libs/s3');
 const { logActivity } = require('./activity-log.service');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
-const config = require('../../config');
 
-const UPLOADS_DIR = path.join(__dirname, '../../uploads/posts');
-
-const processImages = (node) => {
+const processImages = async (node) => {
     if (!node || typeof node !== 'object') return;
 
     if (node.type === 'image' && node.attrs?.src) {
@@ -31,16 +27,15 @@ const processImages = (node) => {
                 const mime = matches[1];
                 const base64data = matches[2];
                 const ext = mime.split('/')[1]?.split('+')[0] || 'png';
-                const filename = `${nanoid()}.${ext}`;
-                fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-                fs.writeFileSync(path.join(UPLOADS_DIR, filename), Buffer.from(base64data, 'base64'));
-                node.attrs.src = `${config.baseUrl}/uploads/posts/${filename}`;
+                const key = `groups/posts/${randomUUID()}.${ext}`;
+                const s3Url = await uploadBuffer(key, Buffer.from(base64data, 'base64'), mime);
+                node.attrs.src = s3Url;
             }
         }
     }
 
     if (Array.isArray(node.content)) {
-        node.content.forEach(processImages);
+        await Promise.all(node.content.map(processImages));
     }
 };
 
@@ -108,7 +103,7 @@ const createPost = async (idThread, user, konten) => {
     const author = await User.findById(user.sub).lean();
     if (!author) throw new ApiError(404, 'User tidak ditemukan');
 
-    processImages(konten);
+    await processImages(konten);
 
     const post = await GroupPost.create({
         idThread,
@@ -178,7 +173,7 @@ const updatePost = async (idPost, user, konten) => {
         throw new ApiError(403, 'Anda tidak boleh mengedit post ini');
     }
 
-    processImages(konten);
+    await processImages(konten);
     post.konten = konten;
     await post.save();
 
