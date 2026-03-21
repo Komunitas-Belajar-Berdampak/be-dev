@@ -54,7 +54,7 @@ const listPostsByThread = async (idThread, query) => {
 
     const posts = await GroupPost.find(filter)
         .populate('idAuthor', 'nrp nama')
-        .sort({ updatedAt: 1 })
+        .sort({ createdAt: 1 })
         .skip(skip)
         .limit(limit)
         .lean();
@@ -64,6 +64,7 @@ const listPostsByThread = async (idThread, query) => {
         id: p._id.toString(),
         author: { nrp: p.idAuthor.nrp, nama: p.idAuthor.nama },
         konten: p.konten,
+        createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         })),
         pagination: buildPagination({ page, limit, totalItems }),
@@ -88,6 +89,7 @@ const getPostById = async (idPost) => {
             nama: post.idAuthor.nama,
         },
         konten: post.konten,
+        createdAt: post.createdAt,
         updatedAt: post.updatedAt,
     };
 };
