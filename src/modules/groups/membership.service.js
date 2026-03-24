@@ -65,6 +65,16 @@ const joinGroup = async (idStudyGroup, userId) => {
         }
     }
 
+    // Validation: Check if group is already full
+    const approvedCount = await GroupMember.countDocuments({
+        idGroup: idStudyGroup,
+        status: 'APPROVED',
+    });
+
+    if (approvedCount >= group.kapasitas) {
+        throw new ApiError(400, 'Kapasitas kelompok sudah penuh');
+    }
+
     // Validation: Check if student is already in another group in this course
     const groupsInCourse = await StudyGroup.find({
         idCourse: group.idCourse,
