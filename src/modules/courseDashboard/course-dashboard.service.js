@@ -44,6 +44,7 @@ const getDashboardByCourse = async (idCourse) => {
         return acc;
     }, {});
 
+    // Map<assignmentId, submission[]>
     const subByAssignment = submissions.reduce((acc, s) => {
         const key = s.idAssignment.toString();
         if (!acc[key]) acc[key] = [];
@@ -51,12 +52,54 @@ const getDashboardByCourse = async (idCourse) => {
         return acc;
     }, {});
 
+    // Map<assignmentId, Map<studentId, submission>> — O(1) lookup di loop
+    const subByStudentByAssignment = {};
+    for (const [aId, subs] of Object.entries(subByAssignment)) {
+        subByStudentByAssignment[aId] = {};
+        for (const s of subs) {
+            if (s.idStudent) {
+                subByStudentByAssignment[aId][s.idStudent.toString()] = s;
+            }
+        }
+    }
+
+    // Map<assignmentId, meetingId> — untuk lookup O(1) di scatter
+    const assignmentMap = assignments.reduce((acc, a) => {
+        acc[a._id.toString()] = a;
+        return acc;
+    }, {});
+
+    // Map<meetingId, meetingObj> — untuk lookup O(1)
+    const meetingMapById = meetings.reduce((acc, m) => {
+        acc[m._id.toString()] = m;
+        return acc;
+    }, {});
+
+    // Map<assignmentId, meetingId> — tiap assignment milik tepat 1 meeting
+    const assignmentToMeetingId = {};
+    for (const m of meetings) {
+        for (const a of assignmentByMeeting[m._id.toString()] ?? []) {
+            assignmentToMeetingId[a._id.toString()] = m._id.toString();
+        }
+    }
+
+    // Map<meetingId, Set<studentId yang submit>> — O(submissions) sekali jalan
+    const submittedByMeeting = meetings.reduce((acc, m) => {
+        acc[m._id.toString()] = new Set();
+        return acc;
+    }, {});
+    for (const s of submissions) {
+        const meetingId = assignmentToMeetingId[s.idAssignment.toString()];
+        if (meetingId && s.idStudent) {
+            submittedByMeeting[meetingId].add(s.idStudent.toString());
+        }
+    }
+
     const progressTugas = mahasiswaIds.map((mhsId) => {
-        const selesai = assignments.filter((a) =>
-            (subByAssignment[a._id.toString()] ?? []).some(
-                (s) => s.idStudent?.toString() === mhsId
-            )
-        ).length;
+        const selesai = assignments.filter((a) => {
+            const subByStudent = subByStudentByAssignment[a._id.toString()] ?? {};
+            return !!subByStudent[mhsId];
+        }).length;
 
         return {
             id: mhsId,
@@ -66,36 +109,16 @@ const getDashboardByCourse = async (idCourse) => {
         };
     });
 
-    const kontribusiMingguan = meetings.map((m) => {
-        const mAssignments = assignmentByMeeting[m._id.toString()] ?? [];
-        const mAssignmentIds = mAssignments.map((a) => a._id.toString());
-
-        const submitted = new Set(
-            submissions
-                .filter((s) => mAssignmentIds.includes(s.idAssignment.toString()))
-                .map((s) => s.idStudent?.toString())
-                .filter(Boolean)
-        ).size;
-
-        return {
-            minggu: m.pertemuan,
-            submitted,
-            total: totalMahasiswa,
-        };
-    });
+    const kontribusiMingguan = meetings.map((m) => ({
+        minggu: m.pertemuan,
+        submitted: submittedByMeeting[m._id.toString()].size,
+        total: totalMahasiswa,
+    }));
 
     const heatmap = mahasiswaIds.map((mhsId) => {
-        const data = meetings.map((m) => {
-            const mAssignments = assignmentByMeeting[m._id.toString()] ?? [];
-            const mAssignmentIds = mAssignments.map((a) => a._id.toString());
-            const didSubmit = submissions.some(
-                (s) =>
-                    mAssignmentIds.includes(s.idAssignment.toString()) &&
-                    s.idStudent?.toString() === mhsId
-            );
-            return didSubmit ? 1 : 0;
-        });
-
+        const data = meetings.map((m) =>
+            submittedByMeeting[m._id.toString()].has(mhsId) ? 1 : 0
+        );
         return {
             nama: mahasiswaMap[mhsId]?.nama ?? '-',
             data,
@@ -107,9 +130,9 @@ const getDashboardByCourse = async (idCourse) => {
     let belum = 0;
 
     for (const a of assignments) {
-        const subs = subByAssignment[a._id.toString()] ?? [];
+        const subByStudent = subByStudentByAssignment[a._id.toString()] ?? {};
         for (const mhsId of mahasiswaIds) {
-            const sub = subs.find((s) => s.idStudent?.toString() === mhsId);
+            const sub = subByStudent[mhsId];
             if (!sub) {
                 belum++;
             } else if (a.tenggat && sub.submittedAt > a.tenggat) {
@@ -121,12 +144,10 @@ const getDashboardByCourse = async (idCourse) => {
     }
 
     const scatter = submissions.map((s) => {
-        const assignment = assignments.find(
-            (a) => a._id.toString() === s.idAssignment.toString()
-        );
-        const meeting = meetings.find(
-            (m) => m._id.toString() === assignment?.idMeeting?.toString()
-        );
+        const assignment = assignmentMap[s.idAssignment.toString()];
+        const meeting = assignment
+            ? meetingMapById[assignment.idMeeting.toString()]
+            : null;
         const hariTerlambat =
             assignment?.tenggat && s.submittedAt > assignment.tenggat
                 ? Math.round(
@@ -193,12 +214,15 @@ const getDashboardByMeeting = async (idCourse, pertemuan) => {
             idAssignment: { $in: assignmentIds },
         }).lean();
 
-        const subByAssignment = submissions.reduce((acc, s) => {
-            const key = s.idAssignment.toString();
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(s);
-            return acc;
-        }, {});
+        // Map<assignmentId, Map<studentId, submission>> — O(1) lookup
+        const subByStudentByAssignment = {};
+        for (const s of submissions) {
+            const aId = s.idAssignment.toString();
+            if (!subByStudentByAssignment[aId]) subByStudentByAssignment[aId] = {};
+            if (s.idStudent) {
+                subByStudentByAssignment[aId][s.idStudent.toString()] = s;
+            }
+        }
 
         let tepat = 0, terlambat = 0, belum = 0;
         const mahasiswaTugas = [];
@@ -206,8 +230,8 @@ const getDashboardByMeeting = async (idCourse, pertemuan) => {
         for (const mhsId of mahasiswaIds) {
             let mSelesai = 0;
             for (const a of assignments) {
-                const subs = subByAssignment[a._id.toString()] ?? [];
-                const sub = subs.find((s) => s.idStudent?.toString() === mhsId);
+                const subByStudent = subByStudentByAssignment[a._id.toString()] ?? {};
+                const sub = subByStudent[mhsId];
                 if (!sub) {
                     belum++;
                 } else if (a.tenggat && sub.submittedAt > a.tenggat) {

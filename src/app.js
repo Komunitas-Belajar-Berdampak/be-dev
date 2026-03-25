@@ -26,6 +26,7 @@ const approachRoutes = require('./modules/approach/approach.routes');
 const privateFileRoutes = require('./modules/privateFiles/private-file.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const courseDashboardRoutes = require('./modules/courseDashboard/course-dashboard.routes');
+const studentDashboardRoutes = require('./modules/studentDashboard/student-dashboard.routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 
@@ -77,6 +78,7 @@ app.use('/api/approach', approachRoutes);
 app.use('/api/private-files', privateFileRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/course-dashboard', courseDashboardRoutes);
+app.use('/api/student-dashboard', studentDashboardRoutes);
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

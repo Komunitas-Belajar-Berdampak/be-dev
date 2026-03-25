@@ -3,6 +3,8 @@ const auth = require('../../middlewares/auth');
 const requireRoles = require('../../middlewares/rbac');
 const { createUpload } = require('../../middlewares/upload');
 const controller = require('./material.controller');
+const { successResponse } = require('../../utils/http');
+const { trackMaterialAccess } = require('../studentDashboard/student-dashboard.service');
 
 const router = express.Router();
 
@@ -17,6 +19,41 @@ router.use(auth);
 
 // Register more specific routes (with multiple segments) first
 // to avoid conflicts with single-parameter routes
+
+/**
+ * @swagger
+ * /api/materials/{idMaterial}/accessed:
+ *   post:
+ *     summary: Catat akses materi oleh mahasiswa
+ *     tags: [Materials]
+ *     description: |
+ *       Dipanggil oleh frontend saat mahasiswa membuka halaman materi.
+ *       Digunakan untuk fitur "lanjut belajar" di dashboard mahasiswa.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: idMaterial
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID material yang diakses
+ *     responses:
+ *       200:
+ *         description: akses materi berhasil dicatat!
+ *       400:
+ *         description: ID material tidak valid
+ *       404:
+ *         description: Material tidak ditemukan
+ */
+router.post('/:idMaterial/accessed', async (req, res, next) => {
+    try {
+        await trackMaterialAccess(req.params.idMaterial, req.user);
+        return successResponse(res, { message: 'akses materi berhasil dicatat!' });
+    } catch (err) {
+        return next(err);
+    }
+});
 
 /**
  * @swagger
