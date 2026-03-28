@@ -59,9 +59,15 @@ const getAssignmentDetail = async (req, res, next) => {
 
 const createAssignment = async (req, res, next) => {
     try {
+        const rawStatusTugas = req.body.statusTugas;
         const body = {
             ...req.body,
             deskripsi: parseJsonField(req.body.deskripsi),
+            // FormData selalu kirim string; coerce ke boolean sebelum Joi validasi
+            statusTugas:
+                rawStatusTugas === true || rawStatusTugas === 'true' ? true
+                : rawStatusTugas === false || rawStatusTugas === 'false' ? false
+                : rawStatusTugas,
         };
 
         const { error, value } = createSchema.validate(body);
@@ -89,9 +95,17 @@ const createAssignment = async (req, res, next) => {
 
 const updateAssignment = async (req, res, next) => {
     try {
+        const rawStatusTugas = req.body.statusTugas;
         const body = {
             ...req.body,
             deskripsi: parseJsonField(req.body.deskripsi),
+            // FormData selalu kirim string; coerce ke boolean sebelum Joi validasi
+            ...(rawStatusTugas !== undefined && {
+                statusTugas:
+                    rawStatusTugas === true || rawStatusTugas === 'true' ? true
+                    : rawStatusTugas === false || rawStatusTugas === 'false' ? false
+                    : rawStatusTugas,
+            }),
         };
 
         const { error, value } = updateSchema.validate(body);

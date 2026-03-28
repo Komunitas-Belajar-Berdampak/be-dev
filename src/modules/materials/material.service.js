@@ -10,6 +10,7 @@ const isMahasiswa = (user) =>
 
 const mapMaterial = (m) => ({
     id: m._id.toString(),
+    idMeeting: m.idMeeting.toString(),
     namaFile: m.namaFile,
     deskripsi: m.deskripsi,
     pathFile: m.pathFile,

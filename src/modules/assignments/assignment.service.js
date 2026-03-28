@@ -12,20 +12,26 @@ const mapListItemByCourse = (a, meetingMap) => {
     const pertemuan = meetingMap[a.idMeeting.toString()] || null;
     return {
         id: a._id.toString(),
+        idMeeting: a.idMeeting.toString(),
         pertemuan,
         judul: a.judul,
         status: a.status,
         statusTugas: a.statusTugas,
         tenggat: a.tenggat,
+        deskripsi: a.deskripsi || null,
+        lampiran: a.pathLampiran || null,
     };
 };
 
 const mapListItemByMeeting = (a) => ({
     id: a._id.toString(),
+    idMeeting: a.idMeeting.toString(),
     judul: a.judul,
     status: a.status,
     statusTugas: a.statusTugas,
     tenggat: a.tenggat,
+    deskripsi: a.deskripsi || null,
+    lampiran: a.pathLampiran || null,
 });
 
 const mapDetail = (a) => ({
