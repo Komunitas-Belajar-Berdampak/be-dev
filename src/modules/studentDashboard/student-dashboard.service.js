@@ -154,4 +154,130 @@ const trackMaterialAccess = async (idMaterial, user) => {
     );
 };
 
-module.exports = { getStudentDashboard, trackMaterialAccess };
+const getStudentGrades = async (targetUserId, user) => {
+    let studentId;
+
+    if (user.roles.includes('MAHASISWA')) {
+        studentId = user.sub;
+    } else if (user.roles.includes('DOSEN') || user.roles.includes('SUPER_ADMIN')) {
+        if (!targetUserId) throw new ApiError(400, 'ID mahasiswa diperlukan');
+        if (!mongoose.isValidObjectId(targetUserId)) throw new ApiError(400, 'ID mahasiswa tidak valid');
+        studentId = targetUserId;
+    } else {
+        throw new ApiError(403, 'Akses ditolak');
+    }
+
+    // 1. Courses student is enrolled in
+    const courses = await Course.find({ idMahasiswa: studentId })
+        .select('kodeMatkul namaMatkul kelas sks')
+        .lean();
+
+    const courseIds = courses.map((c) => c._id);
+    const courseMap = {};
+    courses.forEach((c) => { courseMap[c._id.toString()] = c; });
+
+    // 2. Meetings for those courses
+    const meetings = await Meeting.find({ idCourse: { $in: courseIds } })
+        .select('_id idCourse pertemuan')
+        .lean();
+
+    const meetingIds = meetings.map((m) => m._id);
+    const meetingMap = {};
+    meetings.forEach((m) => { meetingMap[m._id.toString()] = m; });
+
+    // 3. Visible assignments
+    const assignments = await Assignment.find({
+        idMeeting: { $in: meetingIds },
+        status: 'VISIBLE',
+    })
+        .select('_id judul tenggat idMeeting')
+        .lean();
+
+    const assignmentIds = assignments.map((a) => a._id);
+
+    // 4. Submissions for this student
+    const submissions = await Submission.find({
+        idAssignment: { $in: assignmentIds },
+        idStudent: studentId,
+    })
+        .select('idAssignment submittedAt nilai gradedAt')
+        .lean();
+
+    const submissionMap = {};
+    submissions.forEach((s) => { submissionMap[s.idAssignment.toString()] = s; });
+
+    // 5. Group assignments by course
+    const courseAssignmentsMap = {};
+    assignments.forEach((a) => {
+        const meeting = meetingMap[a.idMeeting.toString()];
+        if (!meeting) return;
+        const courseId = meeting.idCourse.toString();
+        if (!courseAssignmentsMap[courseId]) courseAssignmentsMap[courseId] = [];
+        const sub = submissionMap[a._id.toString()];
+        courseAssignmentsMap[courseId].push({
+            id: a._id.toString(),
+            judul: a.judul,
+            tenggat: a.tenggat,
+            pertemuan: meeting.pertemuan,
+            submission: sub
+                ? { submitted: true, submittedAt: sub.submittedAt, nilai: sub.nilai ?? null, gradedAt: sub.gradedAt ?? null }
+                : { submitted: false, submittedAt: null, nilai: null, gradedAt: null },
+        });
+    });
+
+    // 6. Build per-course result + global summary
+    let totalTugasAll = 0;
+    let totalDinilaiAll = 0;
+    let totalNilaiAll = 0;
+    let countNilaiAll = 0;
+
+    const coursesResult = courses.map((c) => {
+        const items = (courseAssignmentsMap[c._id.toString()] || []).sort(
+            (a, b) => a.pertemuan - b.pertemuan,
+        );
+
+        let totalDinilai = 0;
+        let totalNilai = 0;
+        let countNilai = 0;
+
+        items.forEach((a) => {
+            if (a.submission.nilai !== null) {
+                totalDinilai++;
+                totalNilai += a.submission.nilai;
+                countNilai++;
+            }
+        });
+
+        totalTugasAll += items.length;
+        totalDinilaiAll += totalDinilai;
+        totalNilaiAll += totalNilai;
+        countNilaiAll += countNilai;
+
+        return {
+            id: c._id.toString(),
+            kodeMatkul: c.kodeMatkul,
+            namaMatkul: c.namaMatkul,
+            kelas: c.kelas,
+            sks: c.sks,
+            summary: {
+                totalTugas: items.length,
+                totalDinilai,
+                totalBelumDinilai: items.length - totalDinilai,
+                rataRataNilai: countNilai > 0 ? Math.round((totalNilai / countNilai) * 100) / 100 : null,
+            },
+            assignments: items,
+        };
+    });
+
+    return {
+        summary: {
+            totalTugas: totalTugasAll,
+            totalDinilai: totalDinilaiAll,
+            totalBelumDinilai: totalTugasAll - totalDinilaiAll,
+            rataRataNilai: countNilaiAll > 0 ? Math.round((totalNilaiAll / countNilaiAll) * 100) / 100 : null,
+        },
+        courses: coursesResult,
+    };
+};
+
+module.exports = { getStudentDashboard, trackMaterialAccess, getStudentGrades };
