@@ -744,4 +744,39 @@ router.delete(
     controller.deleteTaskController,
 );
 
+/**
+ * @swagger
+ * /api/sg/group/{idGroup}/ai-contribution:
+ *   get:
+ *     summary: Analisis kontribusi anggota kelompok menggunakan AI
+ *     description: Menganalisis distribusi kontribusi anggota dan memberikan rekomendasi nilai per member. Hanya untuk DOSEN/SUPER_ADMIN.
+ *     tags: [StudyGroups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idGroup
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: threadJudul
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: Judul thread/tugas sebagai konteks analisis (opsional)
+ *     responses:
+ *       200:
+ *         description: Analisis berhasil
+ *       403:
+ *         description: Hanya dosen/admin
+ *       422:
+ *         description: Kelompok belum memiliki anggota atau AI tidak dikonfigurasi
+ */
+router.get(
+    '/sg/group/:idGroup/ai-contribution',
+    requireRoles('DOSEN', 'SUPER_ADMIN'),
+    controller.getAiContributionAnalysis,
+);
+
 module.exports = router;

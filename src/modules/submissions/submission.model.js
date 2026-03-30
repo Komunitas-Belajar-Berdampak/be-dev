@@ -31,6 +31,10 @@ const submissionSchema = new Schema(
         gradedAt: {
         type: Date,
         },
+        aiFlag: {
+        suspicious: { type: Boolean, default: false },
+        reason: { type: String, default: null },
+        },
     },
     {
         timestamps: true,

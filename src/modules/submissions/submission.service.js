@@ -6,6 +6,7 @@ const Course = require('../courses/course.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
+const ai = require('../../libs/ai');
 
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
@@ -29,6 +30,9 @@ const mapSubmission = (s, mahasiswaMap) => {
         file: s.file,
         grade: s.nilai,
         gradeAt: s.gradedAt,
+        aiFlag: s.aiFlag?.suspicious
+            ? { suspicious: true, reason: s.aiFlag.reason }
+            : null,
     };
 };
 
@@ -194,16 +198,35 @@ const createSubmission = async (idAssignment, user, filePath) => {
         );
     }
 
+    // Deteksi duplikasi: cek apakah file URL sudah ada di submission lain pada assignment yang sama
+    let aiFlag = { suspicious: false, reason: null };
+    if (ai.isEnabled()) {
+        const duplicate = await Submission.findOne({
+            idAssignment,
+            file: filePath,
+            idStudent: { $ne: user.sub },
+        }).lean();
+
+        if (duplicate) {
+            aiFlag = {
+                suspicious: true,
+                reason: 'File identik dengan submission mahasiswa lain pada tugas yang sama',
+            };
+        }
+    }
+
     const sub = await Submission.create({
         idAssignment,
         idStudent: user.sub,
         submittedAt: now,
         file: filePath,
+        aiFlag,
     });
 
     return {
         file: sub.file,
         submittedAt: sub.submittedAt,
+        aiFlag: aiFlag.suspicious ? aiFlag : undefined,
     };
 };
 

@@ -10,6 +10,7 @@ const { ApiError } = require('../../utils/http');
 const { uploadBuffer } = require('../../libs/s3');
 const { logActivity } = require('./activity-log.service');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
+const ai = require('../../libs/ai');
 
 const processImages = async (node) => {
     if (!node || typeof node !== 'object') return;
@@ -106,6 +107,12 @@ const createPost = async (idThread, user, konten) => {
     if (!author) throw new ApiError(404, 'User tidak ditemukan');
 
     await processImages(konten);
+
+    // Validasi kualitas konten via AI (jika GROQ_API_KEY terkonfigurasi)
+    const validation = await ai.validatePostContent(konten, thread.judul);
+    if (!validation.valid) {
+        throw new ApiError(422, `Post ditolak oleh sistem AI: ${validation.reason}`);
+    }
 
     const post = await GroupPost.create({
         idThread,

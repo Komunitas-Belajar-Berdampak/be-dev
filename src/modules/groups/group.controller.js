@@ -1,10 +1,18 @@
 const Joi = require('joi');
-const { successResponse } = require('../../utils/http');
+const mongoose = require('mongoose');
+const { successResponse, ApiError } = require('../../utils/http');
 const groupService = require('./group.service');
 const membershipService = require('./membership.service');
 const threadService = require('./thread.service');
 const postService = require('./post.service');
 const taskService = require('./task.service');
+const ai = require('../../libs/ai');
+const StudyGroup = require('./group.model');
+const GroupMember = require('./group-member.model');
+const GroupPost = require('./group-post.model');
+const GroupTask = require('./group-task.model');
+const GroupThread = require('./group-thread.model');
+const User = require('../users/user.model');
 
 const createGroupSchema = Joi.object({
     nama: Joi.string().optional(),
@@ -416,6 +424,95 @@ const rejectMembership = async (req, res, next) => {
     }
 };
 
+const getAiContributionAnalysis = async (req, res, next) => {
+    try {
+        const { idGroup } = req.params;
+
+        if (!mongoose.isValidObjectId(idGroup)) {
+            throw new ApiError(400, 'ID kelompok tidak valid');
+        }
+
+        const isPrivileged =
+            Array.isArray(req.user.roles) &&
+            (req.user.roles.includes('DOSEN') || req.user.roles.includes('SUPER_ADMIN'));
+        if (!isPrivileged) {
+            throw new ApiError(403, 'Hanya dosen/admin yang dapat mengakses analisis AI');
+        }
+
+        const group = await StudyGroup.findById(idGroup).lean();
+        if (!group) throw new ApiError(404, 'Kelompok tidak ditemukan');
+
+        // Ambil semua anggota APPROVED beserta data user
+        const members = await GroupMember.find({ idGroup, status: 'APPROVED' })
+            .populate('idMahasiswa', 'nrp nama')
+            .lean();
+
+        if (members.length === 0) {
+            throw new ApiError(422, 'Kelompok belum memiliki anggota aktif');
+        }
+
+        const memberIds = members.map((m) => m.idMahasiswa._id);
+
+        // Ambil thread IDs dalam group ini
+        const threads = await GroupThread.find({ idGroup }).select('_id').lean();
+        const threadIds = threads.map((t) => t._id);
+
+        // Hitung jumlah post per member di semua thread group ini
+        const postCounts = await GroupPost.aggregate([
+            { $match: { idThread: { $in: threadIds }, idAuthor: { $in: memberIds } } },
+            { $group: { _id: '$idAuthor', count: { $sum: 1 } } },
+        ]);
+        const postCountMap = postCounts.reduce((acc, p) => {
+            acc[p._id.toString()] = p.count;
+            return acc;
+        }, {});
+
+        // Hitung jumlah task DONE per member
+        const taskCounts = await GroupTask.aggregate([
+            {
+                $match: {
+                    idThread: { $in: threadIds },
+                    status: 'DONE',
+                    idMahasiswa: { $in: memberIds },
+                },
+            },
+            { $unwind: '$idMahasiswa' },
+            { $match: { idMahasiswa: { $in: memberIds } } },
+            { $group: { _id: '$idMahasiswa', count: { $sum: 1 } } },
+        ]);
+        const taskCountMap = taskCounts.reduce((acc, t) => {
+            acc[t._id.toString()] = t.count;
+            return acc;
+        }, {});
+
+        const memberData = members.map((m) => ({
+            nrp: m.idMahasiswa.nrp,
+            nama: m.idMahasiswa.nama,
+            kontribusi: m.kontribusi,
+            jumlahPost: postCountMap[m.idMahasiswa._id.toString()] || 0,
+            jumlahTaskSelesai: taskCountMap[m.idMahasiswa._id.toString()] || 0,
+        }));
+
+        const threadJudul = req.query.threadJudul || null;
+
+        const analysis = await ai.analyzeGroupContributions({
+            groupName: group.nama,
+            threadJudul,
+            members: memberData,
+        });
+
+        return successResponse(res, {
+            message: 'Analisis kontribusi berhasil',
+            data: {
+                kelompok: group.nama,
+                ...analysis,
+            },
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 module.exports = {
     getGroupsByCourse,
     getGroupsWithMembershipStatus,
@@ -441,4 +538,5 @@ module.exports = {
     createTask,
     updateTaskController,
     deleteTaskController,
+    getAiContributionAnalysis,
 };
