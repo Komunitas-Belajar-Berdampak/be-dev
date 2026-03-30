@@ -66,18 +66,21 @@ Berikan skor 0-25 berdasarkan kualitas dan relevansi konten post.
 Balas HANYA dengan JSON:
 {"score": <angka 0-25>, "reason": "alasan singkat dalam Bahasa Indonesia"}
 
-Panduan skor:
-- 0     : Spam, karakter acak (asdfgh, aaaa), lorem ipsum/placeholder text, tidak bermakna sama sekali
-- 1-8   : Ada teks tapi sangat dangkal, hanya persetujuan singkat tanpa alasan, tidak menambah nilai diskusi
-- 9-16  : Kontribusi cukup, ada pendapat atau informasi yang relevan dengan topik
-- 17-25 : Kontribusi berkualitas tinggi, ada analisis, argumen, penjelasan mendalam, atau pertanyaan kritis
+Panduan skor (fokus pada KUALITAS tulisan, BUKAN relevansi topik):
+- 0     : Spam, karakter acak (asdfgh, aaaa, 123123), lorem ipsum, teks tidak bermakna sama sekali, atau hanya 1-3 kata tanpa substansi ("iya", "oke", "sip", "noted", "iya oke sip")
+- 1-8   : Ada kalimat terbaca tapi sangat dangkal, hanya persetujuan tanpa alasan apapun
+- 9-16  : Ada pendapat, ide, atau informasi yang disampaikan dengan cukup jelas
+- 17-25 : Ada analisis, argumen, penjelasan, atau pertanyaan yang menunjukkan pemikiran mendalam
 
-Contoh skor 0: "lorem ipsum dolor sit amet", "asdfghjkl", "iya", "oke", "sip", "noted", "iya oke sip"
-Contoh skor 1-8: "Oke saya setuju dengan pendapat di atas" (tidak ada alasan/tambahan)
-Contoh skor 9-16: "Menurut saya poin ketiga paling penting karena berkaitan langsung dengan tugas kita"
-Contoh skor 17-25: "Saya tidak setuju dengan poin kedua karena berdasarkan referensi yang saya baca, konsep ini sebenarnya..."
+PENTING:
+- Jangan nilai berdasarkan relevansi topik — fokus hanya pada apakah teks bermakna dan berkualitas
+- Kalimat normal dalam Bahasa Indonesia/Inggris yang terbaca dengan baik TIDAK BOLEH skor 0
+- Hanya berikan skor 0 untuk spam, gibberish, atau konten 1-3 kata tanpa makna
 
-PENTING: konten 1-3 kata seperti "iya", "oke", "setuju", "sip", "noted" SELALU skor 0.`,
+Contoh skor 0: "lorem ipsum dolor sit amet", "asdfghjkl aaaa", "iya", "oke sip noted"
+Contoh skor 1-8: "Saya setuju dengan pendapat di atas"
+Contoh skor 9-16: "Menurut saya bagian ini perlu didiskusikan lebih lanjut karena ada beberapa poin yang belum jelas"
+Contoh skor 17-25: "Pendekatan ini kurang efisien karena kompleksitasnya O(n²), sebaiknya kita gunakan metode lain yang sudah terbukti lebih optimal"`,
                 },
                 {
                     role: 'user',
