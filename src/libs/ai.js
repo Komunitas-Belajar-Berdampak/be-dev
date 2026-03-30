@@ -39,9 +39,9 @@ const validatePostContent = async (konten, threadJudul) => {
 
     const text = extractTextFromTiptap(konten).trim().replace(/\s+/g, ' ');
 
-    // Tolak langsung tanpa panggil API jika terlalu pendek
-    if (text.length < 10) {
-        return { valid: false, reason: 'Konten terlalu singkat atau tidak mengandung teks bermakna' };
+    // Tolak langsung tanpa panggil API hanya jika benar-benar kosong
+    if (text.length === 0) {
+        return { valid: false, reason: 'Konten tidak boleh kosong' };
     }
 
     try {
@@ -59,16 +59,14 @@ Balas HANYA dengan JSON berikut:
 {"valid": true/false, "reason": "alasan singkat dalam Bahasa Indonesia"}
 
 Post TIDAK VALID jika:
-- Hanya berisi karakter/kata acak tanpa makna
-- Spam atau pengulangan karakter (aaaaaa, 123123, dll)
-- Hanya emoji atau simbol tanpa teks
-- Sangat tidak relevan dengan topik diskusi
-- Kurang dari 3 kata bermakna
+- Hanya berisi karakter/kata acak tanpa makna (contoh: "asdfgh", "aaaaaaa", "123123")
+- Spam atau pengulangan karakter
+- Hanya emoji atau simbol tanpa teks bermakna
 
 Post VALID jika:
-- Mengandung kalimat atau ide yang dapat dipahami
-- Relevan dengan konteks diskusi akademik
-- Menunjukkan upaya kontribusi nyata, meskipun singkat`,
+- Mengandung kata atau kalimat yang dapat dipahami, meskipun singkat
+- Respons singkat seperti "Setuju", "Oke", "Sip", "Terima kasih" tetap VALID
+- Menunjukkan respons atau interaksi nyata dalam diskusi`,
                 },
                 {
                     role: 'user',
