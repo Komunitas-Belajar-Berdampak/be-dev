@@ -18,6 +18,12 @@ const groupPostSchema = new Schema(
         type: Schema.Types.Mixed,
         required: true,
         },
+        poin: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 25,
+        },
     },
     { timestamps: true },
 );

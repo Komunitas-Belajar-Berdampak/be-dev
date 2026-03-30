@@ -40,7 +40,7 @@ const processImages = async (node) => {
     }
 };
 
-const POINT_PER_POST = 10;
+const MAX_POINT_PER_POST = 25;
 
 const listPostsByThread = async (idThread, query) => {
     if (!mongoose.isValidObjectId(idThread)) throw new ApiError(400, 'ID thread tidak valid');
@@ -108,16 +108,17 @@ const createPost = async (idThread, user, konten) => {
 
     await processImages(konten);
 
-    // Validasi kualitas konten via AI (jika GROQ_API_KEY terkonfigurasi)
-    const validation = await ai.validatePostContent(konten, thread.judul);
-    if (!validation.valid) {
-        throw new ApiError(422, `Post ditolak oleh sistem AI: ${validation.reason}`);
+    // Nilai kualitas konten via AI dan dapatkan skor poin (0-25)
+    const { score, reason } = await ai.validatePostContent(konten, thread.judul);
+    if (score === 0) {
+        throw new ApiError(422, `Post ditolak: ${reason}`);
     }
 
     const post = await GroupPost.create({
         idThread,
         idAuthor: user.sub,
         konten,
+        poin: score,
     });
 
     await Promise.all([
@@ -126,21 +127,21 @@ const createPost = async (idThread, user, konten) => {
             idGroup: thread.idGroup,
             idMahasiswa: user.sub,
         },
-        { $inc: { kontribusi: POINT_PER_POST } },
+        { $inc: { kontribusi: score } },
         { new: true },
         ).exec(),
         StudyGroup.findByIdAndUpdate(thread.idGroup, {
-        $inc: { totalKontribusi: POINT_PER_POST },
+        $inc: { totalKontribusi: score },
         }).exec(),
         GroupThread.findByIdAndUpdate(idThread, {
-        $inc: { kontribusi: POINT_PER_POST },
+        $inc: { kontribusi: score },
         }).exec(),
         ContributionThread.findOneAndUpdate(
         {
             idThread: idThread,
             idMahasiswa: user.sub,
         },
-        { $inc: { kontribusi: POINT_PER_POST } },
+        { $inc: { kontribusi: score } },
         { upsert: true, new: true },
         ).exec(),
     ]);
@@ -149,7 +150,7 @@ const createPost = async (idThread, user, konten) => {
         aktivitas: `Menambahkan post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
-        kontribusi: POINT_PER_POST,
+        kontribusi: score,
     });
 
     return {
@@ -159,6 +160,7 @@ const createPost = async (idThread, user, konten) => {
         nama: author.nama,
         },
         konten: post.konten,
+        poin: score,
     };
 };
 
@@ -214,38 +216,42 @@ const deletePost = async (idPost, user) => {
         throw new ApiError(403, 'Anda tidak boleh menghapus post ini');
     }
 
+    const poinPost = post.poin || 0;
+
     await post.deleteOne();
 
-    await Promise.all([
-        GroupMember.findOneAndUpdate(
-        {
-            idGroup: thread.idGroup,
-            idMahasiswa: post.idAuthor,
-        },
-        { $inc: { kontribusi: -POINT_PER_POST } },
-        { new: true },
-        ).exec(),
-        StudyGroup.findByIdAndUpdate(thread.idGroup, {
-        $inc: { totalKontribusi: -POINT_PER_POST },
-        }).exec(),
-        GroupThread.findByIdAndUpdate(post.idThread, {
-        $inc: { kontribusi: -POINT_PER_POST },
-        }).exec(),
-        ContributionThread.findOneAndUpdate(
-        {
-            idThread: post.idThread,
-            idMahasiswa: post.idAuthor,
-        },
-        { $inc: { kontribusi: -POINT_PER_POST } },
-        { new: true },
-        ).exec(),
-    ]);
+    if (poinPost > 0) {
+        await Promise.all([
+            GroupMember.findOneAndUpdate(
+            {
+                idGroup: thread.idGroup,
+                idMahasiswa: post.idAuthor,
+            },
+            { $inc: { kontribusi: -poinPost } },
+            { new: true },
+            ).exec(),
+            StudyGroup.findByIdAndUpdate(thread.idGroup, {
+            $inc: { totalKontribusi: -poinPost },
+            }).exec(),
+            GroupThread.findByIdAndUpdate(post.idThread, {
+            $inc: { kontribusi: -poinPost },
+            }).exec(),
+            ContributionThread.findOneAndUpdate(
+            {
+                idThread: post.idThread,
+                idMahasiswa: post.idAuthor,
+            },
+            { $inc: { kontribusi: -poinPost } },
+            { new: true },
+            ).exec(),
+        ]);
+    }
 
     await logActivity({
         aktivitas: `Menghapus post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
-        kontribusi: -POINT_PER_POST,
+        kontribusi: -poinPost,
     });
 };
 
