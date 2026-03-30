@@ -46,12 +46,9 @@ const validatePostContent = async (konten, threadJudul) => {
 
     const text = extractTextFromTiptap(konten).trim().replace(/\s+/g, ' ');
 
-    // Tolak langsung tanpa panggil API jika kosong atau < 5 kata
+    // Tolak langsung hanya jika benar-benar kosong
     if (text.length === 0) {
         return { score: 0, reason: 'Konten tidak boleh kosong' };
-    }
-    if (text.split(/\s+/).filter(Boolean).length < 5) {
-        return { score: 0, reason: 'Terlalu singkat. Minimal 5 kata untuk mendapat poin kontribusi' };
     }
 
     try {
@@ -75,10 +72,12 @@ Panduan skor:
 - 9-16  : Kontribusi cukup, ada pendapat atau informasi yang relevan dengan topik
 - 17-25 : Kontribusi berkualitas tinggi, ada analisis, argumen, penjelasan mendalam, atau pertanyaan kritis
 
-Contoh skor 0: "lorem ipsum dolor sit amet", "asdfghjkl", "iya iya iya oke sip noted"
-Contoh skor 1-8: "Oke saya setuju dengan pendapat di atas"
+Contoh skor 0: "lorem ipsum dolor sit amet", "asdfghjkl", "iya", "oke", "sip", "noted", "iya oke sip"
+Contoh skor 1-8: "Oke saya setuju dengan pendapat di atas" (tidak ada alasan/tambahan)
 Contoh skor 9-16: "Menurut saya poin ketiga paling penting karena berkaitan langsung dengan tugas kita"
-Contoh skor 17-25: "Saya tidak setuju dengan poin kedua karena berdasarkan referensi yang saya baca, konsep ini sebenarnya..."`,
+Contoh skor 17-25: "Saya tidak setuju dengan poin kedua karena berdasarkan referensi yang saya baca, konsep ini sebenarnya..."
+
+PENTING: konten 1-3 kata seperti "iya", "oke", "setuju", "sip", "noted" SELALU skor 0.`,
                 },
                 {
                     role: 'user',
