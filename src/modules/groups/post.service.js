@@ -109,10 +109,8 @@ const createPost = async (idThread, user, konten) => {
     await processImages(konten);
 
     // Nilai kualitas konten via AI dan dapatkan skor poin (0-25)
+    // Post selalu tersimpan — score 0 berarti tidak dapat poin, bukan ditolak
     const { score, reason } = await ai.validatePostContent(konten, thread.judul);
-    if (score === 0) {
-        throw new ApiError(422, `Post ditolak: ${reason}`);
-    }
 
     const post = await GroupPost.create({
         idThread,
@@ -121,30 +119,32 @@ const createPost = async (idThread, user, konten) => {
         poin: score,
     });
 
-    await Promise.all([
-        GroupMember.findOneAndUpdate(
-        {
-            idGroup: thread.idGroup,
-            idMahasiswa: user.sub,
-        },
-        { $inc: { kontribusi: score } },
-        { new: true },
-        ).exec(),
-        StudyGroup.findByIdAndUpdate(thread.idGroup, {
-        $inc: { totalKontribusi: score },
-        }).exec(),
-        GroupThread.findByIdAndUpdate(idThread, {
-        $inc: { kontribusi: score },
-        }).exec(),
-        ContributionThread.findOneAndUpdate(
-        {
-            idThread: idThread,
-            idMahasiswa: user.sub,
-        },
-        { $inc: { kontribusi: score } },
-        { upsert: true, new: true },
-        ).exec(),
-    ]);
+    if (score > 0) {
+        await Promise.all([
+            GroupMember.findOneAndUpdate(
+            {
+                idGroup: thread.idGroup,
+                idMahasiswa: user.sub,
+            },
+            { $inc: { kontribusi: score } },
+            { new: true },
+            ).exec(),
+            StudyGroup.findByIdAndUpdate(thread.idGroup, {
+            $inc: { totalKontribusi: score },
+            }).exec(),
+            GroupThread.findByIdAndUpdate(idThread, {
+            $inc: { kontribusi: score },
+            }).exec(),
+            ContributionThread.findOneAndUpdate(
+            {
+                idThread: idThread,
+                idMahasiswa: user.sub,
+            },
+            { $inc: { kontribusi: score } },
+            { upsert: true, new: true },
+            ).exec(),
+        ]);
+    }
 
     await logActivity({
         aktivitas: `Menambahkan post di thread: ${thread.judul}`,
@@ -161,6 +161,7 @@ const createPost = async (idThread, user, konten) => {
         },
         konten: post.konten,
         poin: score,
+        ...(score === 0 && { peringatan: reason || 'Konten kurang berkualitas, tidak mendapat poin kontribusi' }),
     };
 };
 

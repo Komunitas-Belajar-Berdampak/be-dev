@@ -46,9 +46,9 @@ const validatePostContent = async (konten, threadJudul) => {
 
     const text = extractTextFromTiptap(konten).trim().replace(/\s+/g, ' ');
 
-    // Tolak langsung hanya jika benar-benar kosong
+    // Langsung beri score 0 jika kosong, tanpa panggil API
     if (text.length === 0) {
-        return { score: 0, reason: 'Konten tidak boleh kosong' };
+        return { score: 0, reason: 'Konten kosong' };
     }
 
     try {
