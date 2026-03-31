@@ -133,6 +133,20 @@ const approveMembership = async (idStudyGroup, idMembership) => {
 
     member.status = 'APPROVED';
     await member.save();
+
+    // Hapus semua PENDING request milik mahasiswa ini di group lain dalam course yang sama
+    const otherGroupsInCourse = await StudyGroup.find({
+        idCourse: group.idCourse,
+        _id: { $ne: idStudyGroup },
+    }).select('_id').lean();
+
+    if (otherGroupsInCourse.length > 0) {
+        await GroupMember.deleteMany({
+            idGroup: { $in: otherGroupsInCourse.map((g) => g._id) },
+            idMahasiswa: member.idMahasiswa,
+            status: 'PENDING',
+        });
+    }
 };
 
 const rejectMembership = async (idStudyGroup, idMembership) => {

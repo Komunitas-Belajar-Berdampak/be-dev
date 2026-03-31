@@ -129,7 +129,7 @@ const listGroupsWithMembershipStatus = async (idCourse, userId, queryParams) => 
                 totalAnggota: memberMap[groupId]?.totalAnggota || 0,
                 status: g.status,
                 statusMember: userMembership ? userMembership.status : null,
-                totalKontribusi: userMembership ? userMembership.kontribusi : 0,
+                totalKontribusi: g.totalKontribusi || 0,
             };
         }),
         pagination: buildPagination({ page, limit, totalItems }),
