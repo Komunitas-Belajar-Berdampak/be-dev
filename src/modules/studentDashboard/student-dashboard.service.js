@@ -83,6 +83,8 @@ const getStudentDashboard = async (user) => {
         const course = meeting ? courseMap[meeting.idCourse.toString()] : null;
         return {
             id: a._id.toString(),
+            idMeeting: a.idMeeting.toString(),
+            idCourse: meeting ? meeting.idCourse.toString() : null,
             judul: a.judul,
             tenggat: a.tenggat,
             sudahLewat: a.tenggat ? new Date(a.tenggat) < now : false,
