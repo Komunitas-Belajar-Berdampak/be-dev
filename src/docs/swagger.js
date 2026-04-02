@@ -1,3 +1,4 @@
+
 const path = require('path');
 const swaggerJsdoc = require('swagger-jsdoc');
 
@@ -57,6 +58,7 @@ const options = {
                         nrp: { type: 'string', example: '2272002' },
                         nama: { type: 'string', example: 'Mahasiswa Testing' },
                         namaRole: { type: 'string', example: 'MAHASISWA' },
+                        isDefaultPassword: { type: 'boolean', description: 'true jika user belum pernah ganti password dari default' },
                     },
                     },
                 },
@@ -140,7 +142,77 @@ const options = {
             },
             },
 
-            // COURSES & MEETINGS 
+            // COURSES & MEETINGS
+            CourseSummary: {
+            type: 'object',
+            properties: {
+                id: { type: 'string' },
+                kodeMatkul: { type: 'string', example: 'IN243' },
+                namaMatkul: { type: 'string', example: 'Analitik Kebijakan' },
+                sks: { type: 'integer', example: 4 },
+                status: { type: 'string', example: 'aktif' },
+                semesterType: { type: 'string', enum: ['Ganjil', 'Genap'], nullable: true },
+                periode: { type: 'string', example: '2025/2026 - Ganjil', nullable: true },
+                deskripsi: { type: 'object', nullable: true },
+                pengajar: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                    id: { type: 'string' },
+                    nama: { type: 'string' },
+                    },
+                },
+                },
+                kelas: { type: 'string', example: 'A' },
+            },
+            },
+            CourseDetail: {
+            type: 'object',
+            properties: {
+                id: { type: 'string' },
+                kodeMatkul: { type: 'string', example: 'IN243' },
+                namaMatkul: { type: 'string', example: 'Analitik Kebijakan' },
+                sks: { type: 'integer', example: 4 },
+                status: { type: 'string', example: 'aktif' },
+                semesterType: { type: 'string', enum: ['Ganjil', 'Genap'], nullable: true },
+                kelas: { type: 'string', example: 'A' },
+                deskripsi: { type: 'object', nullable: true },
+                periode: {
+                type: 'object',
+                nullable: true,
+                properties: {
+                    id: { type: 'string' },
+                    periode: { type: 'string' },
+                    startDate: { type: 'string', format: 'date-time', nullable: true },
+                    endDate: { type: 'string', format: 'date-time', nullable: true },
+                    status: { type: 'string' },
+                },
+                },
+                pengajar: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                    id: { type: 'string' },
+                    nrp: { type: 'string' },
+                    nama: { type: 'string' },
+                    },
+                },
+                },
+                mahasiswa: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                    id: { type: 'string' },
+                    nrp: { type: 'string' },
+                    nama: { type: 'string' },
+                    },
+                },
+                },
+            },
+            },
             CourseListItem: {
             type: 'object',
             properties: {
@@ -191,7 +263,7 @@ const options = {
             properties: {
                 id: { type: 'string' },
                 judul: { type: 'string' },
-                statusTugas: { type: 'string', example: 'kelompok / individu' },
+                statusTugas: { type: 'string', enum: ['kelompok', 'individu'] },
                 tenggat: { type: 'string', format: 'date-time' },
                 status: { type: 'string', example: 'VISIBLE' },
                 deskripsi: { type: 'object' },
@@ -217,7 +289,37 @@ const options = {
             },
             },
 
-            // GROUPS & THREADS 
+            // GROUPS & THREADS
+            StudyGroupSummary: {
+            type: 'object',
+            properties: {
+                id: { type: 'string' },
+                nama: { type: 'string' },
+                kapasitas: { type: 'integer' },
+                totalAnggota: { type: 'integer' },
+                status: { type: 'boolean', description: 'true = pendaftaran ditutup' },
+                totalKontribusi: { type: 'integer' },
+            },
+            },
+            MembershipList: {
+            type: 'object',
+            properties: {
+                id: { type: 'string', description: 'ID kelompok' },
+                totalRequest: { type: 'integer', description: 'Jumlah permintaan join yang masih PENDING' },
+                mahasiswa: {
+                type: 'array',
+                items: {
+                    type: 'object',
+                    properties: {
+                    id: { type: 'string', description: 'ID membership' },
+                    nrp: { type: 'string' },
+                    nama: { type: 'string' },
+                    status: { type: 'string', enum: ['PENDING', 'APPROVED', 'REJECTED'] },
+                    },
+                },
+                },
+            },
+            },
             StudyGroupListItem: {
             type: 'object',
             properties: {

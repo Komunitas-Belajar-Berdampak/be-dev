@@ -257,6 +257,52 @@ router.patch(
     controller.patchUser,
 );
 
+/**
+ * @openapi
+ * /api/users/avatar:
+ *   patch:
+ *     tags:
+ *       - Users
+ *     summary: Upload / ganti foto profil user yang sedang login
+ *     description: Upload foto profil baru (max 5 MB). ID diambil dari token auth.
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - avatar
+ *             properties:
+ *               avatar:
+ *                 type: string
+ *                 format: binary
+ *                 description: File gambar (jpg/png, maks 5 MB)
+ *     responses:
+ *       200:
+ *         description: foto profil berhasil diubah!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     fotoProfil:
+ *                       type: string
+ *                       description: URL foto profil baru
+ *       400:
+ *         description: File tidak ditemukan atau format tidak valid
+ *       401:
+ *         description: Unauthorized
+ */
 router.patch(
     '/avatar',
     auth,

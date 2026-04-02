@@ -49,26 +49,20 @@ router.get('/', controller.listPrivateFiles);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             required:
- *               - filePath
- *               - fileSize
+ *               - file
  *             properties:
- *               filePath:
+ *               file:
  *                 type: string
- *                 example: "users/2272002/notes/bab2.pdf"
- *               fileSize:
- *                 type: string
- *                 example: "1.9 MB"
+ *                 format: binary
+ *                 description: File yang akan disimpan sebagai file pribadi
  *               status:
  *                 type: string
  *                 enum: [VISIBLE, PRIVATE]
  *                 example: "PRIVATE"
- *               tipe:
- *                 type: string
- *                 example: "application/pdf"
  *     responses:
  *       201:
  *         description: data berhasil disimpan!

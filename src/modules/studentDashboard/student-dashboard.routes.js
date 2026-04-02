@@ -64,6 +64,11 @@ router.use(auth);
  *                         properties:
  *                           id:
  *                             type: string
+ *                           idMeeting:
+ *                             type: string
+ *                           idCourse:
+ *                             type: string
+ *                             nullable: true
  *                           judul:
  *                             type: string
  *                           tenggat:
