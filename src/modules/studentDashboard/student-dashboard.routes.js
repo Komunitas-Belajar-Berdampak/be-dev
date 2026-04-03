@@ -105,6 +105,9 @@ router.use(auth);
  *                         accessedAt:
  *                           type: string
  *                           format: date-time
+ *                         idMeeting:
+ *                           type: string
+ *                           nullable: true
  *                         matkul:
  *                           type: object
  *                           nullable: true

@@ -114,6 +114,7 @@ const getStudentDashboard = async (user) => {
             namaFile: mat.namaFile,
             tipe: mat.tipe,
             accessedAt: lastAccess.accessedAt,
+            idMeeting: mat.idMeeting ? mat.idMeeting.toString() : null,
             matkul: lastAccess.idCourse
                 ? {
                       id: lastAccess.idCourse._id.toString(),
