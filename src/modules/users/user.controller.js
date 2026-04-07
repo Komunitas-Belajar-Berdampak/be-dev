@@ -18,11 +18,16 @@ const getUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
     try {
         const isSuperAdmin = Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN');
-        if (!isSuperAdmin && req.params.id !== req.user.sub) {
-            throw new ApiError(403, 'Akses ditolak');
-        }
+        const isOwner = req.params.id === req.user.sub;
 
         const user = await userService.getUserById(req.params.id);
+
+        if (!isSuperAdmin && !isOwner) {
+            delete user.email;
+            delete user.alamat;
+            delete user.isDefaultPassword;
+        }
+
         return successResponse(res, {
         message: 'data berhasil diambil!',
         data: user,
