@@ -18,13 +18,13 @@ const getApproachByUser = async (idUser) => {
         throw new ApiError(400, 'ID user tidak valid');
     }
 
-    const mahasiswa = await User.findById(idUser).lean();
-    if (!mahasiswa) throw new ApiError(404, 'Mahasiswa tidak ditemukan');
+    const [mahasiswa, doc] = await Promise.all([
+        User.findById(idUser).lean(),
+        Approach.findOne({ idMahasiswa: idUser }).lean(),
+    ]);
 
-    const doc = await Approach.findOne({ idMahasiswa: idUser }).lean();
-    if (!doc) {
-        throw new ApiError(404, 'Profil gaya belajar belum dibuat');
-    }
+    if (!mahasiswa) throw new ApiError(404, 'Mahasiswa tidak ditemukan');
+    if (!doc) throw new ApiError(404, 'Profil gaya belajar belum dibuat');
 
     return mapResponse(doc, mahasiswa);
 };
@@ -34,10 +34,12 @@ const createApproach = async (idUser, gayaBelajar) => {
         throw new ApiError(400, 'ID user tidak valid');
     }
 
-    const mahasiswa = await User.findById(idUser).lean();
-    if (!mahasiswa) throw new ApiError(404, 'Mahasiswa tidak ditemukan');
+    const [mahasiswa, existing] = await Promise.all([
+        User.findById(idUser).lean(),
+        Approach.findOne({ idMahasiswa: idUser }).lean(),
+    ]);
 
-    const existing = await Approach.findOne({ idMahasiswa: idUser }).lean();
+    if (!mahasiswa) throw new ApiError(404, 'Mahasiswa tidak ditemukan');
     if (existing) {
         throw new ApiError(400, 'Profil gaya belajar sudah ada, gunakan PATCH untuk mengubah');
     }
@@ -55,13 +57,13 @@ const updateApproach = async (idUser, gayaBelajar) => {
         throw new ApiError(400, 'ID user tidak valid');
     }
 
-    const mahasiswa = await User.findById(idUser).lean();
-    if (!mahasiswa) throw new ApiError(404, 'Mahasiswa tidak ditemukan');
+    const [mahasiswa, doc] = await Promise.all([
+        User.findById(idUser).lean(),
+        Approach.findOne({ idMahasiswa: idUser }),
+    ]);
 
-    let doc = await Approach.findOne({ idMahasiswa: idUser });
-    if (!doc) {
-        throw new ApiError(404, 'Profil gaya belajar belum dibuat');
-    }
+    if (!mahasiswa) throw new ApiError(404, 'Mahasiswa tidak ditemukan');
+    if (!doc) throw new ApiError(404, 'Profil gaya belajar belum dibuat');
 
     doc.gayaBelajar = gayaBelajar || [];
     await doc.save();

@@ -7,12 +7,10 @@ const { parsePagination, buildPagination } = require('../../utils/pagination');
 const listFaculties = async (query) => {
     const { page, limit, skip } = parsePagination(query);
 
-    const totalItems = await Faculty.countDocuments({});
-    const faculties = await Faculty.find({})
-        .sort({ namaFakultas: 1 })
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [totalItems, faculties] = await Promise.all([
+        Faculty.countDocuments({}),
+        Faculty.find({}).sort({ namaFakultas: 1 }).skip(skip).limit(limit).lean(),
+    ]);
 
     const facultyIds = faculties.map((f) => f._id);
     const majors = await Major.find({ idFakultas: { $in: facultyIds } }).lean();

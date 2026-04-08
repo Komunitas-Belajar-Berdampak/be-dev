@@ -92,8 +92,35 @@ const deleteFile = async (userId, idFile) => {
     }
 };
 
+const listByOtherUser = async (targetUserId, query) => {
+    if (!mongoose.isValidObjectId(targetUserId)) throw new ApiError(400, 'ID user tidak valid');
+
+    const { page, limit, skip } = parsePagination(query);
+    const { search, tipe, status } = query;
+
+    const filter = { idMahasiswa: targetUserId };
+
+    if (search) filter.namaFile = { $regex: search, $options: 'i' };
+    if (tipe) filter.tipe = tipe;
+    if (status) filter.status = status;
+
+    const totalItems = await PrivateFile.countDocuments(filter);
+
+    const docs = await PrivateFile.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+
+    return {
+        items: docs.map(mapItem),
+        pagination: buildPagination({ page, limit, totalItems }),
+    };
+};
+
 module.exports = {
     listByUser,
+    listByOtherUser,
     createForUser,
     updateStatus,
     deleteFile,

@@ -13,6 +13,7 @@ const getDashboardStats = async () => {
         userStatusTidakAktif,
         roles,
         periodeAktif,
+        userPerRoleAgg,
     ] = await Promise.all([
         User.countDocuments(),
         Course.countDocuments(),
@@ -21,14 +22,21 @@ const getDashboardStats = async () => {
         User.countDocuments({ status: 'tidak aktif' }),
         Role.find().lean(),
         AcademicTerm.findOne({ status: 'aktif' }).lean(),
+        User.aggregate([
+            { $unwind: '$roleIds' },
+            { $group: { _id: '$roleIds', count: { $sum: 1 } } },
+        ]),
     ]);
 
-    const totalUserPerRole = await Promise.all(
-        roles.map(async (role) => ({
-            role: role.nama,
-            total: await User.countDocuments({ roleIds: role._id }),
-        })),
-    );
+    const roleCountMap = userPerRoleAgg.reduce((acc, r) => {
+        acc[r._id.toString()] = r.count;
+        return acc;
+    }, {});
+
+    const totalUserPerRole = roles.map((role) => ({
+        role: role.nama,
+        total: roleCountMap[role._id.toString()] || 0,
+    }));
 
     const roleMap = totalUserPerRole.reduce((acc, r) => {
         acc[r.role] = r.total;

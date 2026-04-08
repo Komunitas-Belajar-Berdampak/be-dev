@@ -42,6 +42,19 @@ const createPrivateFile = async (req, res, next) => {
     }
 };
 
+const listUserPrivateFiles = async (req, res, next) => {
+    try {
+        const result = await service.listByOtherUser(req.params.userId, req.query);
+        return successResponse(res, {
+            message: 'data berhasil diambil!',
+            data: result.items,
+            pagination: result.pagination,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const patchPrivateFileStatus = async (req, res, next) => {
     try {
         const { error, value } = patchSchema.validate(req.body);
@@ -71,6 +84,7 @@ const deletePrivateFile = async (req, res, next) => {
 
 module.exports = {
     listPrivateFiles,
+    listUserPrivateFiles,
     createPrivateFile,
     patchPrivateFileStatus,
     deletePrivateFile,

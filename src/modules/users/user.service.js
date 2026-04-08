@@ -90,12 +90,8 @@ const listUsers = async (filters) => {
     };
 };
 
-const getUserById = async (id) => {
-    if (!mongoose.isValidObjectId(id)) {
-        throw new ApiError(400, 'ID user tidak valid');
-    }
-
-    const user = await User.findById(id)
+const getUserByNrp = async (nrp) => {
+    const user = await User.findOne({ nrp })
         .populate('idProdi', 'namaProdi')
         .populate('roleIds', 'nama')
         .lean();
@@ -104,7 +100,30 @@ const getUserById = async (id) => {
         throw new ApiError(404, 'User tidak ditemukan');
     }
 
-    const approach = await Approach.findOne({ idMahasiswa: id }).lean();
+    const approach = await Approach.findOne({ idMahasiswa: user._id }).lean();
+
+    return {
+        ...mapUserDetail(user),
+        gayaBelajar: approach ? approach.gayaBelajar : null,
+    };
+};
+
+const getUserById = async (id) => {
+    if (!mongoose.isValidObjectId(id)) {
+        throw new ApiError(400, 'ID user tidak valid');
+    }
+
+    const [user, approach] = await Promise.all([
+        User.findById(id)
+            .populate('idProdi', 'namaProdi')
+            .populate('roleIds', 'nama')
+            .lean(),
+        Approach.findOne({ idMahasiswa: id }).lean(),
+    ]);
+
+    if (!user) {
+        throw new ApiError(404, 'User tidak ditemukan');
+    }
 
     return {
         ...mapUserDetail(user),
@@ -288,6 +307,7 @@ const patchUser = async (id, payload) => {
 
 module.exports = {
     listUsers,
+    getUserByNrp,
     getUserById,
     createUser,
     updateUser,

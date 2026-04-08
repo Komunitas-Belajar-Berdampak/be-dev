@@ -64,6 +64,30 @@ router.get('/', auth, requireRoles('SUPER_ADMIN'), controller.getUsers);
 
 /**
  * @openapi
+ * /api/users/nrp/{nrp}:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Detail user berdasarkan NRP
+ *     description: SUPER_ADMIN bisa akses profil siapapun. Mahasiswa/Dosen hanya mendapat data publik jika bukan profil sendiri.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: nrp
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *       404:
+ *         description: User tidak ditemukan
+ */
+router.get('/nrp/:nrp', auth, controller.getUserByNrp);
+
+/**
+ * @openapi
  * /api/users/{id}:
  *   get:
  *     tags:

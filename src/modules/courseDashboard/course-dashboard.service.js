@@ -17,7 +17,10 @@ const getDashboardByCourse = async (idCourse) => {
     const mahasiswaIds = (course.idMahasiswa ?? []).map((id) => id.toString());
     const totalMahasiswa = mahasiswaIds.length;
 
-    const meetings = await Meeting.find({ idCourse }).sort({ pertemuan: 1 }).lean();
+    const [meetings, mahasiswa] = await Promise.all([
+        Meeting.find({ idCourse }).sort({ pertemuan: 1 }).lean(),
+        User.find({ _id: { $in: mahasiswaIds } }).select('nama nrp').lean(),
+    ]);
     const meetingIds = meetings.map((m) => m._id);
     const totalPertemuan = meetings.length;
 
@@ -34,10 +37,6 @@ const getDashboardByCourse = async (idCourse) => {
     const submissions = await Submission.find({
         idAssignment: { $in: assignmentIds },
     }).lean();
-
-    const mahasiswa = await User.find({ _id: { $in: mahasiswaIds } })
-        .select('nama nrp')
-        .lean();
 
     const mahasiswaMap = mahasiswa.reduce((acc, m) => {
         acc[m._id.toString()] = m;
@@ -185,20 +184,12 @@ const getDashboardByMeeting = async (idCourse, pertemuan) => {
     const mahasiswaIds = (course.idMahasiswa ?? []).map((id) => id.toString());
     const totalMahasiswa = mahasiswaIds.length;
 
-    const meeting = await Meeting.findOne({
-        idCourse,
-        pertemuan: Number(pertemuan),
-    }).lean();
+    const [meeting, prevMeeting, mahasiswa] = await Promise.all([
+        Meeting.findOne({ idCourse, pertemuan: Number(pertemuan) }).lean(),
+        Meeting.findOne({ idCourse, pertemuan: Number(pertemuan) - 1 }).lean(),
+        User.find({ _id: { $in: mahasiswaIds } }).select('nama nrp').lean(),
+    ]);
     if (!meeting) throw new ApiError(404, 'Pertemuan tidak ditemukan');
-
-    const prevMeeting = await Meeting.findOne({
-        idCourse,
-        pertemuan: Number(pertemuan) - 1,
-    }).lean();
-
-    const mahasiswa = await User.find({ _id: { $in: mahasiswaIds } })
-        .select('nama nrp')
-        .lean();
 
     const mahasiswaMap = mahasiswa.reduce((acc, m) => {
         acc[m._id.toString()] = m;

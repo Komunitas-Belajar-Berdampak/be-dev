@@ -86,14 +86,15 @@ const listCourses = async (filters, currentUser) => {
         }
     }
 
-    const totalItems = await Course.countDocuments(query);
-
-    const courses = await Course.find(query)
-        .populate('idPeriode', 'periode')
-        .populate('idPengajar', 'nama')
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [totalItems, courses] = await Promise.all([
+        Course.countDocuments(query),
+        Course.find(query)
+            .populate('idPeriode', 'periode')
+            .populate('idPengajar', 'nama')
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+    ]);
 
     return {
         items: courses.map(mapCourseListItem),

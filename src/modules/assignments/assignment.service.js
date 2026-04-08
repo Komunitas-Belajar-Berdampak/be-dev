@@ -62,13 +62,14 @@ const listAssignmentsByCourse = async (idCourse, user, queryParams) => {
     const query = { idMeeting: { $in: meetingIds } };
     if (isMahasiswa(user)) query.status = 'VISIBLE';
 
-    const totalItems = await Assignment.countDocuments(query);
-
-    const assignments = await Assignment.find(query)
-        .sort({ tenggat: 1 })
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [totalItems, assignments] = await Promise.all([
+        Assignment.countDocuments(query),
+        Assignment.find(query)
+            .sort({ tenggat: 1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+    ]);
 
     return {
         items: assignments.map((a) => mapListItemByCourse(a, meetingMap)),
@@ -87,13 +88,14 @@ const listAssignmentsByMeeting = async (idCourse, pertemuan, user, queryParams) 
     const query = { idMeeting: meeting._id };
     if (isMahasiswa(user)) query.status = 'VISIBLE';
 
-    const totalItems = await Assignment.countDocuments(query);
-
-    const assignments = await Assignment.find(query)
-        .sort({ tenggat: 1 })
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [totalItems, assignments] = await Promise.all([
+        Assignment.countDocuments(query),
+        Assignment.find(query)
+            .sort({ tenggat: 1 })
+            .skip(skip)
+            .limit(limit)
+            .lean(),
+    ]);
 
     return {
         items: assignments.map(mapListItemByMeeting),

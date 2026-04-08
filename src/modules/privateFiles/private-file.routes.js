@@ -1,5 +1,6 @@
 const express = require('express');
 const auth = require('../../middlewares/auth');
+const requireRoles = require('../../middlewares/rbac');
 const { createUpload } = require('../../middlewares/upload');
 const controller = require('./private-file.controller');
 
@@ -90,6 +91,44 @@ router.get('/', controller.listPrivateFiles);
  */
 router.post('/', createUpload('file', { required: true }), controller.createPrivateFile);
 
+
+/**
+ * @openapi
+ * /api/private-files/user/{userId}:
+ *   get:
+ *     tags:
+ *       - Private Files
+ *     summary: List file pribadi milik user tertentu (DOSEN / SUPER_ADMIN)
+ *     description: Mengambil semua file pribadi milik user lain. Hanya bisa diakses oleh DOSEN atau SUPER_ADMIN.
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID user yang ingin dilihat file-nya
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [VISIBLE, PRIVATE]
+ *       - in: query
+ *         name: tipe
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: User tidak ditemukan
+ */
+router.get('/user/:userId', requireRoles('DOSEN', 'SUPER_ADMIN'), controller.listUserPrivateFiles);
 
 /**
  * @openapi

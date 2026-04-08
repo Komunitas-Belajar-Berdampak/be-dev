@@ -28,12 +28,10 @@ const listMaterialsByCourse = async (idCourse, user, query) => {
     const filter = { idCourse };
     if (isMahasiswa(user)) filter.status = 'VISIBLE';
 
-    const totalItems = await Material.countDocuments(filter);
-
-    const materials = await Material.find(filter)
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [totalItems, materials] = await Promise.all([
+        Material.countDocuments(filter),
+        Material.find(filter).skip(skip).limit(limit).lean(),
+    ]);
 
     return {
         items: materials.map(mapMaterial),
@@ -52,12 +50,10 @@ const listMaterialsByMeeting = async (idCourse, pertemuan, user, query) => {
     const filter = { idCourse, idMeeting: meeting._id };
     if (isMahasiswa(user)) filter.status = 'VISIBLE';
 
-    const totalItems = await Material.countDocuments(filter);
-
-    const materials = await Material.find(filter)
-        .skip(skip)
-        .limit(limit)
-        .lean();
+    const [totalItems, materials] = await Promise.all([
+        Material.countDocuments(filter),
+        Material.find(filter).skip(skip).limit(limit).lean(),
+    ]);
 
     return {
         items: materials.map(mapMaterial),

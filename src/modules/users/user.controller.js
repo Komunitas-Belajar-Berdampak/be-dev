@@ -15,6 +15,29 @@ const getUsers = async (req, res, next) => {
     }
 };
 
+const getUserByNrp = async (req, res, next) => {
+    try {
+        const isSuperAdmin = Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN');
+
+        const user = await userService.getUserByNrp(req.params.nrp);
+
+        const isOwner = user.id === req.user.sub;
+
+        if (!isSuperAdmin && !isOwner) {
+            delete user.email;
+            delete user.alamat;
+            delete user.isDefaultPassword;
+        }
+
+        return successResponse(res, {
+            message: 'data berhasil diambil!',
+            data: user,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const getUserById = async (req, res, next) => {
     try {
         const isSuperAdmin = Array.isArray(req.user.roles) && req.user.roles.includes('SUPER_ADMIN');
@@ -91,6 +114,7 @@ const uploadAvatar = async (req, res, next) => {
 
 module.exports = {
     getUsers,
+    getUserByNrp,
     getUserById,
     createUser,
     updateUser,

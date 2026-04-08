@@ -31,6 +31,8 @@ groupMemberSchema.index(
     { idGroup: 1, idMahasiswa: 1 },
     { unique: true },
 );
+groupMemberSchema.index({ idGroup: 1, status: 1 });
+groupMemberSchema.index({ idMahasiswa: 1, status: 1 });
 
 const GroupMember = mongoose.model('GroupMember', groupMemberSchema);
 
