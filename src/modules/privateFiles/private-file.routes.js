@@ -98,8 +98,8 @@ router.post('/', createUpload('file', { required: true }), controller.createPriv
  *   get:
  *     tags:
  *       - Private Files
- *     summary: List file pribadi milik user tertentu (DOSEN / SUPER_ADMIN)
- *     description: Mengambil semua file pribadi milik user lain. Hanya bisa diakses oleh DOSEN atau SUPER_ADMIN.
+ *     summary: List file pribadi milik user tertentu
+ *     description: Mengambil file pribadi milik user lain. MAHASISWA hanya melihat file VISIBLE; DOSEN dan SUPER_ADMIN melihat semua status.
  *     parameters:
  *       - in: path
  *         name: userId
@@ -128,7 +128,7 @@ router.post('/', createUpload('file', { required: true }), controller.createPriv
  *       404:
  *         description: User tidak ditemukan
  */
-router.get('/user/:userId', requireRoles('DOSEN', 'SUPER_ADMIN'), controller.listUserPrivateFiles);
+router.get('/user/:userId', controller.listUserPrivateFiles);
 
 /**
  * @openapi

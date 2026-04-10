@@ -44,7 +44,9 @@ const createPrivateFile = async (req, res, next) => {
 
 const listUserPrivateFiles = async (req, res, next) => {
     try {
-        const result = await service.listByOtherUser(req.params.userId, req.query);
+        const isMahasiswa = Array.isArray(req.user.roles) && req.user.roles.includes('MAHASISWA');
+        const query = isMahasiswa ? { ...req.query, status: 'VISIBLE' } : req.query;
+        const result = await service.listByOtherUser(req.params.userId, query);
         return successResponse(res, {
             message: 'data berhasil diambil!',
             data: result.items,
