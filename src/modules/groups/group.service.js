@@ -389,21 +389,28 @@ const updateGroup = async (idGroup, payload) => {
         }
         }
 
+        // Remove existing APPROVED members (full replacement)
         await GroupMember.deleteMany({
-        idGroup,
-        status: 'APPROVED',
+            idGroup,
+            status: 'APPROVED',
         });
 
         if (uniqueIds.length > 0) {
-        // Issue 3: Auto-approve when lecturer adds members
-        const docs = uniqueIds.map((idMhs) => ({
-            idGroup,
-            idMahasiswa: idMhs,
-            status: 'APPROVED',
-            kontribusi: 0,
-        }));
+            // Also remove any PENDING/REJECTED records for these students
+            // so dosen can re-add previously rejected students
+            await GroupMember.deleteMany({
+                idGroup,
+                idMahasiswa: { $in: uniqueIds },
+            });
 
-        await GroupMember.insertMany(docs, { ordered: false });
+            const docs = uniqueIds.map((idMhs) => ({
+                idGroup,
+                idMahasiswa: idMhs,
+                status: 'APPROVED',
+                kontribusi: 0,
+            }));
+
+            await GroupMember.insertMany(docs, { ordered: false });
         }
     }
 
