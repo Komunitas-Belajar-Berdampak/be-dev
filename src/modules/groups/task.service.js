@@ -27,12 +27,12 @@ const listTasksByThread = async (idThread, query) => {
         items: tasks.map((t) => ({
             id: t._id.toString(),
             task: t.task,
-            deskripsi: t.deskripsi ?? null,
             mahasiswa: (t.idMahasiswa || []).map((m) => ({
                 id: m._id.toString(),
                 nama: m.nama,
             })),
             status: t.status,
+            deskripsi: t.deskripsi ?? null,
         })),
         pagination: buildPagination({ page, limit, totalItems }),
     };
@@ -88,12 +88,12 @@ const createTask = async (idThread, payload, user) => {
     return {
         id: populated._id.toString(),
         task: populated.task,
-        deskripsi: populated.deskripsi ?? null,
         mahasiswa: (populated.idMahasiswa || []).map((m) => ({
             id: m._id.toString(),
             nama: m.nama,
         })),
         status: populated.status,
+        deskripsi: populated.deskripsi ?? null,
     };
 };
 

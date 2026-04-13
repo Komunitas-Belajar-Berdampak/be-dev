@@ -538,7 +538,8 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"passwordLama\": \"password123\",\n  \"passwordBaru\": \"newpassword123\",\n  \"nama\": \"Updated Name\",\n  \"alamat\": \"New Address\",\n  \"fotoProfil\": null\n}"
+							"raw": "{\n  \"passwordLama\": \"password123\",\n  \"passwordBaru\": \"newpassword123\",\n  \"nama\": \"Updated Name\",\n  \"alamat\": \"New Address\",\n  \"fotoProfil\": null\n}",
+							"options": { "raw": { "language": "json" } }
 						},
 						"url": {
 							"raw": "{{base_url}}/api/users",
@@ -549,7 +550,86 @@
 								"api",
 								"users"
 							]
-						}
+						},
+						"description": "Update profil sendiri (semua role).\n\nField opsional: passwordLama + passwordBaru, nama, alamat, fotoProfil"
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by NRP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/nrp/:nrp",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"nrp",
+								":nrp"
+							],
+							"variable": [
+								{
+									"key": "nrp",
+									"value": "2272001"
+								}
+							]
+						},
+						"description": "Cari user berdasarkan NRP.\n\nRole: semua role yang sudah login"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Avatar",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "avatar",
+									"type": "file",
+									"src": "",
+									"description": "File gambar (jpg/png, maks 5 MB)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users/avatar",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"avatar"
+							]
+						},
+						"description": "Upload / ganti foto profil user yang sedang login.\n\nRole: semua role\nContent-Type: multipart/form-data\nField: avatar (file, jpg/png, maks 5 MB)"
 					},
 					"response": []
 				}
@@ -1384,6 +1464,52 @@
 			"name": "8. Meetings",
 			"item": [
 				{
+					"name": "Create Meeting (POST /meetings/:idCourse)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"pertemuan\": 17,\n  \"judul\": \"Pertemuan Tambahan\",\n  \"deskripsi\": {\"ops\": [{\"insert\": \"Deskripsi pertemuan\"}]}\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/api/meetings/:idCourse",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"meetings",
+								":idCourse"
+							],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						},
+						"description": "Buat meeting baru untuk course.\n\nRole: DOSEN, SUPER_ADMIN\n\nCatatan: course yang dibuat otomatis sudah punya 16 meeting default."
+					},
+					"response": []
+				},
+				{
 					"name": "List Meetings by Course",
 					"request": {
 						"auth": {
@@ -1747,6 +1873,43 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Mark Material Accessed (POST /materials/:idMaterial/accessed)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/materials/:idMaterial/accessed",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"materials",
+								":idMaterial",
+								"accessed"
+							],
+							"variable": [
+								{
+									"key": "idMaterial",
+									"value": ""
+								}
+							]
+						},
+						"description": "Catat bahwa mahasiswa sudah mengakses materi ini.\n\nRole: semua role\nNo request body needed."
+					},
+					"response": []
 				}
 			]
 		},
@@ -1998,6 +2161,43 @@
 		{
 			"name": "11. Submissions",
 			"item": [
+				{
+					"name": "Get Submission Summary (GET /submissions/:idAssignment/summary)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/submissions/:idAssignment/summary",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"submissions",
+								":idAssignment",
+								"summary"
+							],
+							"variable": [
+								{
+									"key": "idAssignment",
+									"value": ""
+								}
+							]
+						},
+						"description": "Ringkasan statistik submission untuk satu assignment.\n\nRole: DOSEN, SUPER_ADMIN\n\nResponse: totalMahasiswa, telahSubmit, belumSubmit, butuhPenilaian, telat, tenggat"
+					},
+					"response": []
+				},
 				{
 					"name": "Get My Submission",
 					"request": {
@@ -2524,6 +2724,51 @@
 						"description": "🗑️ DELETE study group\n\nDeletes group and all associated members"
 					},
 					"response": []
+				},
+				{
+					"name": "AI Contribution Analysis (GET /sg/group/:idGroup/ai-contribution)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/sg/group/:idGroup/ai-contribution?threadJudul=",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"sg",
+								"group",
+								":idGroup",
+								"ai-contribution"
+							],
+							"query": [
+								{
+									"key": "threadJudul",
+									"value": "",
+									"description": "Judul thread/tugas sebagai konteks analisis (opsional)"
+								}
+							],
+							"variable": [
+								{
+									"key": "idGroup",
+									"value": ""
+								}
+							]
+						},
+						"description": "Analisis distribusi kontribusi anggota kelompok menggunakan AI.\n\nRole: DOSEN, SUPER_ADMIN\n\nResponse: rekomendasi nilai per member berdasarkan post, task selesai, dan kontribusi"
+					},
+					"response": []
 				}
 			]
 		},
@@ -3011,6 +3256,7 @@
 		},
 		{
 			"name": "16. Tasks",
+			"description": "Endpoint task dalam study group thread.\n\nAkses per role:\n- GET (list): semua role\n- POST (create): MAHASISWA, SUPER_ADMIN\n- PUT (update): MAHASISWA, SUPER_ADMIN\n- DELETE: MAHASISWA, SUPER_ADMIN\n\nAlur: Login → simpan token → isi thread_id → Create Task (task_id otomatis tersimpan) → Update/Delete pakai task_id",
 			"item": [
 				{
 					"name": "List Tasks in Thread (GET /tasks/thread/:idThread)",
@@ -3053,15 +3299,33 @@
 							"variable": [
 								{
 									"key": "idThread",
-									"value": ""
+									"value": "{{thread_id}}"
 								}
 							]
-						}
+						},
+						"description": "List semua task dalam satu thread.\n\nRole: semua role (MAHASISWA, DOSEN, SUPER_ADMIN)\n\nResponse tiap item: id, task, deskripsi, mahasiswa[], status"
 					},
 					"response": []
 				},
 				{
 					"name": "Create Task (POST /tasks/thread/:idThread)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.environment.set(\"task_id\", jsonData.data.id);",
+									"        console.log(\"task_id saved:\", jsonData.data.id);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -3082,7 +3346,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"IdMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"status\": \"DO\"\n}"
+							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"deskripsi\": null,\n  \"idMahasiswa\": [\"<student_id_1>\", \"<student_id_2>\"],\n  \"status\": \"DO\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/tasks/thread/:idThread",
@@ -3098,10 +3367,11 @@
 							"variable": [
 								{
 									"key": "idThread",
-									"value": ""
+									"value": "{{thread_id}}"
 								}
 							]
-						}
+						},
+						"description": "Buat task baru di dalam thread.\n\nRole: MAHASISWA, SUPER_ADMIN\n\nField:\n- task (required): nama/judul task\n- deskripsi (optional): deskripsi task, default null jika tidak dikirim\n- idMahasiswa (required): array ID mahasiswa yang ditugaskan\n- status (required): DO | IN PROGRESS | DONE\n\nTest script otomatis menyimpan task_id ke environment variable."
 					},
 					"response": []
 				},
@@ -3127,7 +3397,12 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"IdMahasiswa\": [\"<student_id_1>\"],\n  \"status\": \"IN PROGRESS\"\n}"
+							"raw": "{\n  \"task\": \"Complete frontend design\",\n  \"deskripsi\": \"Tambahkan wireframe halaman utama dan halaman detail\",\n  \"idMahasiswa\": [\"<student_id_1>\"],\n  \"status\": \"IN PROGRESS\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
 						},
 						"url": {
 							"raw": "{{base_url}}/api/tasks/:idTasks",
@@ -3142,10 +3417,11 @@
 							"variable": [
 								{
 									"key": "idTasks",
-									"value": ""
+									"value": "{{task_id}}"
 								}
 							]
-						}
+						},
+						"description": "Update task yang sudah ada.\n\nRole: MAHASISWA, SUPER_ADMIN\n\nSemua field opsional (minimal 1 field):\n- task: ubah nama task\n- deskripsi: ubah deskripsi (string atau null untuk kosongkan)\n- idMahasiswa: ubah list mahasiswa yang ditugaskan\n- status: DO | IN PROGRESS | DONE"
 					},
 					"response": []
 				},
@@ -3177,10 +3453,11 @@
 							"variable": [
 								{
 									"key": "idTasks",
-									"value": ""
+									"value": "{{task_id}}"
 								}
 							]
-						}
+						},
+						"description": "Hapus task.\n\nRole: MAHASISWA, SUPER_ADMIN"
 					},
 					"response": []
 				}
@@ -3367,7 +3644,8 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"filePath\": \"users/2272002/notes/bab2.pdf\",\n  \"fileSize\": \"1.9 MB\",\n  \"status\": \"PRIVATE\",\n  \"tipe\": \"application/pdf\"\n}"
+							"raw": "{\n  \"filePath\": \"users/2272002/notes/bab2.pdf\",\n  \"fileSize\": \"1.9 MB\",\n  \"status\": \"PRIVATE\",\n  \"tipe\": \"application/pdf\"\n}",
+							"options": { "raw": { "language": "json" } }
 						},
 						"url": {
 							"raw": "{{base_url}}/api/private-files",
@@ -3379,6 +3657,43 @@
 								"private-files"
 							]
 						}
+					},
+					"response": []
+				},
+				{
+					"name": "List Private Files by User (GET /private-files/user/:userId)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/private-files/user/:userId",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"private-files",
+								"user",
+								":userId"
+							],
+							"variable": [
+								{
+									"key": "userId",
+									"value": ""
+								}
+							]
+						},
+						"description": "List semua private file milik user tertentu.\n\nRole: SUPER_ADMIN, DOSEN"
 					},
 					"response": []
 				},
@@ -3464,7 +3779,226 @@
 			]
 		},
 		{
-			"name": "19. Utility",
+			"name": "19. Dashboard (SUPER_ADMIN)",
+			"item": [
+				{
+					"name": "Get Global Stats (GET /dashboard/stats)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/dashboard/stats",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"dashboard",
+								"stats"
+							]
+						},
+						"description": "Statistik global untuk halaman dashboard admin.\n\nRole: SUPER_ADMIN\n\nResponse: totalUser, totalMahasiswa, totalDosen, totalAdmin, totalUserPerRole[], statusUser{aktif, tidakAktif}, totalMatakuliah, periodeAktif, totalFakultas"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "20. Course Dashboard (DOSEN)",
+			"item": [
+				{
+					"name": "Get Course Dashboard (GET /course-dashboard/:idCourse)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/course-dashboard/:idCourse",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"course-dashboard",
+								":idCourse"
+							],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								}
+							]
+						},
+						"description": "Analytics keseluruhan untuk satu course.\n\nRole: DOSEN, SUPER_ADMIN"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Meeting Dashboard (GET /course-dashboard/:idCourse/pertemuan/:pertemuan)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/course-dashboard/:idCourse/pertemuan/:pertemuan",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"course-dashboard",
+								":idCourse",
+								"pertemuan",
+								":pertemuan"
+							],
+							"variable": [
+								{
+									"key": "idCourse",
+									"value": ""
+								},
+								{
+									"key": "pertemuan",
+									"value": "1"
+								}
+							]
+						},
+						"description": "Analytics per pertemuan untuk satu course.\n\nRole: DOSEN, SUPER_ADMIN"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "21. Student Dashboard (MAHASISWA)",
+			"item": [
+				{
+					"name": "Get Student Dashboard (GET /student-dashboard)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/student-dashboard",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"student-dashboard"
+							]
+						},
+						"description": "Dashboard utama untuk mahasiswa yang sedang login.\n\nRole: MAHASISWA"
+					},
+					"response": []
+				},
+				{
+					"name": "Get My Grades (GET /student-dashboard/grades)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/student-dashboard/grades",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"student-dashboard",
+								"grades"
+							]
+						},
+						"description": "Nilai submission mahasiswa yang sedang login.\n\nRole: MAHASISWA"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Student Grades by ID (GET /student-dashboard/grades/:idStudent)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/student-dashboard/grades/:idStudent",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"student-dashboard",
+								"grades",
+								":idStudent"
+							],
+							"variable": [
+								{
+									"key": "idStudent",
+									"value": ""
+								}
+							]
+						},
+						"description": "Nilai submission mahasiswa tertentu (dilihat oleh dosen/admin).\n\nRole: DOSEN, SUPER_ADMIN"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "22. Utility",
 			"item": [
 				{
 					"name": "Health Check",
