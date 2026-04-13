@@ -27,6 +27,7 @@ const listTasksByThread = async (idThread, query) => {
         items: tasks.map((t) => ({
             id: t._id.toString(),
             task: t.task,
+            deskripsi: t.deskripsi ?? null,
             mahasiswa: (t.idMahasiswa || []).map((m) => ({
                 id: m._id.toString(),
                 nama: m.nama,
@@ -45,7 +46,7 @@ const createTask = async (idThread, payload, user) => {
     const thread = await GroupThread.findById(idThread).lean();
     if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
-    const { task, idMahasiswa, status } = payload;
+    const { task, idMahasiswa, status, deskripsi } = payload;
 
     const mhsIds = Array.from(new Set(idMahasiswa || [])).filter((id) =>
         mongoose.isValidObjectId(id),
@@ -69,6 +70,7 @@ const createTask = async (idThread, payload, user) => {
         idThread,
         idMahasiswa: mhsIds,
         task,
+        deskripsi: deskripsi ?? null,
         status,
     });
 
@@ -86,6 +88,7 @@ const createTask = async (idThread, payload, user) => {
     return {
         id: populated._id.toString(),
         task: populated.task,
+        deskripsi: populated.deskripsi ?? null,
         mahasiswa: (populated.idMahasiswa || []).map((m) => ({
             id: m._id.toString(),
             nama: m.nama,
@@ -105,9 +108,10 @@ const updateTask = async (idTask, payload, user) => {
     const thread = await GroupThread.findById(taskDoc.idThread).lean();
     if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
 
-    const { task, idMahasiswa, status } = payload;
+    const { task, idMahasiswa, status, deskripsi } = payload;
 
     if (task !== undefined) taskDoc.task = task;
+    if (deskripsi !== undefined) taskDoc.deskripsi = deskripsi;
     if (status !== undefined) taskDoc.status = status;
     if (Array.isArray(idMahasiswa)) {
         const mhsIds = Array.from(new Set(idMahasiswa)).filter((id) =>

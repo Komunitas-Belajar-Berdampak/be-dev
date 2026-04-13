@@ -20,6 +20,11 @@ const groupTaskSchema = new Schema(
         required: true,
         trim: true,
         },
+        deskripsi: {
+        type: String,
+        default: null,
+        trim: true,
+        },
         status: {
         type: String,
         enum: ['DO', 'IN PROGRESS', 'DONE'],
