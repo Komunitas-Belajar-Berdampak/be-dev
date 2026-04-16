@@ -42,7 +42,6 @@ const deleteObject = async (key) => {
     await s3.send(command);
 };
 
-// Upload a multer file object directly to S3, returns public URL
 const uploadFile = async (multerFile, folder) => {
     const ext = multerFile.originalname.split('.').pop()?.toLowerCase();
     const key = ext ? `${folder}/${randomUUID()}.${ext}` : `${folder}/${randomUUID()}`;

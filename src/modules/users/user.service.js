@@ -214,6 +214,7 @@ const updateUser = async (id, payload) => {
         status,
         password,
         fotoProfil,
+        isDefaultPassword,
     } = payload;
 
     if (nrp && nrp !== user.nrp) {
@@ -259,6 +260,7 @@ const updateUser = async (id, payload) => {
     if (jenisKelamin !== undefined) user.jenisKelamin = jenisKelamin;
     if (status !== undefined) user.status = status;
     if (fotoProfil !== undefined) user.fotoProfil = fotoProfil;
+    if (isDefaultPassword !== undefined) user.isDefaultPassword = isDefaultPassword;
 
     if (password) {
         user.passwordHash = await hashPassword(password);
