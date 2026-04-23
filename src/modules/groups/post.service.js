@@ -108,9 +108,17 @@ const createPost = async (idThread, user, konten) => {
 
     await processImages(konten);
 
-    // Nilai kualitas konten via AI dan dapatkan skor poin (0-25)
-    // Post selalu tersimpan — score 0 berarti tidak dapat poin, bukan ditolak
-    const { score, reason } = await ai.validatePostContent(konten, thread.judul);
+    const isPrivileged =
+        Array.isArray(user.roles) &&
+        (user.roles.includes('SUPER_ADMIN') || user.roles.includes('DOSEN'));
+
+    let score = 0;
+    let reason = null;
+    if (!isPrivileged) {
+        const result = await ai.validatePostContent(konten, thread.judul);
+        score = result.score;
+        reason = result.reason;
+    }
 
     const post = await GroupPost.create({
         idThread,
@@ -161,7 +169,7 @@ const createPost = async (idThread, user, konten) => {
         },
         konten: post.konten,
         poin: score,
-        ...(score === 0 && { peringatan: reason || 'Konten kurang berkualitas, tidak mendapat poin kontribusi' }),
+        ...(score === 0 && !isPrivileged && { peringatan: reason || 'Konten kurang berkualitas, tidak mendapat poin kontribusi' }),
     };
 };
 
