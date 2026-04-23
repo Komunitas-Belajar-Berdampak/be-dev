@@ -180,11 +180,6 @@ router.post(
     controller.createMaterial
 );
 
-// Single parameter routes below
-// NOTE: GET /:idCourse and GET /:idMaterial have conflicting patterns.
-// Based on route order, /:idCourse will match first for all single-parameter GETs.
-// To get a single material detail, use the material ID after creation.
-
 /**
  * @swagger
  * /api/materials/{idCourse}:

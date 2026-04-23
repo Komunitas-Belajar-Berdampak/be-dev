@@ -217,9 +217,7 @@ const getUserDetailInGroup = async (idGroup, idUser) => {
 
     const logs = await ActivityLog.find({
         idUser,
-        ...(threadIds.length > 0 && {
         idContribusionThread: { $in: threadIds },
-        }),
     })
         .populate('idContribusionThread', 'judul')
         .sort({ createdAt: 1 })

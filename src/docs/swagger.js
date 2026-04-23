@@ -24,6 +24,11 @@ const options = {
             scheme: 'bearer',
             bearerFormat: 'JWT',
             },
+            BearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+            },
         },
         schemas: {
             ErrorResponse: {
