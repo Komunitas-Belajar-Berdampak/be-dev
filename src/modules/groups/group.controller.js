@@ -426,6 +426,30 @@ const rejectMembership = async (req, res, next) => {
     }
 };
 
+const getAssignmentDashboard = async (req, res, next) => {
+    try {
+        const data = await groupService.getAssignmentDashboard(req.params.idCourse);
+        return successResponse(res, {
+            message: 'data berhasil diambil!',
+            data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const getThreadLatestUpdate = async (req, res, next) => {
+    try {
+        const data = await groupService.getThreadLatestUpdate(req.params.idThread);
+        return successResponse(res, {
+            message: 'status update berhasil dicek',
+            data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const getAiContributionAnalysis = async (req, res, next) => {
     try {
         const { idGroup } = req.params;
@@ -541,4 +565,6 @@ module.exports = {
     updateTaskController,
     deleteTaskController,
     getAiContributionAnalysis,
+    getAssignmentDashboard,
+    getThreadLatestUpdate,
 };

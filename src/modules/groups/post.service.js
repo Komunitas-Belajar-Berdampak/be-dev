@@ -5,6 +5,7 @@ const GroupPost = require('./group-post.model');
 const StudyGroup = require('./group.model');
 const GroupMember = require('./group-member.model');
 const ContributionThread = require('./contribution-thread.model');
+const ContributionReview = require('../contributionReviews/contribution-review.model');
 const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { uploadBuffer } = require('../../libs/s3');
@@ -113,63 +114,47 @@ const createPost = async (idThread, user, konten) => {
         (user.roles.includes('SUPER_ADMIN') || user.roles.includes('DOSEN'));
 
     let score = 0;
-    let reason = null;
+    let reason = '';
     if (!isPrivileged) {
         const result = await ai.validatePostContent(konten, thread.judul);
         score = result.score;
-        reason = result.reason;
+        reason = result.reason || '';
     }
 
     const post = await GroupPost.create({
         idThread,
         idAuthor: user.sub,
         konten,
-        poin: score,
     });
 
-    if (score > 0) {
-        await Promise.all([
-            GroupMember.findOneAndUpdate(
-            {
-                idGroup: thread.idGroup,
-                idMahasiswa: user.sub,
-            },
-            { $inc: { kontribusi: score } },
-            { new: true },
-            ).exec(),
-            StudyGroup.findByIdAndUpdate(thread.idGroup, {
-            $inc: { totalKontribusi: score },
-            }).exec(),
-            GroupThread.findByIdAndUpdate(idThread, {
-            $inc: { kontribusi: score },
-            }).exec(),
-            ContributionThread.findOneAndUpdate(
-            {
-                idThread: idThread,
-                idMahasiswa: user.sub,
-            },
-            { $inc: { kontribusi: score } },
-            { upsert: true, new: true },
-            ).exec(),
-        ]);
-    }
+    await ContributionReview.create({
+        idPost: post._id,
+        idStudent: user.sub,
+        idStudyGroup: thread.idGroup,
+        idThread: thread._id,
+        idAssignment: thread.idAssignment || null,
+        aiSuggestedPoints: score,
+        aiReason: reason,
+        status: 'PENDING',
+        finalPoints: null,
+        lecturerNote: null,
+        reviewedAt: null,
+    });
 
     await logActivity({
         aktivitas: `Menambahkan post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
-        kontribusi: score,
+        kontribusi: 0,
     });
 
     return {
         id: post._id.toString(),
         author: {
-        nrp: author.nrp,
-        nama: author.nama,
+            nrp: author.nrp,
+            nama: author.nama,
         },
         konten: post.konten,
-        poin: score,
-        ...(score === 0 && !isPrivileged && { peringatan: reason || 'Konten kurang berkualitas, tidak mendapat poin kontribusi' }),
     };
 };
 
@@ -225,42 +210,42 @@ const deletePost = async (idPost, user) => {
         throw new ApiError(403, 'Anda tidak boleh menghapus post ini');
     }
 
-    const poinPost = post.poin || 0;
+    const review = await ContributionReview.findOne({ idPost: post._id });
+    const reviewedPoints =
+        review && review.status === 'REVIEWED' && typeof review.finalPoints === 'number'
+            ? review.finalPoints
+            : 0;
 
-    await post.deleteOne();
-
-    if (poinPost > 0) {
+    if (reviewedPoints > 0) {
         await Promise.all([
             GroupMember.findOneAndUpdate(
-            {
-                idGroup: thread.idGroup,
-                idMahasiswa: post.idAuthor,
-            },
-            { $inc: { kontribusi: -poinPost } },
-            { new: true },
+                { idGroup: thread.idGroup, idMahasiswa: post.idAuthor },
+                { $inc: { kontribusi: -reviewedPoints } },
             ).exec(),
             StudyGroup.findByIdAndUpdate(thread.idGroup, {
-            $inc: { totalKontribusi: -poinPost },
+                $inc: { totalKontribusi: -reviewedPoints },
             }).exec(),
             GroupThread.findByIdAndUpdate(post.idThread, {
-            $inc: { kontribusi: -poinPost },
+                $inc: { kontribusi: -reviewedPoints },
             }).exec(),
             ContributionThread.findOneAndUpdate(
-            {
-                idThread: post.idThread,
-                idMahasiswa: post.idAuthor,
-            },
-            { $inc: { kontribusi: -poinPost } },
-            { new: true },
+                { idThread: post.idThread, idMahasiswa: post.idAuthor },
+                { $inc: { kontribusi: -reviewedPoints } },
             ).exec(),
         ]);
     }
+
+    if (review) {
+        await review.deleteOne();
+    }
+
+    await post.deleteOne();
 
     await logActivity({
         aktivitas: `Menghapus post di thread: ${thread.judul}`,
         idUser: user.sub,
         idContribusionThread: thread._id,
-        kontribusi: -poinPost,
+        kontribusi: -reviewedPoints,
     });
 };
 

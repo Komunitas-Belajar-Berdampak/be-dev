@@ -38,6 +38,30 @@ router.get('/sg/course/:idCourse', controller.getGroupsByCourse);
 
 /**
  * @swagger
+ * /api/sg/course/{idCourse}/assignment-dashboard:
+ *   get:
+ *     summary: Dashboard kontribusi study group per assignment dalam 1 course
+ *     description: Khusus DOSEN/SUPER_ADMIN. matrix.points hanya menghitung review dengan status REVIEWED.
+ *     tags: [StudyGroups]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idCourse
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: data berhasil diambil!
+ */
+router.get(
+    '/sg/course/:idCourse/assignment-dashboard',
+    requireRoles('DOSEN', 'SUPER_ADMIN'),
+    controller.getAssignmentDashboard,
+);
+
+/**
+ * @swagger
  * /api/sg/course-membership/{idCourse}:
  *   get:
  *     summary: List kelompok belajar dengan status membership mahasiswa
@@ -407,6 +431,39 @@ router.post(
     '/threads/sg/:idStudyGroup',
     requireRoles('MAHASISWA', 'DOSEN', 'SUPER_ADMIN'),
     controller.createThread,
+);
+
+/**
+ * @swagger
+ * /api/threads/{idThread}/latest-update:
+ *   get:
+ *     summary: Cek update terbaru thread (untuk polling realtime)
+ *     tags: [Threads]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idThread
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: status update berhasil dicek
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     latestUpdatedAt: { type: string, nullable: true }
+ *                     totalPosts: { type: integer }
+ */
+router.get(
+    '/threads/:idThread/latest-update',
+    controller.getThreadLatestUpdate,
 );
 
 /**

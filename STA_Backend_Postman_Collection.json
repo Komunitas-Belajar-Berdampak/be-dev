@@ -1,13 +1,13 @@
 {
 	"info": {
-		"_postman_id": "sta-backend-collection-2024",
+		"_postman_id": "81eb6123-ed6b-43d9-8044-c5fad5a822f2",
 		"name": "STA Backend API Collection",
-		"description": "Complete API collection for Student Team Activity Backend\n\nTest Users:\n- Admin: NRP: Admin, Password: password123, Role: SUPER_ADMIN\n- Dosen1: NRP: Dosen1, Password: password123, Role: DOSEN (create manually)\n- Student: NRP: 2272001, Password: password123, Role: MAHASISWA (create manually)",
+		"description": "Koleksi endpoint backend STA.\n\nUser untuk testing (pastikan sudah ada di DB):\n- Admin: nrp Admin / password123\n- Dosen: nrp 720003 / Passworddsn123*\n- Mahasiswa: nrp 2272008 / gB7a3w5r:QFJawZ\n\nUrutan pakai: login dulu dari folder Authentication, token otomatis tersimpan ke env {{token}}, setelah itu semua endpoint lain bisa langsung dipakai.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"item": [
 		{
-			"name": "1. Authentication",
+			"name": "Authentication",
 			"item": [
 				{
 					"name": "Login as Admin",
@@ -211,55 +211,8 @@
 			]
 		},
 		{
-			"name": "2. Roles (SUPER_ADMIN)",
+			"name": "Roles (SUPER_ADMIN)",
 			"item": [
-				{
-					"name": "Step 1: Login as Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Roles",
 					"request": {
@@ -407,55 +360,8 @@
 			]
 		},
 		{
-			"name": "3. Users",
+			"name": "Users",
 			"item": [
-				{
-					"name": "Step 1: Login as Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Users (SUPER_ADMIN)",
 					"request": {
@@ -734,55 +640,8 @@
 			]
 		},
 		{
-			"name": "4. Faculties (SUPER_ADMIN)",
+			"name": "Faculties (SUPER_ADMIN)",
 			"item": [
-				{
-					"name": "Step 1: Login as Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Faculties",
 					"request": {
@@ -895,55 +754,8 @@
 			]
 		},
 		{
-			"name": "5. Majors (SUPER_ADMIN)",
+			"name": "Majors (SUPER_ADMIN)",
 			"item": [
-				{
-					"name": "Step 1: Login as Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Majors",
 					"request": {
@@ -1056,55 +868,8 @@
 			]
 		},
 		{
-			"name": "6. Academic Terms (SUPER_ADMIN)",
+			"name": "Academic Terms (SUPER_ADMIN)",
 			"item": [
-				{
-					"name": "Step 1: Login as Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Academic Terms",
 					"request": {
@@ -1377,55 +1142,8 @@
 			]
 		},
 		{
-			"name": "7. Courses",
+			"name": "Courses",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Courses",
 					"request": {
@@ -1747,55 +1465,8 @@
 			]
 		},
 		{
-			"name": "8. Meetings",
+			"name": "Meetings",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Create Meeting (POST /meetings/:idCourse)",
 					"request": {
@@ -1969,55 +1640,8 @@
 			]
 		},
 		{
-			"name": "9. Materials",
+			"name": "Materials",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Materials by Course",
 					"request": {
@@ -2291,62 +1915,15 @@
 								}
 							]
 						},
-						"description": "Catat bahwa mahasiswa sudah mengakses materi ini.\n\nRole: semua role\nNo request body needed."
+						"description": "Catat bahwa mahasiswa sudah mengakses materi ini.\n\nRole: semua role\nTidak perlu body."
 					},
 					"response": []
 				}
 			]
 		},
 		{
-			"name": "10. Assignments",
+			"name": "Assignments",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Assignments by Course",
 					"request": {
@@ -2590,55 +2167,8 @@
 			]
 		},
 		{
-			"name": "11. Submissions",
+			"name": "Submissions",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Get Submission Summary (GET /submissions/:idAssignment/summary)",
 					"request": {
@@ -2890,55 +2420,8 @@
 			]
 		},
 		{
-			"name": "12. Study Groups",
+			"name": "Study Groups",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Groups by Course (GET /sg/course/:idCourse)",
 					"request": {
@@ -2969,23 +2452,23 @@
 								{
 									"key": "page",
 									"value": "1",
-									"description": "Page number"
+									"description": "Halaman"
 								},
 								{
 									"key": "limit",
 									"value": "10",
-									"description": "Items per page"
+									"description": "Jumlah per halaman"
 								}
 							],
 							"variable": [
 								{
 									"key": "idCourse",
 									"value": "",
-									"description": "Course ID (from GET /api/courses) - Returns ARRAY of groups"
+									"description": "Course ID"
 								}
 							]
 						},
-						"description": "📋 LIST ALL groups in a course\n\nReturns ARRAY with: id, nama, kapasitas, totalAnggota, status, totalRequest, totalKontribusi\n\nResponse has pagination."
+						"description": "List semua kelompok dalam satu course.\n\nRole: semua role\n\nResponse berisi id, nama, kapasitas, totalAnggota, status, totalRequest, totalKontribusi. Sudah pakai pagination."
 					},
 					"response": []
 				},
@@ -3019,23 +2502,23 @@
 								{
 									"key": "page",
 									"value": "1",
-									"description": "Page number"
+									"description": "Halaman"
 								},
 								{
 									"key": "limit",
 									"value": "10",
-									"description": "Items per page"
+									"description": "Jumlah per halaman"
 								}
 							],
 							"variable": [
 								{
 									"key": "idCourse",
 									"value": "",
-									"description": "Course ID - For STUDENTS only"
+									"description": "Course ID (khusus mahasiswa)"
 								}
 							]
 						},
-						"description": "👤 LIST groups with student's membership status (MAHASISWA only)\n\nReturns ARRAY with: id, nama, deskripsi, kapasitas, totalAnggota, status, statusMember, totalKontribusi\n\nstatusMember shows if student is PENDING/APPROVED/REJECTED or null\ntotalKontribusi shows student's contribution in that group"
+						"description": "List kelompok beserta status membership mahasiswa yang sedang login.\n\nRole: MAHASISWA\n\nResponse: id, nama, deskripsi, kapasitas, totalAnggota, status, statusMember, totalKontribusi. statusMember bisa PENDING/APPROVED/REJECTED atau null. totalKontribusi = kontribusi mahasiswa di kelompok tsb."
 					},
 					"response": []
 				},
@@ -3069,11 +2552,11 @@
 								{
 									"key": "id",
 									"value": "",
-									"description": "Group ID (from previous 'List Groups' response) - Returns SINGLE group object"
+									"description": "Group ID"
 								}
 							]
 						},
-						"description": "📖 GET SINGLE group details with members\n\nReturns SINGLE OBJECT (not array) with: id, nama, deskripsi, kapasitas, anggota[], status, totalKontribusi\n\nNo pagination. Use Group ID here, NOT Course ID!"
+						"description": "Detail satu kelompok beserta anggotanya.\n\nRole: semua role\n\nResponse: id, nama, deskripsi, kapasitas, anggota[], status, totalKontribusi. Catatan: pakai Group ID, bukan Course ID."
 					},
 					"response": []
 				},
@@ -3113,11 +2596,11 @@
 								{
 									"key": "idUser",
 									"value": "",
-									"description": "User/Student ID"
+									"description": "ID user/mahasiswa"
 								}
 							]
 						},
-						"description": "👤 GET user's contributions and activity in a specific group\n\nReturns: mahasiswa info, kontribusi by thread, aktivitas log"
+						"description": "Detail kontribusi dan aktivitas user di satu kelompok.\n\nRole: DOSEN, SUPER_ADMIN\n\nResponse: info mahasiswa, kontribusi per thread, aktivitas log."
 					},
 					"response": []
 				},
@@ -3159,11 +2642,11 @@
 								{
 									"key": "idCourse",
 									"value": "",
-									"description": "Course ID where this group belongs"
+									"description": "Course ID"
 								}
 							]
 						},
-						"description": "➕ CREATE new study group\n\nRequired: kapasitas\nOptional: nama, deskripsi, idMahasiswa[], status\n\nReturns: created group with totalKontribusi: 0"
+						"description": "Buat kelompok belajar baru.\n\nRole: DOSEN, SUPER_ADMIN\n\nWajib: kapasitas. Opsional: nama, deskripsi, idMahasiswa[], status."
 					},
 					"response": []
 				},
@@ -3205,11 +2688,11 @@
 								{
 									"key": "id",
 									"value": "",
-									"description": "Group ID to update"
+									"description": "Group ID"
 								}
 							]
 						},
-						"description": "✏️ UPDATE existing group\n\nAll fields optional: nama, deskripsi, status, kapasitas, idMahasiswa[]"
+						"description": "Update kelompok yang sudah ada.\n\nRole: DOSEN, SUPER_ADMIN\n\nSemua field opsional: nama, deskripsi, status, kapasitas, idMahasiswa[]."
 					},
 					"response": []
 				},
@@ -3242,11 +2725,11 @@
 								{
 									"key": "id",
 									"value": "",
-									"description": "Group ID to delete"
+									"description": "Group ID"
 								}
 							]
 						},
-						"description": "🗑️ DELETE study group\n\nDeletes group and all associated members"
+						"description": "Hapus kelompok beserta seluruh membership-nya.\n\nRole: DOSEN, SUPER_ADMIN"
 					},
 					"response": []
 				},
@@ -3298,55 +2781,8 @@
 			]
 		},
 		{
-			"name": "13. Memberships",
+			"name": "Memberships",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Memberships",
 					"request": {
@@ -3376,12 +2812,12 @@
 								{
 									"key": "page",
 									"value": "1",
-									"description": "Page number"
+									"description": "Halaman"
 								},
 								{
 									"key": "limit",
 									"value": "10",
-									"description": "Items per page"
+									"description": "Jumlah per halaman"
 								}
 							],
 							"variable": [
@@ -3517,55 +2953,8 @@
 			]
 		},
 		{
-			"name": "14. Threads",
+			"name": "Threads",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Threads in Group (GET /threads/sg/:idStudyGroup)",
 					"request": {
@@ -3596,12 +2985,12 @@
 								{
 									"key": "page",
 									"value": "1",
-									"description": "Page number"
+									"description": "Halaman"
 								},
 								{
 									"key": "limit",
 									"value": "10",
-									"description": "Items per page"
+									"description": "Jumlah per halaman"
 								}
 							],
 							"variable": [
@@ -3662,55 +3051,8 @@
 			]
 		},
 		{
-			"name": "15. Posts",
+			"name": "Posts",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Posts in Thread (GET /threads/:idThread)",
 					"request": {
@@ -3740,12 +3082,12 @@
 								{
 									"key": "page",
 									"value": "1",
-									"description": "Page number"
+									"description": "Halaman"
 								},
 								{
 									"key": "limit",
 									"value": "10",
-									"description": "Items per page"
+									"description": "Jumlah per halaman"
 								}
 							],
 							"variable": [
@@ -3835,7 +3177,7 @@
 								}
 							]
 						},
-						"description": "📖 GET single post details\n\nReturns: id, author (nrp, nama), konten, updatedAt"
+						"description": "Detail satu post.\n\nRole: semua role\n\nResponse: id, author (nrp, nama), konten, updatedAt."
 					},
 					"response": []
 				},
@@ -3921,56 +3263,9 @@
 			]
 		},
 		{
-			"name": "16. Tasks",
+			"name": "Tasks",
 			"description": "Endpoint task dalam study group thread.\n\nAkses per role:\n- GET (list): semua role\n- POST (create): MAHASISWA, SUPER_ADMIN\n- PUT (update): MAHASISWA, SUPER_ADMIN\n- DELETE: MAHASISWA, SUPER_ADMIN\n\nAlur: Login → simpan token → isi thread_id → Create Task (task_id otomatis tersimpan) → Update/Delete pakai task_id",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List Tasks in Thread (GET /tasks/thread/:idThread)",
 					"request": {
@@ -4001,12 +3296,12 @@
 								{
 									"key": "page",
 									"value": "1",
-									"description": "Page number"
+									"description": "Halaman"
 								},
 								{
 									"key": "limit",
 									"value": "10",
-									"description": "Items per page"
+									"description": "Jumlah per halaman"
 								}
 							],
 							"variable": [
@@ -4177,55 +3472,8 @@
 			]
 		},
 		{
-			"name": "17. Learning Approach",
+			"name": "Learning Approach",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Get Learning Approach",
 					"request": {
@@ -4352,55 +3600,8 @@
 			]
 		},
 		{
-			"name": "18. Private Files",
+			"name": "Private Files",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "List My Private Files",
 					"request": {
@@ -4590,55 +3791,8 @@
 			]
 		},
 		{
-			"name": "19. Dashboard (SUPER_ADMIN)",
+			"name": "Dashboard (SUPER_ADMIN)",
 			"item": [
-				{
-					"name": "Step 1: Login as Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"Admin\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Get Global Stats (GET /dashboard/stats)",
 					"request": {
@@ -4672,55 +3826,8 @@
 			]
 		},
 		{
-			"name": "20. Course Dashboard (DOSEN)",
+			"name": "Course Dashboard (DOSEN)",
 			"item": [
-				{
-					"name": "Step 1: Login as Dosen",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"720003\",\n  \"password\": \"Passworddsn123*\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Get Course Dashboard (GET /course-dashboard/:idCourse)",
 					"request": {
@@ -4802,55 +3909,8 @@
 			]
 		},
 		{
-			"name": "21. Student Dashboard (MAHASISWA)",
+			"name": "Student Dashboard (MAHASISWA)",
 			"item": [
-				{
-					"name": "Step 1: Login as Mahasiswa",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.data && jsonData.data.token) {",
-									"        pm.environment.set(\"token\", jsonData.data.token);",
-									"        console.log(\"Token saved to environment:\", jsonData.data.token);",
-									"    } else {",
-									"        console.log(\"Token not found in response:\", JSON.stringify(jsonData));",
-									"    }",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"nrp\": \"2272008\",\n  \"password\": \"gB7a3w5r:QFJawZ\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/api/auth/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"api",
-								"auth",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
 				{
 					"name": "Get Student Dashboard (GET /student-dashboard)",
 					"request": {
@@ -4950,7 +4010,7 @@
 			]
 		},
 		{
-			"name": "22. Utility",
+			"name": "Utility",
 			"item": [
 				{
 					"name": "Health Check",

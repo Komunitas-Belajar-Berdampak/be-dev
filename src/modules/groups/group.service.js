@@ -6,7 +6,9 @@ const User = require('../users/user.model');
 const GroupThread = require('./group-thread.model');
 const GroupPost = require('./group-post.model');
 const ContributionThread = require('./contribution-thread.model');
-const ActivityLog = require('./activity-log.model');
+const ContributionReview = require('../contributionReviews/contribution-review.model');
+const Meeting = require('../meetings/meeting.model');
+const Assignment = require('../assignments/assignment.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 
@@ -215,20 +217,30 @@ const getUserDetailInGroup = async (idGroup, idUser) => {
         });
     }
 
-    const logs = await ActivityLog.find({
-        idUser,
-        idContribusionThread: { $in: threadIds },
+    const reviews = await ContributionReview.find({
+        idStudyGroup: idGroup,
+        idStudent: idUser,
     })
-        .populate('idContribusionThread', 'judul')
+        .populate('idThread', 'judul')
         .sort({ createdAt: 1 })
         .lean();
 
-    const aktivitasList = logs.map((log) => ({
-        thread: log.idContribusionThread?.judul || null,
-        aktivitas: log.aktivitas,
-        kontribusi: log.kontribusi || 0,
-        timestamp: log.createdAt,
-    }));
+    const aktivitasList = reviews.map((r) => {
+        const judulThread = r.idThread?.judul || null;
+        return {
+            thread: judulThread,
+            aktivitas: judulThread
+                ? `Posting di thread: ${judulThread}`
+                : 'Posting di thread',
+            status: r.status,
+            kontribusi:
+                r.status === 'REVIEWED' && typeof r.finalPoints === 'number'
+                    ? r.finalPoints
+                    : 0,
+            catatan: r.lecturerNote ?? null,
+            timestamp: r.createdAt,
+        };
+    });
 
     return {
         id: group._id.toString(),
@@ -427,6 +439,222 @@ const deleteGroup = async (idGroup) => {
     await GroupMember.deleteMany({ idGroup });
 };
 
+const getAssignmentDashboard = async (idCourse) => {
+    if (!mongoose.isValidObjectId(idCourse)) {
+        throw new ApiError(400, 'ID course tidak valid');
+    }
+
+    const course = await Course.findById(idCourse).lean();
+    if (!course) throw new ApiError(404, 'Course tidak ditemukan');
+
+    const meetings = await Meeting.find({ idCourse })
+        .select('_id pertemuan')
+        .lean();
+    const meetingPertemuanMap = meetings.reduce((acc, m) => {
+        acc[m._id.toString()] = m.pertemuan;
+        return acc;
+    }, {});
+    const meetingIds = meetings.map((m) => m._id);
+
+    const assignments = meetingIds.length
+        ? await Assignment.find({ idMeeting: { $in: meetingIds } })
+              .select('_id judul idMeeting tenggat createdAt')
+              .sort({ tenggat: 1, createdAt: 1 })
+              .lean()
+        : [];
+
+    const assignmentList = assignments.map((a) => ({
+        id: a._id.toString(),
+        pertemuan: meetingPertemuanMap[a.idMeeting.toString()] || 0,
+        judul: a.judul,
+    }));
+
+    const groups = await StudyGroup.find({ idCourse }).select('_id nama').lean();
+    const groupList = groups.map((g) => ({
+        id: g._id.toString(),
+        nama: g.nama,
+    }));
+    const groupIds = groups.map((g) => g._id);
+    const groupNameMap = groups.reduce((acc, g) => {
+        acc[g._id.toString()] = g.nama;
+        return acc;
+    }, {});
+
+    const members = groupIds.length
+        ? await GroupMember.find({
+              idGroup: { $in: groupIds },
+              status: 'APPROVED',
+          })
+              .populate('idMahasiswa', 'nrp nama')
+              .lean()
+        : [];
+
+    const studentList = members
+        .filter((m) => m.idMahasiswa)
+        .map((m) => ({
+            id: m.idMahasiswa._id.toString(),
+            nrp: m.idMahasiswa.nrp,
+            nama: m.idMahasiswa.nama,
+            groupId: m.idGroup.toString(),
+            groupName: groupNameMap[m.idGroup.toString()] || '',
+        }));
+
+    const studentNameMap = studentList.reduce((acc, s) => {
+        acc[s.id] = s.nama;
+        return acc;
+    }, {});
+
+    const reviewedAggregation =
+        groupIds.length && assignmentList.length
+            ? await ContributionReview.aggregate([
+                  {
+                      $match: {
+                          idStudyGroup: { $in: groupIds },
+                          status: 'REVIEWED',
+                          idAssignment: { $ne: null },
+                      },
+                  },
+                  {
+                      $group: {
+                          _id: {
+                              studentId: '$idStudent',
+                              assignmentId: '$idAssignment',
+                          },
+                          points: { $sum: '$finalPoints' },
+                      },
+                  },
+              ])
+            : [];
+
+    const pointsMap = {};
+    for (const row of reviewedAggregation) {
+        const studentKey = row._id.studentId.toString();
+        const assignmentKey = row._id.assignmentId.toString();
+        if (!pointsMap[studentKey]) pointsMap[studentKey] = {};
+        pointsMap[studentKey][assignmentKey] = row.points || 0;
+    }
+
+    const matrix = [];
+    for (const student of studentList) {
+        for (const assignment of assignmentList) {
+            const points = pointsMap[student.id]?.[assignment.id] || 0;
+            matrix.push({
+                studentId: student.id,
+                assignmentId: assignment.id,
+                points,
+            });
+        }
+    }
+
+    const weights = [];
+    if (assignmentList.length > 0) {
+        const baseWeight = Math.floor(100 / assignmentList.length);
+        const remainder = 100 - baseWeight * assignmentList.length;
+        assignmentList.forEach((a, idx) => {
+            weights.push({
+                assignmentId: a.id,
+                weight: baseWeight + (idx === 0 ? remainder : 0),
+            });
+        });
+    }
+
+    const totalKontribusi = matrix.reduce((sum, m) => sum + m.points, 0);
+
+    const studentTotalMap = {};
+    for (const m of matrix) {
+        studentTotalMap[m.studentId] =
+            (studentTotalMap[m.studentId] || 0) + m.points;
+    }
+
+    let topContributor = null;
+    for (const s of studentList) {
+        const total = studentTotalMap[s.id] || 0;
+        if (total > 0 && (!topContributor || total > topContributor.totalPoints)) {
+            topContributor = {
+                studentId: s.id,
+                nama: s.nama,
+                totalPoints: total,
+            };
+        }
+    }
+
+    let assignmentPalingTimpang = null;
+    for (const a of assignmentList) {
+        const rowsForAssignment = matrix.filter(
+            (m) => m.assignmentId === a.id,
+        );
+        const totalForAssignment = rowsForAssignment.reduce(
+            (sum, m) => sum + m.points,
+            0,
+        );
+        if (totalForAssignment <= 0) continue;
+
+        let topStudentId = null;
+        let topStudentPoints = 0;
+        for (const r of rowsForAssignment) {
+            if (r.points > topStudentPoints) {
+                topStudentPoints = r.points;
+                topStudentId = r.studentId;
+            }
+        }
+        const dominance = (topStudentPoints / totalForAssignment) * 100;
+        const dominanceRounded = Math.round(dominance * 100) / 100;
+        if (
+            !assignmentPalingTimpang ||
+            dominanceRounded > assignmentPalingTimpang.dominancePercentage
+        ) {
+            assignmentPalingTimpang = {
+                assignmentId: a.id,
+                judul: a.judul,
+                studentName: studentNameMap[topStudentId] || '',
+                dominancePercentage: dominanceRounded,
+            };
+        }
+    }
+
+    let inactiveStudents = 0;
+    for (const s of studentList) {
+        if ((studentTotalMap[s.id] || 0) === 0) inactiveStudents++;
+    }
+
+    return {
+        courseId: course._id.toString(),
+        assignments: assignmentList,
+        groups: groupList,
+        students: studentList,
+        matrix,
+        weights,
+        summary: {
+            totalKontribusi,
+            topContributor,
+            assignmentPalingTimpang,
+            inactiveStudents,
+        },
+    };
+};
+
+const getThreadLatestUpdate = async (idThread) => {
+    if (!mongoose.isValidObjectId(idThread)) {
+        throw new ApiError(400, 'ID thread tidak valid');
+    }
+
+    const thread = await GroupThread.findById(idThread).lean();
+    if (!thread) throw new ApiError(404, 'Thread tidak ditemukan');
+
+    const [latestPost, totalPosts] = await Promise.all([
+        GroupPost.findOne({ idThread })
+            .sort({ updatedAt: -1 })
+            .select('updatedAt')
+            .lean(),
+        GroupPost.countDocuments({ idThread }),
+    ]);
+
+    return {
+        latestUpdatedAt: latestPost?.updatedAt || null,
+        totalPosts,
+    };
+};
+
 module.exports = {
     listGroupsByCourse,
     listGroupsWithMembershipStatus,
@@ -435,4 +663,6 @@ module.exports = {
     createGroup,
     updateGroup,
     deleteGroup,
+    getAssignmentDashboard,
+    getThreadLatestUpdate,
 };
