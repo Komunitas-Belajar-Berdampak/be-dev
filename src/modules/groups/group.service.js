@@ -6,6 +6,7 @@ const User = require('../users/user.model');
 const GroupThread = require('./group-thread.model');
 const GroupPost = require('./group-post.model');
 const ContributionThread = require('./contribution-thread.model');
+const ActivityLog = require('./activity-log.model');
 const ContributionReview = require('../contributionReviews/contribution-review.model');
 const Meeting = require('../meetings/meeting.model');
 const Assignment = require('../assignments/assignment.model');
@@ -225,7 +226,7 @@ const getUserDetailInGroup = async (idGroup, idUser) => {
         .sort({ createdAt: 1 })
         .lean();
 
-    const aktivitasList = reviews.map((r) => {
+    const reviewActivityList = reviews.map((r) => {
         const judulThread = r.idThread?.judul || null;
         return {
             thread: judulThread,
@@ -241,6 +242,32 @@ const getUserDetailInGroup = async (idGroup, idUser) => {
             timestamp: r.createdAt,
         };
     });
+
+    const activityLogs = threadIds.length > 0
+        ? await ActivityLog.find({
+              idUser,
+              idContribusionThread: { $in: threadIds },
+          })
+              .populate('idContribusionThread', 'judul')
+              .sort({ createdAt: 1 })
+              .lean()
+        : [];
+
+    // Skip post-create logs because they're already represented by ContributionReview entries (which carry status/lecturerNote/finalPoints)
+    const logActivityList = activityLogs
+        .filter((log) => !log.aktivitas.startsWith('Menambahkan post'))
+        .map((log) => ({
+            thread: log.idContribusionThread?.judul || null,
+            aktivitas: log.aktivitas,
+            status: null,
+            kontribusi: log.kontribusi || 0,
+            catatan: null,
+            timestamp: log.createdAt,
+        }));
+
+    const aktivitasList = [...logActivityList, ...reviewActivityList].sort(
+        (a, b) => new Date(a.timestamp) - new Date(b.timestamp),
+    );
 
     return {
         id: group._id.toString(),

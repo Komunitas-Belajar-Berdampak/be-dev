@@ -127,19 +127,21 @@ const createPost = async (idThread, user, konten) => {
         konten,
     });
 
-    await ContributionReview.create({
-        idPost: post._id,
-        idStudent: user.sub,
-        idStudyGroup: thread.idGroup,
-        idThread: thread._id,
-        idAssignment: thread.idAssignment || null,
-        aiSuggestedPoints: score,
-        aiReason: reason,
-        status: 'PENDING',
-        finalPoints: null,
-        lecturerNote: null,
-        reviewedAt: null,
-    });
+    if (!isPrivileged) {
+        await ContributionReview.create({
+            idPost: post._id,
+            idStudent: user.sub,
+            idStudyGroup: thread.idGroup,
+            idThread: thread._id,
+            idAssignment: thread.idAssignment || null,
+            aiSuggestedPoints: score,
+            aiReason: reason,
+            status: 'PENDING',
+            finalPoints: null,
+            lecturerNote: null,
+            reviewedAt: null,
+        });
+    }
 
     await logActivity({
         aktivitas: `Menambahkan post di thread: ${thread.judul}`,
