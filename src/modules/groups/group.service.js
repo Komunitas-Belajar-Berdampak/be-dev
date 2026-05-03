@@ -426,21 +426,35 @@ const updateGroup = async (idGroup, payload) => {
         }
         }
 
-        // Remove existing APPROVED members (full replacement)
-        await GroupMember.deleteMany({
+        // Diff-based update so existing members keep their kontribusi
+        const currentApproved = await GroupMember.find({
             idGroup,
             status: 'APPROVED',
-        });
+        }).select('idMahasiswa').lean();
 
-        if (uniqueIds.length > 0) {
-            // Also remove any PENDING/REJECTED records for these students
-            // so dosen can re-add previously rejected students
+        const currentIds = currentApproved.map((m) => m.idMahasiswa.toString());
+        const newIdsSet = new Set(uniqueIds);
+        const currentIdsSet = new Set(currentIds);
+
+        const toRemove = currentIds.filter((id) => !newIdsSet.has(id));
+        const toAdd = uniqueIds.filter((id) => !currentIdsSet.has(id));
+
+        if (toRemove.length > 0) {
             await GroupMember.deleteMany({
                 idGroup,
-                idMahasiswa: { $in: uniqueIds },
+                status: 'APPROVED',
+                idMahasiswa: { $in: toRemove },
+            });
+        }
+
+        if (toAdd.length > 0) {
+            // Drop any PENDING/REJECTED records for new members so dosen can re-add previously rejected students
+            await GroupMember.deleteMany({
+                idGroup,
+                idMahasiswa: { $in: toAdd },
             });
 
-            const docs = uniqueIds.map((idMhs) => ({
+            const docs = toAdd.map((idMhs) => ({
                 idGroup,
                 idMahasiswa: idMhs,
                 status: 'APPROVED',
