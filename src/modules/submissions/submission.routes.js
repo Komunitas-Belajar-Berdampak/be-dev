@@ -1,4 +1,5 @@
 const express = require('express');
+const axios = require('axios');
 const auth = require('../../middlewares/auth');
 const requireRoles = require('../../middlewares/rbac');
 const { createUpload } = require('../../middlewares/upload');
@@ -42,32 +43,6 @@ router.use(auth);
  *     responses:
  *       200:
  *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     totalMahasiswa:
- *                       type: integer
- *                     telahSubmit:
- *                       type: integer
- *                     butuhPenilaian:
- *                       type: integer
- *                     telat:
- *                       type: integer
- *                     tenggat:
- *                       type: string
- *                       format: date-time
- *                       nullable: true
- *                     tugasJudul:
- *                       type: string
  *       401:
  *         description: Unauthorized
  *       403:
@@ -121,45 +96,6 @@ router.get(
  *     responses:
  *       200:
  *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 summary:
- *                   type: object
- *                   properties:
- *                     totalMahasiswa:
- *                       type: integer
- *                     telahSubmit:
- *                       type: integer
- *                     butuhPenilaian:
- *                       type: integer
- *                     telat:
- *                       type: integer
- *                     tenggat:
- *                       type: string
- *                       format: date-time
- *                       nullable: true
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/SubmissionListItem'
- *                 pagination:
- *                   type: object
- *                   properties:
- *                     page:
- *                       type: integer
- *                     limit:
- *                       type: integer
- *                     totalItems:
- *                       type: integer
- *                     totalPages:
- *                       type: integer
  *       401:
  *         description: Unauthorized
  *       403:
@@ -167,19 +103,113 @@ router.get(
  *       404:
  *         description: Tugas tidak ditemukan
  */
-router.get('/:idAssignment/all', requireRoles('DOSEN', 'SUPER_ADMIN'), async (req, res, next) => {
-    try {
-        const result = await service.listAllSubmissions(req.params.idAssignment, req.user, req.query);
-        return successResponse(res, {
-            message: 'data berhasil diambil!',
-            summary: result.summary,
-            data: result.items,
-            pagination: result.pagination,
-        });
-    } catch (err) {
-        return next(err);
+router.get(
+    '/:idAssignment/all',
+    requireRoles('DOSEN', 'SUPER_ADMIN'),
+    async (req, res, next) => {
+        try {
+            const result = await service.listAllSubmissions(
+                req.params.idAssignment,
+                req.user,
+                req.query
+            );
+            return successResponse(res, {
+                message: 'data berhasil diambil!',
+                summary: result.summary,
+                data: result.items,
+                pagination: result.pagination,
+            });
+        } catch (err) {
+            return next(err);
+        }
     }
-});
+);
+
+/**
+ * @swagger
+ * /api/submissions/{idAssignment}/file-proxy:
+ *   get:
+ *     summary: Proxy download file submission dari R2 (hindari CORS)
+ *     tags: [Submissions]
+ *     description: Hanya DOSEN / SUPER_ADMIN. Mengunduh file dari R2 melalui server untuk menghindari CORS.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idAssignment
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: fileUrl
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: URL file di R2 yang ingin diunduh
+ *     responses:
+ *       200:
+ *         description: Stream file berhasil
+ *         content:
+ *           application/octet-stream:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: fileUrl tidak diberikan
+ *       403:
+ *         description: URL tidak diizinkan
+ *       404:
+ *         description: File tidak ditemukan di upstream
+ */
+router.get(
+    '/:idAssignment/file-proxy',
+    requireRoles('DOSEN', 'SUPER_ADMIN'),
+    async (req, res, next) => {
+        try {
+            const { fileUrl } = req.query;
+
+            if (!fileUrl) {
+                return res.status(400).json({ message: 'Query param fileUrl wajib diisi' });
+            }
+
+            // Validasi: hanya izinkan URL dari domain R2 kita sendiri
+            const R2_BASE = process.env.R2_BASE_URL ?? '';
+            if (R2_BASE && !fileUrl.startsWith(R2_BASE)) {
+                return res.status(403).json({ message: 'URL tidak diizinkan' });
+            }
+
+            const upstream = await axios.get(fileUrl, {
+                responseType: 'stream',
+                timeout: 30_000,
+            });
+
+            // Teruskan header penting dari upstream ke client
+            const contentType =
+                upstream.headers['content-type'] ?? 'application/octet-stream';
+            const contentDisposition = upstream.headers['content-disposition'];
+            const contentLength = upstream.headers['content-length'];
+
+            res.setHeader('Content-Type', contentType);
+            if (contentDisposition) res.setHeader('Content-Disposition', contentDisposition);
+            if (contentLength) res.setHeader('Content-Length', contentLength);
+
+            // Pipe stream langsung ke response
+            upstream.data.pipe(res);
+
+            // Handle error di tengah stream
+            upstream.data.on('error', (err) => {
+                console.error('[file-proxy] stream error:', err);
+                if (!res.headersSent) next(err);
+                else res.destroy(err);
+            });
+        } catch (err) {
+            if (err.response?.status === 404) {
+                return res.status(404).json({ message: 'File tidak ditemukan di upstream' });
+            }
+            return next(err);
+        }
+    }
+);
 
 /**
  * @swagger
@@ -198,36 +228,6 @@ router.get('/:idAssignment/all', requireRoles('DOSEN', 'SUPER_ADMIN'), async (re
  *     responses:
  *       200:
  *         description: data berhasil diambil!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   nullable: true
- *                   properties:
- *                     id:
- *                       type: string
- *                       nullable: true
- *                     submittedAt:
- *                       type: string
- *                       format: date-time
- *                       nullable: true
- *                     file:
- *                       type: string
- *                       nullable: true
- *                     grade:
- *                       type: number
- *                       nullable: true
- *                     gradeAt:
- *                       type: string
- *                       format: date-time
- *                       nullable: true
  *       401:
  *         description: Unauthorized
  *       404:
@@ -271,35 +271,9 @@ router.get('/:idAssignment', async (req, res, next) => {
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: File tugas yang dikumpulkan
  *     responses:
  *       201:
  *         description: tugas sudah tersubmit!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     file:
- *                       type: string
- *                     submittedAt:
- *                       type: string
- *                       format: date-time
- *                     aiFlag:
- *                       type: object
- *                       nullable: true
- *                       properties:
- *                         suspicious:
- *                           type: boolean
- *                         reason:
- *                           type: string
  *       400:
  *         description: Sudah pernah submit
  *       401:
@@ -309,23 +283,27 @@ router.get('/:idAssignment', async (req, res, next) => {
  *       422:
  *         description: Tenggat sudah lewat
  */
-router.post('/:idAssignment', createUpload('file', { required: true }), async (req, res, next) => {
-    try {
-        const fileUrl = await uploadFile(req.file, 'submissions');
-        const data = await service.createSubmission(
-            req.params.idAssignment,
-            req.user,
-            fileUrl,
-        );
-        return successResponse(res, {
-            statusCode: 201,
-            message: 'tugas sudah tersubmit!',
-            data,
-        });
-    } catch (err) {
-        return next(err);
+router.post(
+    '/:idAssignment',
+    createUpload('file', { required: true }),
+    async (req, res, next) => {
+        try {
+            const fileUrl = await uploadFile(req.file, 'submissions');
+            const data = await service.createSubmission(
+                req.params.idAssignment,
+                req.user,
+                fileUrl,
+            );
+            return successResponse(res, {
+                statusCode: 201,
+                message: 'tugas sudah tersubmit!',
+                data,
+            });
+        } catch (err) {
+            return next(err);
+        }
     }
-});
+);
 
 /**
  * @swagger
@@ -351,27 +329,9 @@ router.post('/:idAssignment', createUpload('file', { required: true }), async (r
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: File baru (opsional, jika tidak diisi file lama tetap dipakai)
  *     responses:
  *       200:
  *         description: submissions telah diubah!
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 status:
- *                   type: string
- *                 message:
- *                   type: string
- *                 data:
- *                   type: object
- *                   properties:
- *                     file:
- *                       type: string
- *                     submittedAt:
- *                       type: string
- *                       format: date-time
  *       401:
  *         description: Unauthorized
  *       404:
@@ -379,22 +339,26 @@ router.post('/:idAssignment', createUpload('file', { required: true }), async (r
  *       422:
  *         description: Tenggat sudah lewat
  */
-router.patch('/:idAssignment', createUpload('file', { required: false }), async (req, res, next) => {
-    try {
-        const fileUrl = req.file ? await uploadFile(req.file, 'submissions') : undefined;
-        const data = await service.updateMySubmission(
-            req.params.idAssignment,
-            req.user,
-            fileUrl,
-        );
-        return successResponse(res, {
-            message: 'submissions telah diubah!',
-            data,
-        });
-    } catch (err) {
-        return next(err);
+router.patch(
+    '/:idAssignment',
+    createUpload('file', { required: false }),
+    async (req, res, next) => {
+        try {
+            const fileUrl = req.file ? await uploadFile(req.file, 'submissions') : undefined;
+            const data = await service.updateMySubmission(
+                req.params.idAssignment,
+                req.user,
+                fileUrl,
+            );
+            return successResponse(res, {
+                message: 'submissions telah diubah!',
+                data,
+            });
+        } catch (err) {
+            return next(err);
+        }
     }
-});
+);
 
 /**
  * @swagger
@@ -431,7 +395,6 @@ router.patch('/:idAssignment', createUpload('file', { required: false }), async 
  *               gradeAt:
  *                 type: string
  *                 format: date-time
- *                 description: Tanggal penilaian (opsional, default sekarang)
  *     responses:
  *       200:
  *         description: nilai berhasil disimpan!
@@ -466,7 +429,7 @@ router.patch(
         } catch (err) {
             return next(err);
         }
-    },
+    }
 );
 
 module.exports = router;
