@@ -53,6 +53,16 @@ const listGroupsByCourse = async (idCourse, queryParams) => {
         return acc;
     }, {});
 
+    const pendingReviews = await ContributionReview.aggregate([
+        { $match: { idStudyGroup: { $in: groupIds }, status: 'PENDING' } },
+        { $group: { _id: '$idStudyGroup', totalReview: { $sum: 1 } } },
+    ]);
+
+    const reviewMap = pendingReviews.reduce((acc, r) => {
+        acc[r._id.toString()] = r.totalReview;
+        return acc;
+    }, {});
+
     return {
         items: groups.map((g) => ({
         id: g._id.toString(),
@@ -62,6 +72,7 @@ const listGroupsByCourse = async (idCourse, queryParams) => {
         status: g.status,
         totalRequest: memberMap[g._id.toString()]?.totalRequest || 0,
         totalKontribusi: g.totalKontribusi || 0,
+        totalReview: reviewMap[g._id.toString()] || 0,
         })),
         pagination: buildPagination({ page, limit, totalItems }),
     };

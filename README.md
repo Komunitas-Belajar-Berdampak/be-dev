@@ -40,7 +40,7 @@ be-dev/
 │   │   └── swagger.js                  # Swagger setup & definisi komponen global
 │   │
 │   ├── libs/
-│   │   ├── ai.js                       # Integrasi Groq AI (analisis kontribusi kelompok)
+│   │   ├── ai.js                       # Integrasi Groq AI (penilaian kualitas post + analisis kontribusi kelompok)
 │   │   ├── cache.js                    # In-memory cache sederhana
 │   │   ├── logger.js                   # Pino logger + pino-http
 │   │   ├── s3.js                       # AWS SDK S3 client (Cloudflare R2)
@@ -78,6 +78,11 @@ be-dev/
 │   │   │   ├── auth.routes.js
 │   │   │   ├── auth.service.js
 │   │   │   └── auth.utils.js
+│   │   ├── contributionReviews/
+│   │   │   ├── contribution-review.controller.js
+│   │   │   ├── contribution-review.model.js
+│   │   │   ├── contribution-review.routes.js
+│   │   │   └── contribution-review.service.js
 │   │   ├── courseDashboard/
 │   │   │   ├── course-dashboard.controller.js
 │   │   │   ├── course-dashboard.routes.js
@@ -533,6 +538,29 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 ---
 
+### `ContributionReview` — collection: `contributionreviews`
+
+Antrian penilaian kontribusi: setiap post mahasiswa otomatis menghasilkan satu review yang menunggu persetujuan dosen.
+
+| Field | Tipe | Constraint |
+|---|---|---|
+| `idPost` | ObjectId | ref: GroupPost, required, unique |
+| `idStudent` | ObjectId | ref: User, required |
+| `idStudyGroup` | ObjectId | ref: StudyGroup, required |
+| `idThread` | ObjectId | ref: GroupThread, required |
+| `idAssignment` | ObjectId | ref: Assignment, default: `null` |
+| `aiSuggestedPoints` | Number | default: 0, min: 0 (skor saran dari AI) |
+| `aiReason` | String | default: `''` (alasan skor dari AI) |
+| `finalPoints` | Number | default: `null`, min: 0 (poin final dari dosen) |
+| `lecturerNote` | String | default: `null` |
+| `status` | String | enum: `['PENDING', 'REVIEWED']`, default: `'PENDING'` |
+| `reviewedAt` | Date | default: `null` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
+
+**Indexes:** `{idStudyGroup, status, createdAt}`, `{idStudent, status}`, `idThread`, `{idAssignment, status}`
+
+---
+
 ### `Approach` — collection: `approaches`
 
 | Field | Tipe | Constraint |
@@ -760,6 +788,17 @@ Keterangan kolom Auth:
 
 ---
 
+### Contribution Reviews — `/api/contribution-reviews`
+
+Penilaian kontribusi post mahasiswa: setiap post menghasilkan review berstatus `PENDING` dengan skor saran AI, lalu dosen menentukan poin final.
+
+| Method | Path | Auth | Role | Keterangan |
+|---|---|---|---|---|
+| GET | `/contribution-reviews/sg/:idStudyGroup` | JWT | DOSEN, SUPER_ADMIN | List review dalam kelompok (filter `?status=PENDING\|REVIEWED`, pagination) |
+| PATCH | `/contribution-reviews/:idReview` | JWT | DOSEN, SUPER_ADMIN | Review kontribusi: set status `REVIEWED` + `finalPoints`, otomatis isi `reviewedAt` |
+
+---
+
 ### Approach — `/api/approach`
 
 | Method | Path | Auth | Role | Keterangan |
@@ -978,6 +1017,18 @@ updateTaskSchema: {
     idMahasiswa: array of string, optional
     status: enum ['DO', 'IN PROGRESS', 'DONE'], optional
     // min 1 field
+}
+```
+
+---
+
+### Validator di dalam Controller — Contribution Reviews
+
+```js
+patchReviewSchema: {
+    status: enum ['REVIEWED'], required
+    finalPoints: number min 0, required
+    lecturerNote: string allow ['', null], optional
 }
 ```
 
@@ -1319,6 +1370,7 @@ const privateFileRoutes = require('./modules/privateFiles/private-file.routes');
 const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const courseDashboardRoutes = require('./modules/courseDashboard/course-dashboard.routes');
 const studentDashboardRoutes = require('./modules/studentDashboard/student-dashboard.routes');
+const contributionReviewRoutes = require('./modules/contributionReviews/contribution-review.routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 
@@ -1360,6 +1412,7 @@ app.use('/api/private-files', privateFileRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/course-dashboard', courseDashboardRoutes);
 app.use('/api/student-dashboard', studentDashboardRoutes);
+app.use('/api/contribution-reviews', contributionReviewRoutes);
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use((req, res) => {
@@ -1655,6 +1708,17 @@ POST /threads/sg/:idStudyGroup
 (buat thread diskusi)
     │
     ├──► POST /threads/:idThread (buat post) ◄── Mahasiswa
+    │         │
+    │         ▼
+    │    AI (Groq) menilai kualitas post → skor 0-25
+    │    ContributionReview dibuat (status PENDING)
+    │    *post DOSEN/SUPER_ADMIN dilewati, tidak di-score
+    │         │
+    │         ▼
+    │    GET /contribution-reviews/sg/:idStudyGroup ◄── Dosen/Admin
+    │    PATCH /contribution-reviews/:idReview
+    │    (set REVIEWED + finalPoints → poin masuk ke
+    │     GroupMember, StudyGroup, GroupThread, ContributionThread)
     │
     └──► POST /tasks/thread/:idThread ◄── Mahasiswa
          (buat task: DO → IN PROGRESS → DONE)
@@ -1664,14 +1728,17 @@ POST /threads/sg/:idStudyGroup
     (analisis kontribusi dengan Groq AI)
 ```
 
+**Catatan alur poin:** Poin kontribusi **tidak langsung dihitung** saat post dibuat. Setiap post mahasiswa menghasilkan `ContributionReview` berstatus `PENDING` dengan skor saran AI. Poin baru masuk ke counter kontribusi (`GroupMember.kontribusi`, `StudyGroup.totalKontribusi`, `GroupThread.kontribusi`, `ContributionThread.kontribusi`) setelah dosen menyetujui review (`PATCH` → `REVIEWED` + `finalPoints`). Menghapus post yang sudah di-review otomatis mengembalikan (revert) poinnya.
+
 **Model yang terlibat:**
-- `StudyGroup` — data kelompok (nama, kapasitas, status)
+- `StudyGroup` — data kelompok (nama, kapasitas, status, totalKontribusi)
 - `GroupMember` — membership dengan status PENDING/APPROVED/REJECTED + poin kontribusi
 - `GroupThread` — thread diskusi dalam kelompok
-- `GroupPost` — post/komentar dalam thread (mengakumulasi poin)
+- `GroupPost` — post/komentar dalam thread (field `poin` legacy, kini tidak dipakai — poin dikelola lewat `ContributionReview`)
 - `GroupTask` — task dalam thread (DO/IN PROGRESS/DONE)
 - `ActivityLog` — log setiap aktivitas anggota
 - `ContributionThread` — tracking kontribusi per mahasiswa per thread
+- `ContributionReview` — antrian penilaian post (skor AI + poin final dosen)
 
 ---
 
