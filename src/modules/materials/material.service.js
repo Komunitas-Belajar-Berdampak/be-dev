@@ -9,7 +9,6 @@ const { parsePagination, buildPagination } = require('../../utils/pagination');
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
 
-// Klasifikasi MIME type file materi menjadi kategori format
 const classifyFormat = (tipe) => {
     const t = (tipe || '').toLowerCase();
     if (t.startsWith('audio/')) return 'audio';
@@ -19,7 +18,7 @@ const classifyFormat = (tipe) => {
         t === 'application/pdf' ||
         t.startsWith('text/') ||
         t.includes('msword') ||
-        t.includes('document') ||      // mencakup ...officedocument... (Word/PPT/Excel)
+        t.includes('document') ||
         t.includes('presentation') ||
         t.includes('powerpoint') ||
         t.includes('sheet') ||
@@ -30,9 +29,6 @@ const classifyFormat = (tipe) => {
     return 'lainnya';
 };
 
-// Pemetaan gaya belajar -> format materi yang diprioritaskan.
-// 'kinestetik' berupa soal praktik dalam file PDF, jadi diperlakukan sama
-// seperti 'reading' (memprioritaskan dokumen).
 const STYLE_FORMAT_MAP = {
     auditori: ['audio'],
     visual: ['video', 'gambar'],
@@ -40,8 +36,6 @@ const STYLE_FORMAT_MAP = {
     kinestetik: ['dokumen'],
 };
 
-// Urutkan materi: format yang cocok dengan gaya belajar mahasiswa tampil lebih dulu.
-// Stable — materi dengan prioritas sama mempertahankan urutan aslinya.
 const sortByLearningStyle = async (materials, studentId) => {
     const approach = await Approach.findOne({ idMahasiswa: studentId })
         .select('gayaBelajar')
@@ -50,9 +44,8 @@ const sortByLearningStyle = async (materials, studentId) => {
     const styles = approach && Array.isArray(approach.gayaBelajar)
         ? approach.gayaBelajar
         : [];
-    if (styles.length === 0) return materials; // belum ada data gaya belajar -> default
+    if (styles.length === 0) return materials;
 
-    // Susun daftar format prioritas mengikuti urutan gaya belajar mahasiswa
     const preferred = [];
     for (const s of styles) {
         const formats = STYLE_FORMAT_MAP[String(s).toLowerCase()] || [];
@@ -60,7 +53,7 @@ const sortByLearningStyle = async (materials, studentId) => {
             if (!preferred.includes(f)) preferred.push(f);
         }
     }
-    if (preferred.length === 0) return materials; // gaya belajar tak dikenali -> default
+    if (preferred.length === 0) return materials;
 
     const rank = (m) => {
         const idx = preferred.indexOf(classifyFormat(m.tipe));
@@ -117,8 +110,6 @@ const listMaterialsByMeeting = async (idCourse, pertemuan, user, query) => {
     const filter = { idCourse, idMeeting: meeting._id };
     if (isMahasiswa(user)) filter.status = 'VISIBLE';
 
-    // Ambil semua materi pertemuan ini dulu (jumlahnya sedikit) supaya
-    // pengurutan berdasarkan gaya belajar diterapkan SEBELUM dipotong per halaman.
     let materials = await Material.find(filter).lean();
 
     if (isMahasiswa(user)) {

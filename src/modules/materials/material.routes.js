@@ -15,12 +15,6 @@ router.use(auth);
  * tags:
  *   name: Materials
  *   description: Materi per pertemuan
- */
-
-// Register more specific routes (with multiple segments) first
-// to avoid conflicts with single-parameter routes
-
-/**
  * @swagger
  * /api/materials/{idMaterial}/accessed:
  *   post:
