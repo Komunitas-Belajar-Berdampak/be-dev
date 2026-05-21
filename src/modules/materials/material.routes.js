@@ -61,6 +61,11 @@ router.post('/:idMaterial/accessed', async (req, res, next) => {
  *   get:
  *     summary: Ambil materi berdasarkan pertemuan
  *     tags: [Materials]
+ *     description: |
+ *       Untuk MAHASISWA, urutan materi disesuaikan dengan gaya belajarnya:
+ *       auditori → file audio dulu; visual → video dulu; reading & kinestetik →
+ *       dokumen/PDF dulu. Semua materi tetap tampil — hanya urutannya yang berubah.
+ *       Dosen/admin mendapat urutan default.
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -101,6 +106,13 @@ router.post('/:idMaterial/accessed', async (req, res, next) => {
  *                         type: object
  *                       pathFile:
  *                         type: string
+ *                       tipe:
+ *                         type: string
+ *                         description: MIME type file materi
+ *                       format:
+ *                         type: string
+ *                         enum: [audio, video, dokumen, gambar, lainnya]
+ *                         description: Kategori format hasil klasifikasi tipe
  *                       visibility:
  *                         type: string
  *                         enum: [HIDE, VISIBLE]
@@ -220,6 +232,13 @@ router.post(
  *                         type: object
  *                       pathFile:
  *                         type: string
+ *                       tipe:
+ *                         type: string
+ *                         description: MIME type file materi
+ *                       format:
+ *                         type: string
+ *                         enum: [audio, video, dokumen, gambar, lainnya]
+ *                         description: Kategori format hasil klasifikasi tipe
  *                       visibility:
  *                         type: string
  *                         enum: [HIDE, VISIBLE]
@@ -266,6 +285,13 @@ router.get('/:idCourse', controller.getMaterialsByCourse);
  *                       type: string
  *                     pathFile:
  *                       type: string
+ *                     tipe:
+ *                       type: string
+ *                       description: MIME type file materi
+ *                     format:
+ *                       type: string
+ *                       enum: [audio, video, dokumen, gambar, lainnya]
+ *                       description: Kategori format hasil klasifikasi tipe
  *                     visibility:
  *                       type: string
  *                       enum: [HIDE, VISIBLE]

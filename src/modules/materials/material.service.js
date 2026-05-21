@@ -2,11 +2,76 @@ const mongoose = require('mongoose');
 const Material = require('./material.model');
 const Meeting = require('../meetings/meeting.model');
 const Course = require('../courses/course.model');
+const Approach = require('../approach/approach.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
+
+// Klasifikasi MIME type file materi menjadi kategori format
+const classifyFormat = (tipe) => {
+    const t = (tipe || '').toLowerCase();
+    if (t.startsWith('audio/')) return 'audio';
+    if (t.startsWith('video/')) return 'video';
+    if (t.startsWith('image/')) return 'gambar';
+    if (
+        t === 'application/pdf' ||
+        t.startsWith('text/') ||
+        t.includes('msword') ||
+        t.includes('document') ||      // mencakup ...officedocument... (Word/PPT/Excel)
+        t.includes('presentation') ||
+        t.includes('powerpoint') ||
+        t.includes('sheet') ||
+        t.includes('excel')
+    ) {
+        return 'dokumen';
+    }
+    return 'lainnya';
+};
+
+// Pemetaan gaya belajar -> format materi yang diprioritaskan.
+// 'kinestetik' berupa soal praktik dalam file PDF, jadi diperlakukan sama
+// seperti 'reading' (memprioritaskan dokumen).
+const STYLE_FORMAT_MAP = {
+    auditori: ['audio'],
+    visual: ['video', 'gambar'],
+    reading: ['dokumen'],
+    kinestetik: ['dokumen'],
+};
+
+// Urutkan materi: format yang cocok dengan gaya belajar mahasiswa tampil lebih dulu.
+// Stable — materi dengan prioritas sama mempertahankan urutan aslinya.
+const sortByLearningStyle = async (materials, studentId) => {
+    const approach = await Approach.findOne({ idMahasiswa: studentId })
+        .select('gayaBelajar')
+        .lean();
+
+    const styles = approach && Array.isArray(approach.gayaBelajar)
+        ? approach.gayaBelajar
+        : [];
+    if (styles.length === 0) return materials; // belum ada data gaya belajar -> default
+
+    // Susun daftar format prioritas mengikuti urutan gaya belajar mahasiswa
+    const preferred = [];
+    for (const s of styles) {
+        const formats = STYLE_FORMAT_MAP[String(s).toLowerCase()] || [];
+        for (const f of formats) {
+            if (!preferred.includes(f)) preferred.push(f);
+        }
+    }
+    if (preferred.length === 0) return materials; // gaya belajar tak dikenali -> default
+
+    const rank = (m) => {
+        const idx = preferred.indexOf(classifyFormat(m.tipe));
+        return idx === -1 ? preferred.length : idx;
+    };
+
+    return materials
+        .map((m, i) => ({ m, i, r: rank(m) }))
+        .sort((a, b) => a.r - b.r || a.i - b.i)
+        .map((x) => x.m);
+};
 
 const mapMaterial = (m) => ({
     id: m._id.toString(),
@@ -14,6 +79,8 @@ const mapMaterial = (m) => ({
     namaFile: m.namaFile,
     deskripsi: m.deskripsi,
     pathFile: m.pathFile,
+    tipe: m.tipe || null,
+    format: classifyFormat(m.tipe),
     visibility: m.status,
 });
 
@@ -50,13 +117,19 @@ const listMaterialsByMeeting = async (idCourse, pertemuan, user, query) => {
     const filter = { idCourse, idMeeting: meeting._id };
     if (isMahasiswa(user)) filter.status = 'VISIBLE';
 
-    const [totalItems, materials] = await Promise.all([
-        Material.countDocuments(filter),
-        Material.find(filter).skip(skip).limit(limit).lean(),
-    ]);
+    // Ambil semua materi pertemuan ini dulu (jumlahnya sedikit) supaya
+    // pengurutan berdasarkan gaya belajar diterapkan SEBELUM dipotong per halaman.
+    let materials = await Material.find(filter).lean();
+
+    if (isMahasiswa(user)) {
+        materials = await sortByLearningStyle(materials, user.sub);
+    }
+
+    const totalItems = materials.length;
+    const paged = materials.slice(skip, skip + limit);
 
     return {
-        items: materials.map(mapMaterial),
+        items: paged.map(mapMaterial),
         pagination: buildPagination({ page, limit, totalItems }),
     };
 };
@@ -93,6 +166,8 @@ const getMaterialDetail = async (idCourse, pertemuan, idMaterial, user) => {
         idCourse: material.idCourse.toString(),
         namaFile: material.namaFile,
         pathFile: material.pathFile,
+        tipe: material.tipe || null,
+        format: classifyFormat(material.tipe),
         visibility: material.status,
         deskripsi: material.deskripsi,
     };
@@ -198,6 +273,8 @@ const getMaterialById = async (idMaterial, user) => {
         idCourse: material.idCourse.toString(),
         namaFile: material.namaFile,
         pathFile: material.pathFile,
+        tipe: material.tipe || null,
+        format: classifyFormat(material.tipe),
         visibility: material.status,
         deskripsi: material.deskripsi,
     };
