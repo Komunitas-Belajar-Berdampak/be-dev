@@ -252,6 +252,9 @@ router.get('/grades/:idStudent', requireRoles('DOSEN', 'SUPER_ADMIN'), controlle
  *                       properties:
  *                         id:
  *                           type: string
+ *                         idMeeting:
+ *                           type: string
+ *                           description: ID pertemuan, dipakai untuk navigasi ke halaman submission
  *                         judul:
  *                           type: string
  *                         tenggat:

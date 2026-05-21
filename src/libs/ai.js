@@ -84,7 +84,7 @@ Contoh skor 17-25: "Pendekatan ini kurang efisien karena kompleksitasnya O(n²),
                 },
                 {
                     role: 'user',
-                    content: `Topik thread: "${threadJudul}"\n\nIsi post:\n${text.slice(0, 800)}`,
+                    content: `Topik thread: "${threadJudul}"\n\nIsi post:\n${text}`,
                 },
             ],
         });

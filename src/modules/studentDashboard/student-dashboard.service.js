@@ -219,6 +219,7 @@ const getStudentGrades = async (targetUserId, user) => {
         const sub = submissionMap[a._id.toString()];
         courseAssignmentsMap[courseId].push({
             id: a._id.toString(),
+            idMeeting: a.idMeeting.toString(),
             judul: a.judul,
             tenggat: a.tenggat,
             pertemuan: meeting.pertemuan,

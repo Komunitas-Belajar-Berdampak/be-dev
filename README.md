@@ -177,9 +177,9 @@ be-dev/
 │   │       └── schema.js               # Joi schemas untuk CRUD user
 │   │
 │   └── workers/
-│       ├── analytics.worker.js         # Background worker analitik (placeholder)
-│       ├── notification.worker.js      # Background worker notifikasi (placeholder)
-│       └── scheduler.js               # Scheduler untuk background jobs
+│       ├── analytics.worker.js         # Background worker analitik (placeholder, kosong)
+│       ├── notification.worker.js      # Background worker notifikasi (placeholder, kosong)
+│       └── scheduler.js                # Scheduler background jobs (placeholder, kosong)
 │
 ├── STA_Backend_Postman_Collection.json # Postman collection lengkap
 ├── STA_Backend_Postman_Environment.json # Postman environment variables
@@ -328,7 +328,8 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 | Field | Tipe | Constraint |
 |---|---|---|
-| `nama` | String | required, unique |
+| `nama` | String | required, unique, trim |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
 ---
 
@@ -336,8 +337,9 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 | Field | Tipe | Constraint |
 |---|---|---|
-| `namaFakultas` | String | required, unique |
-| `kodeFakultas` | String | optional, sparse unique |
+| `namaFakultas` | String | required, unique, trim |
+| `kodeFakultas` | String | optional, sparse unique, trim |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
 ---
 
@@ -345,9 +347,10 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 | Field | Tipe | Constraint |
 |---|---|---|
-| `kodeProdi` | String | required, unique |
-| `namaProdi` | String | required |
+| `kodeProdi` | String | required, unique, trim |
+| `namaProdi` | String | required, trim |
 | `idFakultas` | ObjectId | ref: Faculty, required |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
 ---
 
@@ -355,12 +358,13 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 | Field | Tipe | Constraint |
 |---|---|---|
-| `periode` | String | required, unique |
-| `semesterType` | String | enum: `['Ganjil', 'Genap']`, optional |
-| `semesters` | [Number] | array of integer |
+| `periode` | String | required, unique, trim |
+| `semesterType` | String | enum: `['Ganjil', 'Genap']`, default: `null` |
+| `semesters` | [Number] | array of integer, default: `undefined` |
 | `startDate` | Date | optional |
 | `endDate` | Date | optional |
 | `status` | String | enum: `['aktif', 'tidak aktif']`, default: `'tidak aktif'` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
 **Indexes:** `status`, `{startDate, endDate}`
 
@@ -370,18 +374,19 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 | Field | Tipe | Constraint |
 |---|---|---|
-| `kodeMatkul` | String | required, unique |
-| `namaMatkul` | String | required |
-| `sks` | Number | required |
+| `kodeMatkul` | String | required, unique, trim |
+| `namaMatkul` | String | required, trim |
+| `sks` | Number | required, min: 1 |
 | `status` | String | enum: `['aktif', 'tidak aktif']`, default: `'aktif'` |
-| `idPeriode` | ObjectId | ref: AcademicTerm, optional |
+| `idPeriode` | ObjectId | ref: AcademicTerm, **required** |
 | `idPengajar` | [ObjectId] | ref: User |
 | `idMahasiswa` | [ObjectId] | ref: User |
-| `kelas` | String | optional |
+| `kelas` | String | **required**, trim |
 | `deskripsi` | Mixed | optional (TipTap/Quill JSON object) |
-| `semesterType` | String | enum: `['Ganjil', 'Genap']`, optional |
+| `semesterType` | String | enum: `['Ganjil', 'Genap']`, default: `null` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** `idPeriode`, `status`, `semesterType`, `{idPengajar, status}`, `{idMahasiswa, status}`, `{kodeMatkul, status}`, `{idPeriode, semesterType}`, `{idPengajar, idPeriode}`, `{idMahasiswa, idPeriode}`
+**Indexes:** `idPeriode`, `idPengajar`, `idMahasiswa`, `status`, `kelas`, `sks`, `semesterType`, `{idPeriode, status}`, `{idPengajar, idPeriode}`, `{idMahasiswa, idPeriode}`
 
 ---
 
@@ -390,11 +395,12 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idCourse` | ObjectId | ref: Course, required |
-| `pertemuan` | Number | required (1–16+) |
-| `judul` | String | optional |
+| `pertemuan` | Number | required, min: 1, max: 16 |
+| `judul` | String | required, trim |
 | `deskripsi` | Mixed | optional (TipTap JSON object) |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** unique `{idCourse, pertemuan}`
+**Indexes:** unique `{idCourse, pertemuan}`, `idCourse`
 
 ---
 
@@ -404,13 +410,14 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 |---|---|---|
 | `idMeeting` | ObjectId | ref: Meeting, required |
 | `idCourse` | ObjectId | ref: Course, required |
-| `pathFile` | String | optional (URL R2) |
-| `namaFile` | String | optional |
-| `tipe` | String | optional (MIME type) |
-| `deskripsi` | String | optional |
-| `status` | String | enum: `['HIDE', 'VISIBLE']`, default: `'VISIBLE'` |
+| `pathFile` | String | **required**, trim (URL R2) |
+| `namaFile` | String | **required**, trim |
+| `tipe` | String | **required**, trim (MIME type) |
+| `deskripsi` | Mixed | optional (TipTap JSON object) |
+| `status` | String | enum: `['HIDE', 'VISIBLE']`, default: `'HIDE'` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** `{idCourse, idMeeting}`, `{idCourse, status}`
+**Indexes:** `{idCourse, idMeeting}`, `idCourse`, `idMeeting`, `status`, `{idCourse, status}`, `{idMeeting, status}`
 
 ---
 
@@ -419,12 +426,15 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idMeeting` | ObjectId | ref: Meeting, required |
-| `judul` | String | required |
+| `judul` | String | required, trim |
 | `statusTugas` | Boolean | required (true = kelompok, false = individu) |
-| `tenggat` | Date | optional (deadline) |
-| `status` | String | enum: `['HIDE', 'VISIBLE']`, default: `'VISIBLE'` |
-| `deskripsi` | String | optional |
-| `pathLampiran` | String | optional (URL R2) |
+| `tenggat` | Date | **required** (deadline) |
+| `status` | String | enum: `['HIDE', 'VISIBLE']`, default: `'HIDE'` |
+| `deskripsi` | Mixed | optional (TipTap JSON object) |
+| `pathLampiran` | String | optional, trim (URL R2) |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
+
+**Indexes:** `idMeeting`, `status`, `tenggat`, `{idMeeting, status}`
 
 ---
 
@@ -433,15 +443,16 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idAssignment` | ObjectId | ref: Assignment, required |
-| `idStudent` | ObjectId | ref: User, required |
-| `submittedAt` | Date | optional |
-| `file` | String | optional (URL R2) |
+| `idStudent` | ObjectId | ref: User, optional |
+| `submittedAt` | Date | **required**, default: `Date.now` |
+| `file` | String | **required**, trim (URL R2) |
 | `nilai` | Number | min: 0, max: 100, optional |
 | `gradedAt` | Date | optional |
 | `aiFlag.suspicious` | Boolean | default: false |
-| `aiFlag.reason` | String | optional |
+| `aiFlag.reason` | String | default: `null` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** partial unique `{idAssignment, idStudent}` (hanya dokumen yang tidak di-soft-delete)
+**Indexes:** partial unique `{idAssignment, idStudent}` (hanya jika `idStudent` ada), `idAssignment`, `idStudent`, `submittedAt: -1`, `{idStudent, submittedAt: -1}`
 
 ---
 
@@ -450,13 +461,14 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idCourse` | ObjectId | ref: Course, required |
-| `nama` | String | optional |
+| `nama` | String | **required**, trim |
 | `kapasitas` | Number | required, min: 1 |
 | `status` | Boolean | default: false (false = bisa request join) |
-| `deskripsi` | String | optional |
+| `deskripsi` | String | optional, trim |
 | `totalKontribusi` | Number | default: 0 |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** unique `{idCourse, nama}`
+**Indexes:** unique `{idCourse, nama}`, `idCourse`, `status`, `createdAt: -1`
 
 ---
 
@@ -468,8 +480,9 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | `idMahasiswa` | ObjectId | ref: User, required |
 | `status` | String | enum: `['PENDING', 'REJECTED', 'APPROVED']`, default: `'PENDING'` |
 | `kontribusi` | Number | default: 0 |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** unique `{idGroup, idMahasiswa}`
+**Indexes:** unique `{idGroup, idMahasiswa}`, `{idGroup, status}`, `{idMahasiswa, status}`
 
 ---
 
@@ -478,11 +491,12 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idGroup` | ObjectId | ref: StudyGroup, required |
-| `judul` | String | required |
+| `judul` | String | required, trim |
 | `idAssignment` | ObjectId | ref: Assignment, optional |
 | `kontribusi` | Number | default: 0 |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** `idGroup`
+**Indexes:** `idGroup`, `idAssignment`, `createdAt: -1`, `{idGroup, createdAt: -1}`
 
 ---
 
@@ -494,8 +508,9 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | `idAuthor` | ObjectId | ref: User, required |
 | `konten` | Mixed | required (rich text JSON) |
 | `poin` | Number | min: 0, max: 25, default: 0 |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** `idThread`, `idAuthor`
+**Indexes:** `idThread`, `idAuthor`, `updatedAt: 1`, `{idThread, updatedAt: 1}`
 
 ---
 
@@ -508,6 +523,7 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 | `task` | String | required, trim |
 | `deskripsi` | String | default: null, trim |
 | `status` | String | enum: `['DO', 'IN PROGRESS', 'DONE']`, default: `'DO'` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
 **Indexes:** `idThread`
 
@@ -517,12 +533,13 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 
 | Field | Tipe | Constraint |
 |---|---|---|
-| `aktivitas` | String | required |
+| `aktivitas` | String | required, trim |
 | `idUser` | ObjectId | ref: User, required |
-| `idContribusionThread` | ObjectId | ref: ContributionThread, optional |
+| `idContribusionThread` | ObjectId | ref: **GroupThread**, optional |
 | `kontribusi` | Number | default: 0 |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** `idUser`, `idContribusionThread`
+**Indexes:** `idUser`, `idContribusionThread`, `createdAt: 1`, `{idUser, createdAt: -1}`, `{idContribusionThread, createdAt: 1}`
 
 ---
 
@@ -532,9 +549,10 @@ Log level dikontrol via env `LOG_LEVEL` (default: `info`).
 |---|---|---|
 | `idThread` | ObjectId | ref: GroupThread, required |
 | `idMahasiswa` | ObjectId | ref: User, required |
-| `kontribusi` | Number | default: 0 |
+| `kontribusi` | Number | default: 0, min: 0 |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
-**Indexes:** unique `{idThread, idMahasiswa}`
+**Indexes:** unique `{idThread, idMahasiswa}`, `idThread`, `idMahasiswa`
 
 ---
 
@@ -566,7 +584,8 @@ Antrian penilaian kontribusi: setiap post mahasiswa otomatis menghasilkan satu r
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idMahasiswa` | ObjectId | ref: User, required, unique |
-| `gayaBelajar` | [String] | array of learning style labels |
+| `gayaBelajar` | [String] | array of learning style labels, default: `[]` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
 
 ---
 
@@ -575,11 +594,14 @@ Antrian penilaian kontribusi: setiap post mahasiswa otomatis menghasilkan satu r
 | Field | Tipe | Constraint |
 |---|---|---|
 | `idMahasiswa` | ObjectId | ref: User, required |
-| `namaFile` | String | required |
-| `pathFile` | String | required (URL R2) |
-| `size` | String | optional |
+| `namaFile` | String | required, trim |
+| `pathFile` | String | required, trim (URL R2) |
+| `size` | String | **required** |
 | `tipe` | String | optional (MIME type) |
 | `status` | String | enum: `['VISIBLE', 'PRIVATE']`, default: `'PRIVATE'` |
+| `createdAt` / `updatedAt` | Date | timestamps: true |
+
+**Indexes:** `idMahasiswa`, `status`, `createdAt: -1`, `{idMahasiswa, createdAt: -1}`
 
 ---
 
@@ -592,7 +614,9 @@ Antrian penilaian kontribusi: setiap post mahasiswa otomatis menghasilkan satu r
 | `idCourse` | ObjectId | ref: Course, required |
 | `accessedAt` | Date | default: Date.now |
 
-**Indexes:** unique `{idMahasiswa, idMaterial}`
+> `timestamps: false` — schema tidak menyimpan `createdAt`/`updatedAt`. Pakai pola upsert agar satu record per (mahasiswa + material).
+
+**Indexes:** unique `{idMahasiswa, idMaterial}`, `{idMahasiswa, accessedAt: -1}`
 
 ---
 
@@ -748,6 +772,7 @@ Keterangan kolom Auth:
 | Method | Path | Auth | Role | Keterangan |
 |---|---|---|---|---|
 | GET | `/sg/course/:idCourse` | JWT | Semua | List kelompok di course |
+| GET | `/sg/course/:idCourse/assignment-dashboard` | JWT | DOSEN, SUPER_ADMIN | Dashboard kontribusi study group per assignment dalam 1 course (`matrix.points` hanya hitung review berstatus REVIEWED) |
 | GET | `/sg/course-membership/:idCourse` | JWT | MAHASISWA | List kelompok + status membership mahasiswa |
 | GET | `/sg/group/:id` | JWT | Semua | Detail kelompok |
 | GET | `/sg/:id/user-detail/:idUser` | JWT | Semua | Kontribusi mahasiswa di kelompok |
@@ -771,6 +796,7 @@ Keterangan kolom Auth:
 |---|---|---|---|---|
 | GET | `/threads/sg/:idStudyGroup` | JWT | Semua | List thread dalam kelompok |
 | POST | `/threads/sg/:idStudyGroup` | JWT | Semua | Buat thread baru |
+| GET | `/threads/:idThread/latest-update` | JWT | Semua | Cek update terbaru thread (untuk polling realtime; return `latestUpdatedAt`, `totalPosts`) |
 | GET | `/threads/:idThread` | JWT | Semua | List post dalam thread |
 | POST | `/threads/:idThread` | JWT | Semua | Buat post dalam thread |
 | GET | `/posts/:idPost` | JWT | Semua | Detail satu post |
@@ -862,15 +888,15 @@ loginSchema: {
 createUserSchema: {
     nrp: string, required
     idRole: string (ObjectId), required
-    idProdi: string (ObjectId), optional
+    idProdi: string (ObjectId), required
     nama: string, required
-    angkatan: string, optional
+    angkatan: string, required
     email: string email, required
-    alamat: string, optional
+    alamat: string, allow('', null)
     jenisKelamin: enum ['pria', 'wanita'], required
-    status: enum ['aktif', 'tidak aktif'], optional
+    status: enum ['aktif', 'tidak aktif'], required
     password: string min 6, required
-    fotoProfil: string, optional
+    fotoProfil: string allow('', null)
 }
 
 updateUserSchema: {
@@ -881,8 +907,9 @@ patchUserSchema: {
     passwordLama: string, optional
     passwordBaru: string min 6, optional
     nama: string, optional
-    alamat: string, optional
-    fotoProfil: string allow null, optional
+    alamat: string allow('', null), optional
+    fotoProfil: string allow('', null), optional
+    // min 1 field; custom: passwordLama wajib jika passwordBaru diisi
 }
 ```
 
@@ -904,7 +931,7 @@ updateTermSchema: {
 }
 
 patchTermSemesterSchema: {
-    semesterType: enum ['Ganjil', 'Genap'], required
+    semesterType: enum ['Ganjil', 'Genap'] allow(null), required
 }
 
 addSemestersSchema: {
@@ -920,16 +947,18 @@ addSemestersSchema: {
 createCourseSchema: {
     kodeMatkul: string, required
     namaMatkul: string, required
-    sks: number integer, required
-    status: enum ['aktif', 'tidak aktif'], optional
-    idPeriode: string (ObjectId), optional
-    idMahasiswa: array of string, optional
-    kelas: string, optional
-    semesterType: enum ['Ganjil', 'Genap'], optional
+    sks: number integer min 1, required
+    status: enum ['aktif', 'tidak aktif'], required
+    idPeriode: string (ObjectId), required
+    idPengajar: array of string, default []
+    idMahasiswa: array of string, default []
+    kelas: string, required
+    deskripsi: object, optional
+    semesterType: enum ['Ganjil', 'Genap'] allow(null), optional
 }
 
 updateCourseSchema: {
-    // semua optional, min 1 field
+    // semua optional, min 1 field; idPengajar minimal 1 item jika dikirim
 }
 
 patchDeskripsiSchema: {
@@ -981,7 +1010,7 @@ updateSchema: {
 ```js
 createGroupSchema: {
     nama: string, optional
-    deskripsi: string allow null, optional
+    deskripsi: string allow('', null), optional
     idMahasiswa: array of string, optional
     status: boolean, optional
     kapasitas: number integer min 1, required
@@ -1006,14 +1035,14 @@ updatePostSchema: {
 
 createTaskSchema: {
     task: string, required
-    deskripsi: string allow null, optional
+    deskripsi: string allow('', null), optional
     idMahasiswa: array of string, required
     status: enum ['DO', 'IN PROGRESS', 'DONE'], required
 }
 
 updateTaskSchema: {
     task: string, optional
-    deskripsi: string allow null, optional
+    deskripsi: string allow('', null), optional
     idMahasiswa: array of string, optional
     status: enum ['DO', 'IN PROGRESS', 'DONE'], optional
     // min 1 field
@@ -1076,12 +1105,14 @@ router.get('/dashboard/stats', requireRoles('SUPER_ADMIN'), controller.getStats)
 
 ### `src/middlewares/validate.js`
 
-**Fungsi:** Validasi `req.body` menggunakan Joi schema.
+**Fungsi:** Validasi `req.body` (default) atau properti lain menggunakan Joi schema.
+
+**Signature:** `validate(schema, property = 'body')`
 
 **Cara kerja:**
-1. Jalankan `schema.validate(req.body, { abortEarly: false })`
-2. Jika error → teruskan ke error handler dengan detail validasi
-3. Jika valid → `req.body = value` (nilai yang sudah di-strip/cast oleh Joi), lanjut ke next
+1. Jalankan `schema.validate(req[property], { abortEarly: false, stripUnknown: true })`
+2. Jika error → bungkus dengan `ApiError(400, message, details)` dan lempar ke error handler
+3. Jika valid → `req[property] = value` (sudah di-strip field unknown + cast oleh Joi), lanjut ke next
 
 **Contoh penggunaan:**
 ```js
