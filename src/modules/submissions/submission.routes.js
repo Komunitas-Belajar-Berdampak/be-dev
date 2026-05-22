@@ -16,6 +16,10 @@ const gradeSchema = Joi.object({
     gradeAt: Joi.date().optional(),
 });
 
+const commentSchema = Joi.object({
+    comment: Joi.string().allow('', null).optional(),
+});
+
 router.use(auth);
 
 /**
@@ -172,7 +176,6 @@ router.get(
                 return res.status(400).json({ message: 'Query param fileUrl wajib diisi' });
             }
 
-            // Validasi: hanya izinkan URL dari domain R2 kita sendiri
             const R2_BASE = process.env.R2_BASE_URL ?? '';
             if (R2_BASE && !fileUrl.startsWith(R2_BASE)) {
                 return res.status(403).json({ message: 'URL tidak diizinkan' });
@@ -183,7 +186,6 @@ router.get(
                 timeout: 30_000,
             });
 
-            // Teruskan header penting dari upstream ke client
             const contentType =
                 upstream.headers['content-type'] ?? 'application/octet-stream';
             const contentDisposition = upstream.headers['content-disposition'];
@@ -193,10 +195,8 @@ router.get(
             if (contentDisposition) res.setHeader('Content-Disposition', contentDisposition);
             if (contentLength) res.setHeader('Content-Length', contentLength);
 
-            // Pipe stream langsung ke response
             upstream.data.pipe(res);
 
-            // Handle error di tengah stream
             upstream.data.on('error', (err) => {
                 console.error('[file-proxy] stream error:', err);
                 if (!res.headersSent) next(err);
@@ -425,6 +425,73 @@ router.patch(
 
             return successResponse(res, {
                 message: 'nilai berhasil disimpan!',
+            });
+        } catch (err) {
+            return next(err);
+        }
+    }
+);
+
+/**
+ * @swagger
+ * /api/submissions/assignments/{idAssignment}/submissions/{idSubmission}/comment:
+ *   patch:
+ *     summary: Beri komentar pada submission (DOSEN / SUPER_ADMIN)
+ *     tags: [Submissions]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idAssignment
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: path
+ *         name: idSubmission
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               comment:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Isi komentar dosen. Kirim null atau string kosong untuk menghapus komentar.
+ *     responses:
+ *       200:
+ *         description: komentar berhasil disimpan!
+ *       400:
+ *         description: Validasi gagal
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Submission tidak ditemukan
+ */
+router.patch(
+    '/assignments/:idAssignment/submissions/:idSubmission/comment',
+    requireRoles('DOSEN', 'SUPER_ADMIN'),
+    async (req, res, next) => {
+        try {
+            const { error, value } = commentSchema.validate(req.body);
+            if (error) throw error;
+
+            const data = await service.commentSubmission(
+                req.params.idAssignment,
+                req.params.idSubmission,
+                req.user,
+                value.comment,
+            );
+
+            return successResponse(res, {
+                message: 'komentar berhasil disimpan!',
+                data,
             });
         } catch (err) {
             return next(err);

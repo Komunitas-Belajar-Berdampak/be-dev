@@ -20,16 +20,17 @@ const mapSubmission = (s, mahasiswaMap) => {
     return {
         id: s._id.toString(),
         mahasiswa: m
-        ? {
-            id: m._id.toString(),
-            nrp: m.nrp,
-            nama: m.nama,
-            }
-        : null,
+            ? {
+                id: m._id.toString(),
+                nrp: m.nrp,
+                nama: m.nama,
+              }
+            : null,
         submittedAt: s.submittedAt,
         file: s.file,
         grade: s.nilai,
         gradeAt: s.gradedAt,
+        comment: s.comment ?? null,
         aiFlag: s.aiFlag?.suspicious
             ? { suspicious: true, reason: s.aiFlag.reason }
             : null,
@@ -157,6 +158,7 @@ const getMySubmission = async (idAssignment, user) => {
             file: null,
             grade: null,
             gradeAt: null,
+            comment: null,
         };
     }
 
@@ -166,6 +168,7 @@ const getMySubmission = async (idAssignment, user) => {
         file: sub.file,
         grade: sub.nilai,
         gradeAt: sub.gradedAt,
+        comment: sub.comment ?? null,
     };
 };
 
@@ -193,12 +196,11 @@ const createSubmission = async (idAssignment, user, filePath) => {
 
     if (existing) {
         throw new ApiError(
-        400,
-        'Anda sudah mengumpulkan tugas ini, gunakan PATCH untuk mengubah',
+            400,
+            'Anda sudah mengumpulkan tugas ini, gunakan PATCH untuk mengubah',
         );
     }
 
-    // Deteksi duplikasi: cek apakah file URL sudah ada di submission lain pada assignment yang sama
     let aiFlag = { suspicious: false, reason: null };
     if (ai.isEnabled()) {
         const duplicate = await Submission.findOne({
@@ -295,6 +297,36 @@ const gradeSubmission = async (idAssignment, idSubmission, user, nilai, gradeAt)
     await sub.save();
 };
 
+const commentSubmission = async (idAssignment, idSubmission, user, comment) => {
+    if (
+        !mongoose.isValidObjectId(idAssignment) ||
+        !mongoose.isValidObjectId(idSubmission)
+    ) {
+        throw new ApiError(400, 'ID tidak valid');
+    }
+
+    if (!isDosenOrAdmin(user)) {
+        throw new ApiError(403, 'Hanya dosen / admin yang boleh memberi komentar');
+    }
+
+    const assignment = await Assignment.findById(idAssignment).lean();
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
+    const sub = await Submission.findOne({
+        _id: idSubmission,
+        idAssignment,
+    });
+
+    if (!sub) throw new ApiError(404, 'Submission tidak ditemukan');
+
+    // Kalau comment string kosong, simpan sebagai null
+    sub.comment = comment && comment.trim().length > 0 ? comment.trim() : null;
+
+    await sub.save();
+
+    return { comment: sub.comment };
+};
+
 module.exports = {
     getSubmissionSummary,
     listAllSubmissions,
@@ -302,4 +334,5 @@ module.exports = {
     createSubmission,
     updateMySubmission,
     gradeSubmission,
+    commentSubmission,
 };

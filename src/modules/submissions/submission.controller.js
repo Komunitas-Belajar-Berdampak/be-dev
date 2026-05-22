@@ -15,6 +15,10 @@ const gradeSchema = Joi.object({
     gradedAt: Joi.date().iso().optional(),
 });
 
+const commentSchema = Joi.object({
+    comment: Joi.string().allow('', null).optional(),
+});
+
 const getAllSubmissions = async (req, res, next) => {
     try {
         const result = await submissionService.listAllSubmissions(
@@ -94,14 +98,35 @@ const gradeSubmission = async (req, res, next) => {
         if (error) throw error;
 
         await submissionService.gradeSubmission(
-        req.params.idAssignment,
-        req.params.idSubmission,
-        req.user,
-        value.nilai,
-        value.gradedAt
+            req.params.idAssignment,
+            req.params.idSubmission,
+            req.user,
+            value.nilai,
+            value.gradedAt
         );
 
         return successResponse(res, { message: 'nilai berhasil disimpan!' });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+const commentSubmission = async (req, res, next) => {
+    try {
+        const { error, value } = commentSchema.validate(req.body);
+        if (error) throw error;
+
+        const data = await submissionService.commentSubmission(
+            req.params.idAssignment,
+            req.params.idSubmission,
+            req.user,
+            value.comment
+        );
+
+        return successResponse(res, {
+            message: 'komentar berhasil disimpan!',
+            data,
+        });
     } catch (err) {
         return next(err);
     }
@@ -113,4 +138,5 @@ module.exports = {
     createSubmission,
     updateMySubmission,
     gradeSubmission,
+    commentSubmission,
 };

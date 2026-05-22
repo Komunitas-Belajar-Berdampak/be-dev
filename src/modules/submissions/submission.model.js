@@ -5,35 +5,40 @@ const { Schema } = mongoose;
 const submissionSchema = new Schema(
     {
         idAssignment: {
-        type: Schema.Types.ObjectId,
-        ref: 'Assignment',
-        required: true,
+            type: Schema.Types.ObjectId,
+            ref: 'Assignment',
+            required: true,
         },
         idStudent: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
+            type: Schema.Types.ObjectId,
+            ref: 'User',
         },
         submittedAt: {
-        type: Date,
-        required: true,
-        default: Date.now,
+            type: Date,
+            required: true,
+            default: Date.now,
         },
         file: {
-        type: String,
-        required: true,
-        trim: true,
+            type: String,
+            required: true,
+            trim: true,
         },
         nilai: {
-        type: Number,
-        min: 0,
-        max: 100,
+            type: Number,
+            min: 0,
+            max: 100,
         },
         gradedAt: {
-        type: Date,
+            type: Date,
+        },
+        comment: {
+            type: String,
+            default: null,
+            trim: true,
         },
         aiFlag: {
-        suspicious: { type: Boolean, default: false },
-        reason: { type: String, default: null },
+            suspicious: { type: Boolean, default: false },
+            reason: { type: String, default: null },
         },
     },
     {
@@ -49,10 +54,10 @@ submissionSchema.index(
         partialFilterExpression: { idStudent: { $exists: true, $ne: null } },
     },
 );
-submissionSchema.index({ idAssignment: 1 });           // For listing all assignment submissions
-submissionSchema.index({ idStudent: 1 });              // For student's submissions
-submissionSchema.index({ submittedAt: -1 });           // For sorting by submission date
-submissionSchema.index({ idStudent: 1, submittedAt: -1 }); // Compound: student's recent submissions
+submissionSchema.index({ idAssignment: 1 });
+submissionSchema.index({ idStudent: 1 });
+submissionSchema.index({ submittedAt: -1 });
+submissionSchema.index({ idStudent: 1, submittedAt: -1 });
 
 const Submission = mongoose.model('Submission', submissionSchema);
 
