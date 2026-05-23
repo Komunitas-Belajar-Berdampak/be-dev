@@ -121,6 +121,68 @@ router.get('/nrp/:nrp', auth, controller.getUserByNrp);
  *       404:
  *         description: User tidak ditemukan
  */
+/**
+ * @openapi
+ * /api/users/{id}/profile:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Profil publik user
+ *     description: |
+ *       Profil publik akademik — data dasar user + statistik aktivitas tugas
+ *       (totalTugasDikerjakan, totalDinilai, rataRataNilai) + daftar file yang
+ *       dipublikasikan (PrivateFile status VISIBLE). Tanpa data sensitif (email/alamat).
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: data profil berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status: { type: string }
+ *                 message: { type: string }
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id: { type: string }
+ *                     nrp: { type: string }
+ *                     nama: { type: string }
+ *                     namaRole: { type: string, nullable: true }
+ *                     angkatan: { type: string, nullable: true }
+ *                     prodi: { type: string, nullable: true }
+ *                     jenisKelamin: { type: string }
+ *                     fotoProfil: { type: string, nullable: true }
+ *                     statistik:
+ *                       type: object
+ *                       properties:
+ *                         totalTugasDikerjakan: { type: integer }
+ *                         totalDinilai: { type: integer }
+ *                         rataRataNilai: { type: number, nullable: true }
+ *                     publicFiles:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id: { type: string }
+ *                           nama: { type: string }
+ *                           path: { type: string }
+ *                           size: { type: string }
+ *                           tipe: { type: string, nullable: true }
+ *                           createdAt: { type: string, format: date-time }
+ *       404:
+ *         description: User tidak ditemukan
+ */
+router.get('/:id/profile', auth, controller.getPublicProfile);
+
 router.get('/:id', auth, controller.getUserById);
 
 /**

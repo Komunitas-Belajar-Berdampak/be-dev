@@ -36,6 +36,11 @@ const submissionSchema = new Schema(
             default: null,
             trim: true,
         },
+        // true jika dikumpulkan setelah tenggat (mis. lewat tugas yang di-reopen)
+        isLate: {
+            type: Boolean,
+            default: false,
+        },
         aiFlag: {
             suspicious: { type: Boolean, default: false },
             reason: { type: String, default: null },

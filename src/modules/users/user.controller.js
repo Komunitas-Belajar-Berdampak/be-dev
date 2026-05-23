@@ -60,6 +60,18 @@ const getUserById = async (req, res, next) => {
     }
 };
 
+const getPublicProfile = async (req, res, next) => {
+    try {
+        const data = await userService.getPublicProfile(req.params.id);
+        return successResponse(res, {
+            message: 'data profil berhasil diambil!',
+            data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 const createUser = async (req, res, next) => {
     try {
         const created = await userService.createUser(req.body);
@@ -116,6 +128,7 @@ module.exports = {
     getUsers,
     getUserByNrp,
     getUserById,
+    getPublicProfile,
     createUser,
     updateUser,
     patchUser,

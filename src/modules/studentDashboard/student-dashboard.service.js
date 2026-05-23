@@ -203,7 +203,7 @@ const getStudentGrades = async (targetUserId, user) => {
         idAssignment: { $in: assignmentIds },
         idStudent: studentId,
     })
-        .select('idAssignment submittedAt nilai gradedAt')
+        .select('idAssignment submittedAt nilai gradedAt comment isLate')
         .lean();
 
     const submissionMap = {};
@@ -217,6 +217,9 @@ const getStudentGrades = async (targetUserId, user) => {
         const courseId = meeting.idCourse.toString();
         if (!courseAssignmentsMap[courseId]) courseAssignmentsMap[courseId] = [];
         const sub = submissionMap[a._id.toString()];
+        const isLate = sub
+            ? !!(sub.isLate || (a.tenggat && sub.submittedAt && new Date(sub.submittedAt) > new Date(a.tenggat)))
+            : false;
         courseAssignmentsMap[courseId].push({
             id: a._id.toString(),
             idMeeting: a.idMeeting.toString(),
@@ -224,8 +227,22 @@ const getStudentGrades = async (targetUserId, user) => {
             tenggat: a.tenggat,
             pertemuan: meeting.pertemuan,
             submission: sub
-                ? { submitted: true, submittedAt: sub.submittedAt, nilai: sub.nilai ?? null, gradedAt: sub.gradedAt ?? null }
-                : { submitted: false, submittedAt: null, nilai: null, gradedAt: null },
+                ? {
+                      submitted: true,
+                      submittedAt: sub.submittedAt,
+                      nilai: sub.nilai ?? null,
+                      gradedAt: sub.gradedAt ?? null,
+                      comment: sub.comment ?? null,
+                      isLate,
+                  }
+                : {
+                      submitted: false,
+                      submittedAt: null,
+                      nilai: null,
+                      gradedAt: null,
+                      comment: null,
+                      isLate: false,
+                  },
         });
     });
 
@@ -284,4 +301,167 @@ const getStudentGrades = async (targetUserId, user) => {
     };
 };
 
-module.exports = { getStudentDashboard, trackMaterialAccess, getStudentGrades };
+const getStudentProgress = async (targetUserId, user) => {
+    let studentId;
+
+    if (user.roles.includes('MAHASISWA')) {
+        studentId = user.sub;
+    } else if (user.roles.includes('DOSEN') || user.roles.includes('SUPER_ADMIN')) {
+        if (!targetUserId) throw new ApiError(400, 'ID mahasiswa diperlukan');
+        if (!mongoose.isValidObjectId(targetUserId)) throw new ApiError(400, 'ID mahasiswa tidak valid');
+        studentId = targetUserId;
+    } else {
+        throw new ApiError(403, 'Akses ditolak');
+    }
+
+    // 1. Courses
+    const courses = await Course.find({ idMahasiswa: studentId })
+        .select('kodeMatkul namaMatkul kelas sks')
+        .lean();
+    const courseIds = courses.map((c) => c._id);
+
+    // 2. Meetings
+    const meetings = await Meeting.find({ idCourse: { $in: courseIds } })
+        .select('_id idCourse pertemuan')
+        .lean();
+    const meetingIds = meetings.map((m) => m._id);
+
+    // 3. Materi & tugas VISIBLE
+    const [materials, assignments] = await Promise.all([
+        Material.find({ idCourse: { $in: courseIds }, status: 'VISIBLE' })
+            .select('_id idMeeting')
+            .lean(),
+        Assignment.find({ idMeeting: { $in: meetingIds }, status: 'VISIBLE' })
+            .select('_id idMeeting')
+            .lean(),
+    ]);
+    const materialIds = materials.map((m) => m._id);
+    const assignmentIds = assignments.map((a) => a._id);
+
+    // 4. Yang sudah dibuka / dikumpulkan oleh mahasiswa ini
+    const [accesses, submissions] = await Promise.all([
+        MaterialAccess.find({ idMahasiswa: studentId, idMaterial: { $in: materialIds } })
+            .select('idMaterial')
+            .lean(),
+        Submission.find({ idAssignment: { $in: assignmentIds }, idStudent: studentId })
+            .select('idAssignment')
+            .lean(),
+    ]);
+    const accessedSet = new Set(accesses.map((a) => a.idMaterial.toString()));
+    const submittedSet = new Set(submissions.map((s) => s.idAssignment.toString()));
+
+    // 5. Kelompokkan materi & tugas per meeting, meeting per course
+    const materialsByMeeting = {};
+    materials.forEach((m) => {
+        const key = m.idMeeting.toString();
+        (materialsByMeeting[key] = materialsByMeeting[key] || []).push(m);
+    });
+    const assignmentsByMeeting = {};
+    assignments.forEach((a) => {
+        const key = a.idMeeting.toString();
+        (assignmentsByMeeting[key] = assignmentsByMeeting[key] || []).push(a);
+    });
+    const meetingsByCourse = {};
+    meetings.forEach((m) => {
+        const key = m.idCourse.toString();
+        (meetingsByCourse[key] = meetingsByCourse[key] || []).push(m);
+    });
+
+    // 6. Hitung progress per course.
+    //    Pertemuan dianggap "selesai" bila semua materi sudah dibuka
+    //    DAN semua tugas sudah dikumpulkan (pertemuan tanpa konten = selesai).
+    let gTotalPertemuan = 0;
+    let gPertemuanSelesai = 0;
+    let gTotalMateri = 0;
+    let gMateriSelesai = 0;
+    let gTotalTugas = 0;
+    let gTugasSelesai = 0;
+
+    const coursesResult = courses.map((c) => {
+        const cMeetings = (meetingsByCourse[c._id.toString()] || []).sort(
+            (a, b) => a.pertemuan - b.pertemuan,
+        );
+
+        let totalMateri = 0;
+        let materiSelesai = 0;
+        let totalTugas = 0;
+        let tugasSelesai = 0;
+        let pertemuanSelesai = 0;
+
+        const detailPertemuan = cMeetings.map((m) => {
+            const mats = materialsByMeeting[m._id.toString()] || [];
+            const asgs = assignmentsByMeeting[m._id.toString()] || [];
+
+            const mTotalMateri = mats.length;
+            const mMateriSelesai = mats.filter((x) => accessedSet.has(x._id.toString())).length;
+            const mTotalTugas = asgs.length;
+            const mTugasSelesai = asgs.filter((x) => submittedSet.has(x._id.toString())).length;
+
+            const mItems = mTotalMateri + mTotalTugas;
+            const selesai =
+                mItems === 0
+                    ? true
+                    : mMateriSelesai === mTotalMateri && mTugasSelesai === mTotalTugas;
+
+            totalMateri += mTotalMateri;
+            materiSelesai += mMateriSelesai;
+            totalTugas += mTotalTugas;
+            tugasSelesai += mTugasSelesai;
+            if (selesai) pertemuanSelesai += 1;
+
+            return {
+                pertemuan: m.pertemuan,
+                selesai,
+                materi: { selesai: mMateriSelesai, total: mTotalMateri },
+                tugas: { selesai: mTugasSelesai, total: mTotalTugas },
+            };
+        });
+
+        const totalItems = totalMateri + totalTugas;
+        const progressPersen =
+            totalItems > 0
+                ? Math.round(((materiSelesai + tugasSelesai) / totalItems) * 100)
+                : 0;
+
+        gTotalPertemuan += cMeetings.length;
+        gPertemuanSelesai += pertemuanSelesai;
+        gTotalMateri += totalMateri;
+        gMateriSelesai += materiSelesai;
+        gTotalTugas += totalTugas;
+        gTugasSelesai += tugasSelesai;
+
+        return {
+            id: c._id.toString(),
+            kodeMatkul: c.kodeMatkul,
+            namaMatkul: c.namaMatkul,
+            kelas: c.kelas,
+            sks: c.sks,
+            progressPersen,
+            pertemuan: { selesai: pertemuanSelesai, total: cMeetings.length },
+            materi: { selesai: materiSelesai, total: totalMateri },
+            tugas: { selesai: tugasSelesai, total: totalTugas },
+            detailPertemuan,
+        };
+    });
+
+    const gTotalItems = gTotalMateri + gTotalTugas;
+    const summary = {
+        jumlahKelas: courses.length,
+        pertemuan: { selesai: gPertemuanSelesai, total: gTotalPertemuan },
+        materi: { selesai: gMateriSelesai, total: gTotalMateri },
+        tugas: { selesai: gTugasSelesai, total: gTotalTugas },
+        progressPersen:
+            gTotalItems > 0
+                ? Math.round(((gMateriSelesai + gTugasSelesai) / gTotalItems) * 100)
+                : 0,
+    };
+
+    return { summary, courses: coursesResult };
+};
+
+module.exports = {
+    getStudentDashboard,
+    trackMaterialAccess,
+    getStudentGrades,
+    getStudentProgress,
+};

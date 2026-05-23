@@ -34,6 +34,19 @@ const assignmentSchema = new Schema(
         type: String,
         trim: true,
         },
+        // Daftar mahasiswa yang diberi izin mengumpulkan setelah tenggat (reopen).
+        // Tiap entry: mahasiswa boleh submit sampai waktu `until`.
+        reopenedFor: [
+        {
+            idStudent: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            },
+            until: {
+            type: Date,
+            },
+        },
+        ],
     },
     {
         timestamps: true,
