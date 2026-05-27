@@ -239,6 +239,51 @@ const deleteAssignmentById = async (idAssignment) => {
     if (!deleted) throw new ApiError(404, 'Tugas tidak ditemukan');
 };
 
+const reopenAssignment = async (idAssignment, idStudents, until) => {
+    if (!mongoose.isValidObjectId(idAssignment)) {
+        throw new ApiError(400, 'ID assignment tidak valid');
+    }
+
+    const assignment = await Assignment.findById(idAssignment);
+    if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
+
+    const untilDate = new Date(until);
+    if (Number.isNaN(untilDate.getTime())) {
+        throw new ApiError(400, 'Tanggal until tidak valid');
+    }
+    if (untilDate <= new Date()) {
+        throw new ApiError(400, 'Tanggal until harus di masa depan');
+    }
+
+    for (const sid of idStudents) {
+        if (!mongoose.isValidObjectId(sid)) {
+            throw new ApiError(400, `ID mahasiswa tidak valid: ${sid}`);
+        }
+    }
+
+    // Tambah / perbarui izin reopen per mahasiswa
+    for (const sid of idStudents) {
+        const existing = assignment.reopenedFor.find(
+            (r) => r.idStudent && r.idStudent.toString() === sid.toString(),
+        );
+        if (existing) {
+            existing.until = untilDate;
+        } else {
+            assignment.reopenedFor.push({ idStudent: sid, until: untilDate });
+        }
+    }
+
+    await assignment.save();
+
+    return {
+        idAssignment: assignment._id.toString(),
+        reopenedFor: assignment.reopenedFor.map((r) => ({
+            idStudent: r.idStudent ? r.idStudent.toString() : null,
+            until: r.until,
+        })),
+    };
+};
+
 module.exports = {
     listAssignmentsByCourse,
     listAssignmentsByMeeting,
@@ -249,4 +294,5 @@ module.exports = {
     getAssignmentById,
     updateAssignmentById,
     deleteAssignmentById,
+    reopenAssignment,
 };

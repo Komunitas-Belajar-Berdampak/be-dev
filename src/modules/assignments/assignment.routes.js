@@ -129,6 +129,59 @@ router.post(
 
 /**
  * @swagger
+ * /api/assignments/{idAssignment}/reopen:
+ *   post:
+ *     summary: Buka kembali tugas yang lewat deadline untuk mahasiswa tertentu
+ *     tags: [Assignments]
+ *     description: |
+ *       DOSEN / SUPER_ADMIN membuka kembali tugas agar mahasiswa tertentu tetap
+ *       bisa mengumpulkan meski tenggat sudah lewat, sampai batas waktu `until`.
+ *       Pengumpulan setelah tenggat asli otomatis ditandai `isLate: true`.
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: idAssignment
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idStudents
+ *               - until
+ *             properties:
+ *               idStudents:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Daftar ID mahasiswa yang diberi izin mengumpulkan
+ *               until:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Batas waktu izin mengumpulkan (harus di masa depan)
+ *     responses:
+ *       200:
+ *         description: tugas berhasil dibuka kembali!
+ *       400:
+ *         description: Validasi gagal / tanggal tidak valid
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Tugas tidak ditemukan
+ */
+router.post(
+    '/:idAssignment/reopen',
+    requireRoles('SUPER_ADMIN', 'DOSEN'),
+    controller.reopenAssignment
+);
+
+/**
+ * @swagger
  * /api/assignments/{idCourse}:
  *   get:
  *     summary: Ambil semua assignment dalam course

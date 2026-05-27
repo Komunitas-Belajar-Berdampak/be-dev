@@ -27,6 +27,11 @@ const updateSchema = Joi.object({
     status: Joi.string().valid('HIDE', 'VISIBLE').optional(),
 }).min(1);
 
+const reopenSchema = Joi.object({
+    idStudents: Joi.array().items(Joi.string()).min(1).required(),
+    until: Joi.date().iso().required(),
+});
+
 const getAssignmentsByCourse = async (req, res, next) => {
     try {
         const result = await assignmentService.listAssignmentsByCourse(req.params.idCourse, req.user, req.query);
@@ -145,6 +150,26 @@ const deleteAssignment = async (req, res, next) => {
     }
 };
 
+const reopenAssignment = async (req, res, next) => {
+    try {
+        const { error, value } = reopenSchema.validate(req.body);
+        if (error) throw error;
+
+        const data = await assignmentService.reopenAssignment(
+            req.params.idAssignment,
+            value.idStudents,
+            value.until,
+        );
+
+        return successResponse(res, {
+            message: 'tugas berhasil dibuka kembali!',
+            data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
 module.exports = {
     getAssignmentsByCourse,
     getAssignmentsByMeeting,
@@ -152,4 +177,5 @@ module.exports = {
     createAssignment,
     updateAssignment,
     deleteAssignment,
+    reopenAssignment,
 };

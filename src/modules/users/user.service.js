@@ -2,6 +2,8 @@ const mongoose = require('mongoose');
 const User = require('./user.model');
 const Role = require('../roles/roles.model');
 const Approach = require('../approach/approach.model');
+const Submission = require('../submissions/submission.model');
+const PrivateFile = require('../privateFiles/private-file.model');
 const { ApiError } = require('../../utils/http');
 const { hashPassword, comparePassword } = require('../auth/auth.utils');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
@@ -307,6 +309,67 @@ const patchUser = async (id, payload) => {
     await user.save();
 };
 
+/**
+ * Profil publik akademik: data dasar user + statistik aktivitas tugas
+ * + daftar file yang dipublikasikan (PrivateFile status VISIBLE).
+ * Tanpa data sensitif (email/alamat).
+ */
+const getPublicProfile = async (idUser) => {
+    if (!mongoose.isValidObjectId(idUser)) {
+        throw new ApiError(400, 'ID user tidak valid');
+    }
+
+    const user = await User.findById(idUser)
+        .populate('idProdi', 'namaProdi')
+        .populate('roleIds', 'nama')
+        .lean();
+
+    if (!user) {
+        throw new ApiError(404, 'User tidak ditemukan');
+    }
+
+    const [submissions, publicFiles] = await Promise.all([
+        Submission.find({ idStudent: idUser }).select('nilai').lean(),
+        PrivateFile.find({ idMahasiswa: idUser, status: 'VISIBLE' })
+            .sort({ createdAt: -1 })
+            .lean(),
+    ]);
+
+    const graded = submissions.filter((s) => s.nilai !== null && s.nilai !== undefined);
+    const totalNilai = graded.reduce((sum, s) => sum + s.nilai, 0);
+    const rataRataNilai =
+        graded.length > 0 ? Math.round((totalNilai / graded.length) * 100) / 100 : null;
+
+    const primaryRole =
+        Array.isArray(user.roleIds) && user.roleIds.length > 0
+            ? user.roleIds[0].nama
+            : null;
+
+    return {
+        id: user._id.toString(),
+        nrp: user.nrp,
+        nama: user.nama,
+        namaRole: primaryRole,
+        angkatan: user.angkatan,
+        prodi: user.idProdi?.namaProdi || null,
+        jenisKelamin: user.jenisKelamin,
+        fotoProfil: user.fotoProfil || null,
+        statistik: {
+            totalTugasDikerjakan: submissions.length,
+            totalDinilai: graded.length,
+            rataRataNilai,
+        },
+        publicFiles: publicFiles.map((f) => ({
+            id: f._id.toString(),
+            nama: f.namaFile,
+            path: f.pathFile,
+            size: f.size,
+            tipe: f.tipe || null,
+            createdAt: f.createdAt,
+        })),
+    };
+};
+
 module.exports = {
     listUsers,
     getUserByNrp,
@@ -314,4 +377,5 @@ module.exports = {
     createUser,
     updateUser,
     patchUser,
+    getPublicProfile,
 };

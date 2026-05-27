@@ -26,4 +26,17 @@ const getGrades = async (req, res, next) => {
     }
 };
 
-module.exports = { getDashboard, getGrades };
+const getProgress = async (req, res, next) => {
+    try {
+        const targetUserId = req.params.idStudent || null;
+        const data = await service.getStudentProgress(targetUserId, req.user);
+        return successResponse(res, {
+            message: 'data progres belajar berhasil diambil!',
+            data,
+        });
+    } catch (err) {
+        return next(err);
+    }
+};
+
+module.exports = { getDashboard, getGrades, getProgress };

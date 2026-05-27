@@ -14,7 +14,25 @@ const isDosenOrAdmin = (user) =>
     Array.isArray(user.roles) &&
     (user.roles.includes('DOSEN') || user.roles.includes('SUPER_ADMIN'));
 
-const mapSubmission = (s, mahasiswaMap) => {
+// Cek izin reopen aktif untuk mahasiswa pada sebuah assignment
+const getReopenUntil = (assignment, studentId) => {
+    if (!assignment || !Array.isArray(assignment.reopenedFor)) return null;
+    const entry = assignment.reopenedFor.find(
+        (r) => r.idStudent && r.idStudent.toString() === studentId.toString(),
+    );
+    return entry && entry.until ? new Date(entry.until) : null;
+};
+
+// Hitung status telat: pakai flag tersimpan, fallback ke perbandingan tanggal
+const computeIsLate = (submission, assignment) => {
+    if (submission.isLate) return true;
+    if (assignment && assignment.tenggat && submission.submittedAt) {
+        return new Date(submission.submittedAt) > new Date(assignment.tenggat);
+    }
+    return false;
+};
+
+const mapSubmission = (s, mahasiswaMap, assignment) => {
     const m = mahasiswaMap?.[s.idStudent?.toString()] || null;
 
     return {
@@ -31,6 +49,7 @@ const mapSubmission = (s, mahasiswaMap) => {
         grade: s.nilai,
         gradeAt: s.gradedAt,
         comment: s.comment ?? null,
+        isLate: computeIsLate(s, assignment),
         aiFlag: s.aiFlag?.suspicious
             ? { suspicious: true, reason: s.aiFlag.reason }
             : null,
@@ -129,7 +148,7 @@ const listAllSubmissions = async (idAssignment, user, queryParams) => {
             telat,
             tenggat: assignment.tenggat || null,
         },
-        items: subs.map((s) => mapSubmission(s, mahasiswaMap)),
+        items: subs.map((s) => mapSubmission(s, mahasiswaMap, assignment)),
         pagination: buildPagination({ page, limit, totalItems }),
     };
 };
@@ -159,6 +178,7 @@ const getMySubmission = async (idAssignment, user) => {
             grade: null,
             gradeAt: null,
             comment: null,
+            isLate: false,
         };
     }
 
@@ -169,6 +189,7 @@ const getMySubmission = async (idAssignment, user) => {
         grade: sub.nilai,
         gradeAt: sub.gradedAt,
         comment: sub.comment ?? null,
+        isLate: computeIsLate(sub, assignment),
     };
 };
 
@@ -177,16 +198,21 @@ const createSubmission = async (idAssignment, user, filePath) => {
         throw new ApiError(400, 'ID assignment tidak valid');
     }
 
+    if (!isMahasiswa(user)) {
+        throw new ApiError(403, 'Hanya mahasiswa yang boleh submit tugas');
+    }
+
     const assignment = await Assignment.findById(idAssignment).lean();
     if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
 
     const now = new Date();
-    if (assignment.tenggat && now > assignment.tenggat) {
-        throw new ApiError(422, 'Tenggat waktu telah lewat');
-    }
-
-    if (!isMahasiswa(user)) {
-        throw new ApiError(403, 'Hanya mahasiswa yang boleh submit tugas');
+    const pastDeadline = !!(assignment.tenggat && now > assignment.tenggat);
+    if (pastDeadline) {
+        // Setelah tenggat hanya boleh submit jika dosen membuka (reopen) untuk mahasiswa ini
+        const reopenUntil = getReopenUntil(assignment, user.sub);
+        if (!reopenUntil || now > reopenUntil) {
+            throw new ApiError(422, 'Tenggat waktu telah lewat');
+        }
     }
 
     const existing = await Submission.findOne({
@@ -222,12 +248,14 @@ const createSubmission = async (idAssignment, user, filePath) => {
         idStudent: user.sub,
         submittedAt: now,
         file: filePath,
+        isLate: pastDeadline,
         aiFlag,
     });
 
     return {
         file: sub.file,
         submittedAt: sub.submittedAt,
+        isLate: sub.isLate,
         aiFlag: aiFlag.suspicious ? aiFlag : undefined,
     };
 };
@@ -245,8 +273,12 @@ const updateMySubmission = async (idAssignment, user, filePath) => {
     if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
 
     const now = new Date();
-    if (assignment.tenggat && now > assignment.tenggat) {
-        throw new ApiError(422, 'Tenggat waktu telah lewat, tidak bisa mengubah submission');
+    const pastDeadline = !!(assignment.tenggat && now > assignment.tenggat);
+    if (pastDeadline) {
+        const reopenUntil = getReopenUntil(assignment, user.sub);
+        if (!reopenUntil || now > reopenUntil) {
+            throw new ApiError(422, 'Tenggat waktu telah lewat, tidak bisa mengubah submission');
+        }
     }
 
     const sub = await Submission.findOne({
@@ -260,12 +292,14 @@ const updateMySubmission = async (idAssignment, user, filePath) => {
 
     if (filePath) sub.file = filePath;
     sub.submittedAt = now;
+    sub.isLate = pastDeadline;
 
     await sub.save();
 
     return {
         file: sub.file,
         submittedAt: sub.submittedAt,
+        isLate: sub.isLate,
     };
 };
 

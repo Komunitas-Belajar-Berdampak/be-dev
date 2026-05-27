@@ -38,6 +38,19 @@ const assignmentSchema = new Schema(
         type: Boolean, // true = deadline aktif/dikunci, false = deadline dibuka (bisa submit kapanpun)
         default: true,
         },
+        // Daftar mahasiswa yang diberi izin mengumpulkan setelah tenggat (reopen).
+        // Tiap entry: mahasiswa boleh submit sampai waktu `until`.
+        reopenedFor: [
+        {
+            idStudent: {
+            type: Schema.Types.ObjectId,
+            ref: 'User',
+            },
+            until: {
+            type: Date,
+            },
+        },
+        ],
     },
     {
         timestamps: true,

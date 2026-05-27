@@ -190,6 +190,146 @@ router.get('/grades/:idStudent', requireRoles('DOSEN', 'SUPER_ADMIN'), controlle
 
 /**
  * @swagger
+ * /api/student-dashboard/progress:
+ *   get:
+ *     summary: Ambil progres belajar mahasiswa (login sendiri)
+ *     tags: [Student Dashboard]
+ *     description: |
+ *       Menampilkan progres belajar mahasiswa yang sedang login per matakuliah:
+ *       jumlah pertemuan selesai, materi dibuka, tugas dikumpulkan, dan persentase progres.
+ *       Sebuah pertemuan dihitung selesai bila semua materi sudah dibuka DAN semua tugas
+ *       sudah dikumpulkan. Hanya dapat diakses oleh MAHASISWA.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: data progres belajar berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StudentProgressResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/progress', requireRoles('MAHASISWA'), controller.getProgress);
+
+/**
+ * @swagger
+ * /api/student-dashboard/progress/{idStudent}:
+ *   get:
+ *     summary: Ambil progres belajar mahasiswa tertentu (DOSEN/SUPER_ADMIN)
+ *     tags: [Student Dashboard]
+ *     description: Menampilkan progres belajar mahasiswa berdasarkan ID. Khusus DOSEN/SUPER_ADMIN.
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: idStudent
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: data progres belajar berhasil diambil!
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/StudentProgressResponse'
+ *       400:
+ *         description: ID tidak valid
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/progress/:idStudent', requireRoles('DOSEN', 'SUPER_ADMIN'), controller.getProgress);
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     StudentProgressResponse:
+ *       type: object
+ *       properties:
+ *         status:
+ *           type: string
+ *         message:
+ *           type: string
+ *         data:
+ *           type: object
+ *           properties:
+ *             summary:
+ *               type: object
+ *               properties:
+ *                 jumlahKelas:
+ *                   type: integer
+ *                 pertemuan:
+ *                   type: object
+ *                   properties:
+ *                     selesai: { type: integer }
+ *                     total: { type: integer }
+ *                 materi:
+ *                   type: object
+ *                   properties:
+ *                     selesai: { type: integer }
+ *                     total: { type: integer }
+ *                 tugas:
+ *                   type: object
+ *                   properties:
+ *                     selesai: { type: integer }
+ *                     total: { type: integer }
+ *                 progressPersen:
+ *                   type: integer
+ *                   description: Persentase progres keseluruhan (0-100)
+ *             courses:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id: { type: string }
+ *                   kodeMatkul: { type: string }
+ *                   namaMatkul: { type: string }
+ *                   kelas: { type: string }
+ *                   sks: { type: integer }
+ *                   progressPersen: { type: integer }
+ *                   pertemuan:
+ *                     type: object
+ *                     properties:
+ *                       selesai: { type: integer }
+ *                       total: { type: integer }
+ *                   materi:
+ *                     type: object
+ *                     properties:
+ *                       selesai: { type: integer }
+ *                       total: { type: integer }
+ *                   tugas:
+ *                     type: object
+ *                     properties:
+ *                       selesai: { type: integer }
+ *                       total: { type: integer }
+ *                   detailPertemuan:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *                       properties:
+ *                         pertemuan: { type: integer }
+ *                         selesai: { type: boolean }
+ *                         materi:
+ *                           type: object
+ *                           properties:
+ *                             selesai: { type: integer }
+ *                             total: { type: integer }
+ *                         tugas:
+ *                           type: object
+ *                           properties:
+ *                             selesai: { type: integer }
+ *                             total: { type: integer }
+ */
+
+/**
+ * @swagger
  * components:
  *   schemas:
  *     StudentGradesResponse:
@@ -280,6 +420,13 @@ router.get('/grades/:idStudent', requireRoles('DOSEN', 'SUPER_ADMIN'), controlle
  *                               type: string
  *                               format: date-time
  *                               nullable: true
+ *                             comment:
+ *                               type: string
+ *                               nullable: true
+ *                               description: Komentar/catatan dari dosen
+ *                             isLate:
+ *                               type: boolean
+ *                               description: true jika dikumpulkan setelah tenggat
  */
 
 module.exports = router;
