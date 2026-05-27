@@ -20,6 +20,7 @@ const createSchema = Joi.object({
 const updateSchema = Joi.object({
     judul: Joi.string().optional(),
     statusTugas: Joi.boolean().optional(),
+    statusTenggat: Joi.boolean().optional(),
     tenggat: Joi.date().iso().optional(),
     deskripsi: Joi.object().optional(),
     lampiran: Joi.string().optional(),
@@ -96,6 +97,7 @@ const createAssignment = async (req, res, next) => {
 const updateAssignment = async (req, res, next) => {
     try {
         const rawStatusTugas = req.body.statusTugas;
+        const rawStatusTenggat = req.body.statusTenggat;
         const body = {
             ...req.body,
             deskripsi: parseJsonField(req.body.deskripsi),
@@ -105,6 +107,12 @@ const updateAssignment = async (req, res, next) => {
                     rawStatusTugas === true || rawStatusTugas === 'true' ? true
                     : rawStatusTugas === false || rawStatusTugas === 'false' ? false
                     : rawStatusTugas,
+            }),
+            ...(rawStatusTenggat !== undefined && {
+                statusTenggat:
+                    rawStatusTenggat === true || rawStatusTenggat === 'true' ? true
+                    : rawStatusTenggat === false || rawStatusTenggat === 'false' ? false
+                    : rawStatusTenggat,
             }),
         };
 

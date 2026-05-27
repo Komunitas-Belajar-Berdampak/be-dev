@@ -17,6 +17,7 @@ const mapListItemByCourse = (a, meetingMap) => {
         judul: a.judul,
         status: a.status,
         statusTugas: a.statusTugas,
+        statusTenggat: a.statusTenggat !== false, // default true jika undefined
         tenggat: a.tenggat,
         deskripsi: a.deskripsi || null,
         lampiran: a.pathLampiran || null,
@@ -29,6 +30,7 @@ const mapListItemByMeeting = (a) => ({
     judul: a.judul,
     status: a.status,
     statusTugas: a.statusTugas,
+    statusTenggat: a.statusTenggat !== false, // default true jika undefined
     tenggat: a.tenggat,
     deskripsi: a.deskripsi || null,
     lampiran: a.pathLampiran || null,
@@ -38,6 +40,7 @@ const mapDetail = (a) => ({
     id: a._id.toString(),
     judul: a.judul,
     statusTugas: a.statusTugas ? 'kelompok' : 'individu',
+    statusTenggat: a.statusTenggat !== false, // default true jika undefined
     tenggat: a.tenggat,
     status: a.status,
     deskripsi: a.deskripsi || null,
@@ -214,10 +217,11 @@ const updateAssignmentById = async (idAssignment, payload) => {
     const assignment = await Assignment.findById(idAssignment);
     if (!assignment) throw new ApiError(404, 'Tugas tidak ditemukan');
 
-    const { judul, statusTugas, tenggat, status, deskripsi, lampiran } = payload;
+    const { judul, statusTugas, statusTenggat, tenggat, status, deskripsi, lampiran } = payload;
 
     if (judul !== undefined) assignment.judul = judul;
     if (statusTugas !== undefined) assignment.statusTugas = statusTugas;
+    if (statusTenggat !== undefined) assignment.statusTenggat = statusTenggat;
     if (tenggat !== undefined) assignment.tenggat = tenggat;
     if (status !== undefined) assignment.status = status;
     if (deskripsi !== undefined) assignment.deskripsi = deskripsi;

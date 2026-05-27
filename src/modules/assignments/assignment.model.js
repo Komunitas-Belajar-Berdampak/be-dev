@@ -34,6 +34,10 @@ const assignmentSchema = new Schema(
         type: String,
         trim: true,
         },
+        statusTenggat: {
+        type: Boolean, // true = deadline aktif/dikunci, false = deadline dibuka (bisa submit kapanpun)
+        default: true,
+        },
     },
     {
         timestamps: true,
