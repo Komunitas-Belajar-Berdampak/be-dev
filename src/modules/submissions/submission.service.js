@@ -7,6 +7,7 @@ const User = require('../users/user.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 const ai = require('../../libs/ai');
+const { notifyMany } = require('../notifications/notification.service');
 
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
@@ -251,6 +252,27 @@ const createSubmission = async (idAssignment, user, filePath) => {
         isLate: pastDeadline,
         aiFlag,
     });
+
+    if (pastDeadline) {
+        try {
+            const meeting = await Meeting.findById(assignment.idMeeting).select('idCourse').lean();
+            if (meeting) {
+                const course = await Course.findById(meeting.idCourse).select('kodeMatkul namaMatkul').lean();
+                if (course) {
+                    await notifyMany([user.sub], {
+                        tipe: 'LATE_SUBMISSION',
+                        judul: 'Pengumpulan terlambat',
+                        pesan: `Kamu mengumpulkan tugas "${assignment.judul}" pada ${course.namaMatkul} setelah deadline.`,
+                        idCourse: meeting.idCourse,
+                        idAssignment: assignment._id,
+                        link: `/courses/${meeting.idCourse}/assignments/${assignment._id}`,
+                    });
+                }
+            }
+        } catch (_) {
+            // notif gagal tidak boleh batalkan operasi utama
+        }
+    }
 
     return {
         file: sub.file,

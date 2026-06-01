@@ -28,6 +28,7 @@ const dashboardRoutes = require('./modules/dashboard/dashboard.routes');
 const courseDashboardRoutes = require('./modules/courseDashboard/course-dashboard.routes');
 const studentDashboardRoutes = require('./modules/studentDashboard/student-dashboard.routes');
 const contributionReviewRoutes = require('./modules/contributionReviews/contribution-review.routes');
+const notificationRoutes = require('./modules/notifications/notification.routes');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./docs/swagger');
 
@@ -81,6 +82,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/course-dashboard', courseDashboardRoutes);
 app.use('/api/student-dashboard', studentDashboardRoutes);
 app.use('/api/contribution-reviews', contributionReviewRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 

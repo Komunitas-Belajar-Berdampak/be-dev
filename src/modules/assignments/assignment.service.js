@@ -4,9 +4,27 @@ const Meeting = require('../meetings/meeting.model');
 const Course = require('../courses/course.model');
 const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
+const { notifyMany } = require('../notifications/notification.service');
 
 const isMahasiswa = (user) =>
     Array.isArray(user.roles) && user.roles.includes('MAHASISWA');
+
+const triggerNewAssignmentNotif = async (assignment, idCourse) => {
+    try {
+        const course = await Course.findById(idCourse).select('idMahasiswa kodeMatkul namaMatkul').lean();
+        if (!course?.idMahasiswa?.length) return;
+        await notifyMany(course.idMahasiswa, {
+            tipe: 'NEW_ASSIGNMENT',
+            judul: 'Tugas baru tersedia',
+            pesan: `Tugas baru "${assignment.judul}" telah dipublikasikan pada ${course.namaMatkul}.`,
+            idCourse: course._id,
+            idAssignment: assignment._id,
+            link: `/courses/${course._id}/assignments/${assignment._id}`,
+        });
+    } catch (_) {
+        // notif gagal tidak boleh batalkan operasi utama
+    }
+};
 
 const mapListItemByCourse = (a, meetingMap) => {
     const pertemuan = meetingMap[a.idMeeting.toString()] || null;
@@ -148,6 +166,10 @@ const createAssignment = async (idCourse, pertemuan, payload) => {
         pathLampiran: lampiran,
     });
 
+    if (doc.status === 'VISIBLE') {
+        await triggerNewAssignmentNotif(doc, idCourse);
+    }
+
     return mapDetail(doc.toObject());
 };
 
@@ -168,6 +190,8 @@ const updateAssignment = async (idCourse, pertemuan, idAssignment, payload) => {
 
     const { judul, statusTugas, tenggat, status, deskripsi, lampiran } = payload;
 
+    const wasHide = assignment.status === 'HIDE';
+
     if (judul !== undefined) assignment.judul = judul;
     if (statusTugas !== undefined) assignment.statusTugas = statusTugas;
     if (tenggat !== undefined) assignment.tenggat = tenggat;
@@ -176,6 +200,10 @@ const updateAssignment = async (idCourse, pertemuan, idAssignment, payload) => {
     if (lampiran !== undefined) assignment.pathLampiran = lampiran;
 
     await assignment.save();
+
+    if (wasHide && assignment.status === 'VISIBLE') {
+        await triggerNewAssignmentNotif(assignment, idCourse);
+    }
 };
 
 const deleteAssignment = async (idCourse, pertemuan, idAssignment) => {
@@ -219,6 +247,8 @@ const updateAssignmentById = async (idAssignment, payload) => {
 
     const { judul, statusTugas, statusTenggat, tenggat, status, deskripsi, lampiran } = payload;
 
+    const wasHide = assignment.status === 'HIDE';
+
     if (judul !== undefined) assignment.judul = judul;
     if (statusTugas !== undefined) assignment.statusTugas = statusTugas;
     if (statusTenggat !== undefined) assignment.statusTenggat = statusTenggat;
@@ -228,6 +258,11 @@ const updateAssignmentById = async (idAssignment, payload) => {
     if (lampiran !== undefined) assignment.pathLampiran = lampiran;
 
     await assignment.save();
+
+    if (wasHide && assignment.status === 'VISIBLE') {
+        const meeting = await Meeting.findById(assignment.idMeeting).select('idCourse').lean();
+        if (meeting) await triggerNewAssignmentNotif(assignment, meeting.idCourse);
+    }
 };
 
 const deleteAssignmentById = async (idAssignment) => {

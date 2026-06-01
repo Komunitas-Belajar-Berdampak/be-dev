@@ -4,6 +4,7 @@ const app = require('./app');
 const config = require('./config');
 const { logger } = require('./libs/logger');
 const { connectDB } = require('./config/mongoose');
+const { startNotificationScheduler } = require('./modules/notifications/notification.service');
 
 require('./modules/majors/major.model');
 
@@ -12,6 +13,8 @@ const server = http.createServer(app);
 const start = async () => {
     try {
         await connectDB();
+
+        startNotificationScheduler();
 
         server.listen(config.port, () => {
         logger.info({ port: config.port }, 'Server listening');
