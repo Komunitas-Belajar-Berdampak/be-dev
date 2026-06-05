@@ -8,8 +8,6 @@ const { ApiError } = require('../../utils/http');
 const { parsePagination, buildPagination } = require('../../utils/pagination');
 const { logger } = require('../../libs/logger');
 
-// ─── Internal helpers ────────────────────────────────────────────────────────
-
 const formatSisaWaktu = (ms) => {
     if (ms <= 0) return null;
     const hours = Math.floor(ms / 3600000);
@@ -63,7 +61,6 @@ const enrichNotifications = async (notifications, userId) => {
         return acc;
     }, {});
 
-    // Fetch submittedAt untuk LATE_SUBMISSION
     const lateAssignmentIds = notifications
         .filter((n) => n.tipe === 'LATE_SUBMISSION' && n.idAssignment)
         .map((n) => n.idAssignment);
@@ -115,8 +112,6 @@ const enrichNotifications = async (notifications, userId) => {
     });
 };
 
-// ─── Public helpers (dipanggil dari service lain) ─────────────────────────────
-
 const notifyMany = async (idMahasiswaArr, { tipe, judul, pesan, idCourse, idAssignment, link }) => {
     try {
         const ids = Array.isArray(idMahasiswaArr) ? idMahasiswaArr : [idMahasiswaArr];
@@ -124,7 +119,6 @@ const notifyMany = async (idMahasiswaArr, { tipe, judul, pesan, idCourse, idAssi
 
         let targets = ids;
 
-        // Deduplication untuk tipe yang hanya boleh sekali per mahasiswa per assignment
         if ((tipe === 'DEADLINE_SOON' || tipe === 'LATE_SUBMISSION') && idAssignment) {
             const existing = await Notification.find({
                 tipe,
@@ -152,8 +146,6 @@ const notifyMany = async (idMahasiswaArr, { tipe, judul, pesan, idCourse, idAssi
         logger.error({ err }, 'notifyMany failed silently');
     }
 };
-
-// ─── CRUD service functions ───────────────────────────────────────────────────
 
 const listNotifications = async (userId, queryParams) => {
     const { page, limit, skip } = parsePagination(queryParams);
@@ -227,8 +219,6 @@ const deleteNotification = async (id, userId) => {
     if (!deleted) throw new ApiError(404, 'Notifikasi tidak ditemukan');
 };
 
-// ─── Scheduler ───────────────────────────────────────────────────────────────
-
 const checkDeadlineSoon = async () => {
     const now = new Date();
     const windowStart = new Date(now.getTime() + 23 * 60 * 60 * 1000);
@@ -268,7 +258,7 @@ const checkDeadlineSoon = async () => {
             pesan: `Tugas "${assignment.judul}" pada ${course.namaMatkul} akan berakhir ${sisaStr}. Segera kumpulkan!`,
             idCourse: meeting.idCourse,
             idAssignment: assignment._id,
-            link: `/courses/${meeting.idCourse}/assignments/${assignment._id}`,
+            link: `/courses/${meeting.idCourse}/meeting/${assignment.idMeeting}/submission/${assignment._id}`,
         });
     }
 };
@@ -308,7 +298,7 @@ const checkLateSubmissions = async () => {
             pesan: `Kamu tidak mengumpulkan tugas "${assignment.judul}" pada ${course.namaMatkul} sebelum deadline.`,
             idCourse: meeting.idCourse,
             idAssignment: assignment._id,
-            link: `/courses/${meeting.idCourse}/assignments/${assignment._id}`,
+            link: `/courses/${meeting.idCourse}/meeting/${assignment.idMeeting}/submission/${assignment._id}`,
         });
     }
 };

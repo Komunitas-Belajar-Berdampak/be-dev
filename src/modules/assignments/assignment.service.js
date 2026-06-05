@@ -19,7 +19,7 @@ const triggerNewAssignmentNotif = async (assignment, idCourse) => {
             pesan: `Tugas baru "${assignment.judul}" telah dipublikasikan pada ${course.namaMatkul}.`,
             idCourse: course._id,
             idAssignment: assignment._id,
-            link: `/courses/${course._id}/assignments/${assignment._id}`,
+            link: `/courses/${course._id}/meeting/${assignment.idMeeting}/submission/${assignment._id}`,
         });
     } catch (_) {
         // notif gagal tidak boleh batalkan operasi utama

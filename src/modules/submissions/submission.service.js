@@ -265,7 +265,7 @@ const createSubmission = async (idAssignment, user, filePath) => {
                         pesan: `Kamu mengumpulkan tugas "${assignment.judul}" pada ${course.namaMatkul} setelah deadline.`,
                         idCourse: meeting.idCourse,
                         idAssignment: assignment._id,
-                        link: `/courses/${meeting.idCourse}/assignments/${assignment._id}`,
+                        link: `/courses/${meeting.idCourse}/meeting/${assignment.idMeeting}/submission/${assignment._id}`,
                     });
                 }
             }
