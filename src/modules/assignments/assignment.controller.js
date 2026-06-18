@@ -106,7 +106,6 @@ const updateAssignment = async (req, res, next) => {
         const body = {
             ...req.body,
             deskripsi: parseJsonField(req.body.deskripsi),
-            // FormData selalu kirim string; coerce ke boolean sebelum Joi validasi
             ...(rawStatusTugas !== undefined && {
                 statusTugas:
                     rawStatusTugas === true || rawStatusTugas === 'true' ? true

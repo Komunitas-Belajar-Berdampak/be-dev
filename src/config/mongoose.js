@@ -4,7 +4,6 @@ const { logger } = require('../libs/logger');
 
 mongoose.set('strictQuery', true);
 
-// Listen to index creation events (for monitoring)
 mongoose.connection.on('index', (model) => {
     logger.info(`Index built for model: ${model}`);
 });

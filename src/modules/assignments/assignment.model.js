@@ -28,7 +28,7 @@ const assignmentSchema = new Schema(
         default: 'HIDE',
         },
         deskripsi: {
-        type: Schema.Types.Mixed, // TipTap object
+        type: Schema.Types.Mixed,
         },
         pathLampiran: {
         type: String,
@@ -38,8 +38,7 @@ const assignmentSchema = new Schema(
         type: Boolean, // true = deadline aktif/dikunci, false = deadline dibuka (bisa submit kapanpun)
         default: true,
         },
-        // Daftar mahasiswa yang diberi izin mengumpulkan setelah tenggat (reopen).
-        // Tiap entry: mahasiswa boleh submit sampai waktu `until`.
+
         reopenedFor: [
         {
             idStudent: {
@@ -57,11 +56,10 @@ const assignmentSchema = new Schema(
     },
 );
 
-// Indexes for performance optimization
-assignmentSchema.index({ idMeeting: 1 });              // Existing: for meeting filtering
-assignmentSchema.index({ status: 1 });                 // For visibility filtering
-assignmentSchema.index({ tenggat: 1 });                // For sorting by deadline
-assignmentSchema.index({ idMeeting: 1, status: 1 });   // Compound: common query pattern
+assignmentSchema.index({ idMeeting: 1 });
+assignmentSchema.index({ status: 1 });
+assignmentSchema.index({ tenggat: 1 });
+assignmentSchema.index({ idMeeting: 1, status: 1 });
 
 const Assignment = mongoose.model('Assignment', assignmentSchema);
 

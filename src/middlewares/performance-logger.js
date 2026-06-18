@@ -1,14 +1,8 @@
-/**
- * Performance logging middleware
- * Logs the response time for each API request
- */
-
 const { logger } = require('../libs/logger');
 
 const performanceLogger = (req, res, next) => {
   const start = Date.now();
 
-  // Capture when response finishes
   res.on('finish', () => {
     const duration = Date.now() - start;
 

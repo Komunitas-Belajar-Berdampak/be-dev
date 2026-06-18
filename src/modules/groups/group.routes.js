@@ -499,6 +499,20 @@ router.get(
  *                           nrp: { type: string }
  *                           nama: { type: string }
  *                       konten: { type: object }
+ *                       parentPostId: { type: string, nullable: true }
+ *                       parentPost:
+ *                         type: object
+ *                         nullable: true
+ *                         properties:
+ *                           id: { type: string }
+ *                           author:
+ *                             type: object
+ *                             properties:
+ *                               nrp: { type: string }
+ *                               nama: { type: string }
+ *                           kontenPreview: { type: string }
+ *                           createdAt: { type: string }
+ *                       createdAt: { type: string }
  *                       updatedAt: { type: string }
  */
 router.get(
@@ -527,6 +541,10 @@ router.get(
  *             required: [konten]
  *             properties:
  *               konten: { type: object }
+ *               parentPostId:
+ *                 type: string
+ *                 nullable: true
+ *                 description: Optional. Jika diisi, post dibuat sebagai reply dari post tsb (parent harus di thread yang sama).
  *     responses:
  *       201:
  *         description: post dibuat!
@@ -546,6 +564,19 @@ router.get(
  *                         nrp: { type: string }
  *                         nama: { type: string }
  *                     konten: { type: object }
+ *                     parentPostId: { type: string, nullable: true }
+ *                     parentPost:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         id: { type: string }
+ *                         author:
+ *                           type: object
+ *                           properties:
+ *                             nrp: { type: string }
+ *                             nama: { type: string }
+ *                         kontenPreview: { type: string }
+ *                         createdAt: { type: string }
  */
 router.post(
     '/threads/:idThread',
@@ -584,6 +615,20 @@ router.post(
  *                         nrp: { type: string }
  *                         nama: { type: string }
  *                     konten: { type: object }
+ *                     parentPostId: { type: string, nullable: true }
+ *                     parentPost:
+ *                       type: object
+ *                       nullable: true
+ *                       properties:
+ *                         id: { type: string }
+ *                         author:
+ *                           type: object
+ *                           properties:
+ *                             nrp: { type: string }
+ *                             nama: { type: string }
+ *                         kontenPreview: { type: string }
+ *                         createdAt: { type: string }
+ *                     createdAt: { type: string }
  *                     updatedAt: { type: string }
  */
 router.get(

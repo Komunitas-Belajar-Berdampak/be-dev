@@ -16,7 +16,6 @@ const getClient = () => {
 
 const isEnabled = () => !!process.env.GROQ_API_KEY;
 
-// Ekstrak plain text dari TipTap JSON (konten post/deskripsi)
 const extractTextFromTiptap = (node) => {
     if (!node || typeof node !== 'object') return '';
     if (node.type === 'text' && typeof node.text === 'string') return node.text;
@@ -26,27 +25,11 @@ const extractTextFromTiptap = (node) => {
     return '';
 };
 
-/**
- * Nilai kualitas konten post dan kembalikan skor poin (0-25).
- * Skor 0 = ditolak (spam/kosong/asal). Skor 1-25 = diterima dengan poin sesuai kualitas.
- * Jika AI tidak tersedia, fallback ke skor default 10.
- *
- * Rubrik skor:
- *  0     = spam, lorem ipsum, karakter acak, kosong, atau terlalu singkat (< 5 kata)
- *  1-8   = ada teks tapi sangat dangkal / minim kontribusi
- *  9-16  = kontribusi cukup, ada pendapat atau informasi relevan
- *  17-25 = kontribusi berkualitas, analisis mendalam, argumen kuat
- *
- * @param {object} konten - TipTap JSON content
- * @param {string} threadJudul - Judul thread (untuk konteks topik)
- * @returns {Promise<{score: number, reason: string}>}
- */
 const validatePostContent = async (konten, threadJudul) => {
     if (!isEnabled()) return { score: 10, reason: '' };
 
     const text = extractTextFromTiptap(konten).trim().replace(/\s+/g, ' ');
 
-    // Langsung beri score 0 jika kosong, tanpa panggil API
     if (text.length === 0) {
         return { score: 0, reason: 'Konten kosong' };
     }
@@ -94,21 +77,10 @@ Contoh skor 17-25: "Pendekatan ini kurang efisien karena kompleksitasnya O(n²),
         const score = Math.min(25, Math.max(0, Math.round(Number(result.score) || 0)));
         return { score, reason: result.reason || '' };
     } catch {
-        // Jika AI gagal, beri skor default agar sistem tidak terganggu
         return { score: 10, reason: '' };
     }
 };
 
-/**
- * Analisis kontribusi anggota kelompok dan rekomendasikan nilai per member.
- * Melempar error jika AI tidak tersedia.
- *
- * @param {object} params
- * @param {string} params.groupName
- * @param {string} [params.threadJudul]
- * @param {Array<{nrp, nama, kontribusi, jumlahPost, jumlahTaskSelesai}>} params.members
- * @returns {Promise<object>}
- */
 const analyzeGroupContributions = async ({ groupName, threadJudul, members }) => {
     if (!isEnabled()) {
         throw new Error('Fitur AI tidak tersedia: GROQ_API_KEY belum dikonfigurasi');

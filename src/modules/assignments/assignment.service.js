@@ -22,7 +22,6 @@ const triggerNewAssignmentNotif = async (assignment, idCourse) => {
             link: `/courses/${course._id}/meeting/${assignment.idMeeting}/submission/${assignment._id}`,
         });
     } catch (_) {
-        // notif gagal tidak boleh batalkan operasi utama
     }
 };
 
@@ -35,7 +34,7 @@ const mapListItemByCourse = (a, meetingMap) => {
         judul: a.judul,
         status: a.status,
         statusTugas: a.statusTugas,
-        statusTenggat: a.statusTenggat !== false, // default true jika undefined
+        statusTenggat: a.statusTenggat !== false,
         tenggat: a.tenggat,
         deskripsi: a.deskripsi || null,
         lampiran: a.pathLampiran || null,
@@ -48,7 +47,7 @@ const mapListItemByMeeting = (a) => ({
     judul: a.judul,
     status: a.status,
     statusTugas: a.statusTugas,
-    statusTenggat: a.statusTenggat !== false, // default true jika undefined
+    statusTenggat: a.statusTenggat !== false,
     tenggat: a.tenggat,
     deskripsi: a.deskripsi || null,
     lampiran: a.pathLampiran || null,
@@ -58,7 +57,7 @@ const mapDetail = (a) => ({
     id: a._id.toString(),
     judul: a.judul,
     statusTugas: a.statusTugas ? 'kelompok' : 'individu',
-    statusTenggat: a.statusTenggat !== false, // default true jika undefined
+    statusTenggat: a.statusTenggat !== false,
     tenggat: a.tenggat,
     status: a.status,
     deskripsi: a.deskripsi || null,

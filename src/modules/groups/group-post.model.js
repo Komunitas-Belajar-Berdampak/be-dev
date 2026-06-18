@@ -14,6 +14,11 @@ const groupPostSchema = new Schema(
         ref: 'User',
         required: true,
         },
+        parentPostId: {
+        type: Schema.Types.ObjectId,
+        ref: 'GroupPost',
+        default: null,
+        },
         konten: {
         type: Schema.Types.Mixed,
         required: true,
@@ -33,6 +38,7 @@ groupPostSchema.index({ idThread: 1 });                // Existing: for thread f
 groupPostSchema.index({ idAuthor: 1 });                // For author's posts
 groupPostSchema.index({ updatedAt: 1 });               // For sorting by update time
 groupPostSchema.index({ idThread: 1, updatedAt: 1 });  // Compound: posts in thread sorted
+groupPostSchema.index({ parentPostId: 1 });            // For replies lookup
 
 const GroupPost = mongoose.model('GroupPost', groupPostSchema);
 

@@ -43,6 +43,38 @@ const processImages = async (node) => {
 
 const MAX_POINT_PER_POST = 25;
 
+const PREVIEW_MAX_LENGTH = 120;
+
+// Ekstrak teks dari konten Tiptap (JSONContent) untuk dijadikan preview singkat
+const extractText = (node) => {
+    if (!node || typeof node !== 'object') return '';
+    let text = typeof node.text === 'string' ? node.text : '';
+    if (Array.isArray(node.content)) {
+        text += node.content.map(extractText).join(' ');
+    }
+    return text;
+};
+
+const buildKontenPreview = (konten) => {
+    const text = extractText(konten).replace(/\s+/g, ' ').trim();
+    if (text.length <= PREVIEW_MAX_LENGTH) return text;
+    return `${text.slice(0, PREVIEW_MAX_LENGTH)}...`;
+};
+
+// Bentuk objek parentPost preview dari dokumen post (sudah ter-populate idAuthor)
+const buildParentPost = (parent) => {
+    if (!parent) return null;
+    return {
+        id: parent._id.toString(),
+        author: {
+            nrp: parent.idAuthor?.nrp,
+            nama: parent.idAuthor?.nama,
+        },
+        kontenPreview: buildKontenPreview(parent.konten),
+        createdAt: parent.createdAt,
+    };
+};
+
 const listPostsByThread = async (idThread, query) => {
     if (!mongoose.isValidObjectId(idThread)) throw new ApiError(400, 'ID thread tidak valid');
 
@@ -56,6 +88,11 @@ const listPostsByThread = async (idThread, query) => {
 
     const posts = await GroupPost.find(filter)
         .populate('idAuthor', 'nrp nama')
+        .populate({
+            path: 'parentPostId',
+            select: 'konten createdAt idAuthor',
+            populate: { path: 'idAuthor', select: 'nrp nama' },
+        })
         .sort({ createdAt: 1 })
         .skip(skip)
         .limit(limit)
@@ -66,6 +103,8 @@ const listPostsByThread = async (idThread, query) => {
         id: p._id.toString(),
         author: { nrp: p.idAuthor.nrp, nama: p.idAuthor.nama },
         konten: p.konten,
+        parentPostId: p.parentPostId ? p.parentPostId._id.toString() : null,
+        parentPost: buildParentPost(p.parentPostId),
         createdAt: p.createdAt,
         updatedAt: p.updatedAt,
         })),
@@ -80,6 +119,11 @@ const getPostById = async (idPost) => {
 
     const post = await GroupPost.findById(idPost)
         .populate('idAuthor', 'nrp nama')
+        .populate({
+            path: 'parentPostId',
+            select: 'konten createdAt idAuthor',
+            populate: { path: 'idAuthor', select: 'nrp nama' },
+        })
         .lean();
 
     if (!post) throw new ApiError(404, 'Post tidak ditemukan');
@@ -91,12 +135,14 @@ const getPostById = async (idPost) => {
             nama: post.idAuthor.nama,
         },
         konten: post.konten,
+        parentPostId: post.parentPostId ? post.parentPostId._id.toString() : null,
+        parentPost: buildParentPost(post.parentPostId),
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
     };
 };
 
-const createPost = async (idThread, user, konten) => {
+const createPost = async (idThread, user, konten, parentPostId = null) => {
     if (!mongoose.isValidObjectId(idThread)) {
         throw new ApiError(400, 'ID thread tidak valid');
     }
@@ -106,6 +152,21 @@ const createPost = async (idThread, user, konten) => {
 
     const author = await User.findById(user.sub).lean();
     if (!author) throw new ApiError(404, 'User tidak ditemukan');
+
+    // Jika reply: parent harus ada & berada di thread yang sama
+    let parent = null;
+    if (parentPostId) {
+        if (!mongoose.isValidObjectId(parentPostId)) {
+            throw new ApiError(400, 'ID parent post tidak valid');
+        }
+        parent = await GroupPost.findById(parentPostId)
+            .populate('idAuthor', 'nrp nama')
+            .lean();
+        if (!parent) throw new ApiError(404, 'Parent post tidak ditemukan');
+        if (parent.idThread.toString() !== idThread) {
+            throw new ApiError(400, 'Parent post harus berada di thread yang sama');
+        }
+    }
 
     await processImages(konten);
 
@@ -124,6 +185,7 @@ const createPost = async (idThread, user, konten) => {
     const post = await GroupPost.create({
         idThread,
         idAuthor: user.sub,
+        parentPostId: parent ? parent._id : null,
         konten,
     });
 
@@ -157,6 +219,8 @@ const createPost = async (idThread, user, konten) => {
             nama: author.nama,
         },
         konten: post.konten,
+        parentPostId: parent ? parent._id.toString() : null,
+        parentPost: buildParentPost(parent),
     };
 };
 

@@ -37,6 +37,7 @@ const createThreadSchema = Joi.object({
 
 const createPostSchema = Joi.object({
     konten: Joi.object().required(),
+    parentPostId: Joi.string().allow(null).optional(),
 });
 
 const updatePostSchema = Joi.object({
@@ -235,6 +236,7 @@ const createThreadOrPost = async (req, res, next) => {
                 req.params.id,
                 req.user,
                 value.konten,
+                value.parentPostId,
             );
 
             return successResponse(res, {
@@ -273,6 +275,7 @@ const createPost = async (req, res, next) => {
         req.params.idThread,
         req.user,
         value.konten,
+        value.parentPostId,
         );
 
         return successResponse(res, {
